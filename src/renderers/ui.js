@@ -357,15 +357,6 @@ export function createUiRenderers(context) {
                 ),
               ],
             ),
-            h(
-              "animateMotion",
-              {
-                dur: "2.6s",
-                repeatCount: "indefinite",
-                path: "M24 76h65c42 0 26-44 70-44h55c40 0 30 44 77 44",
-              },
-              [],
-            ),
           ],
         ),
       ],

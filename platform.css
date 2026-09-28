@@ -272,3 +272,27 @@ h1,h2,h3,h4,h5,h6,strong,b{font-weight:700}button{font-weight:600}
 }
 @media(max-width:600px) { .opening-logo { width:120px; height:62px; } }
 @media(prefers-reduced-motion:reduce) { .logo-half { animation:none; } }
+
+/* Composite cached logo images rather than live color filters each frame. */
+.opening-logo{position:relative;isolation:isolate}
+.opening-logo .logo-half{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;will-change:transform,opacity;backface-visibility:hidden}
+.city-rider{will-change:transform;animation-timing-function:linear}
+@keyframes cityCruise{from{transform:translate3d(-95px,0,0)}to{transform:translate3d(95px,0,0)}}
+/* Moving the road avoids repainting its dashed stroke on every frame. */
+.city-road{will-change:transform}
+@keyframes roadSlide{to{transform:translate3d(38px,0,0)}}
+@media(prefers-reduced-motion:reduce){.opening-logo .logo-half,.city-rider,.city-road{will-change:auto;animation:none}}
+/* Transform-only package motion follows the same route without SVG SMIL repaint. */
+.route-package{will-change:transform;animation:packageTravel 2.6s linear infinite}
+@keyframes packageTravel{
+0%{transform:translate3d(24px,76px,0)}
+22%{transform:translate3d(89px,76px,0)}
+30%{transform:translate3d(112px,66px,0)}
+38%{transform:translate3d(130px,41px,0)}
+46%{transform:translate3d(159px,32px,0)}
+65%{transform:translate3d(214px,32px,0)}
+75%{transform:translate3d(242px,44px,0)}
+85%{transform:translate3d(261px,68px,0)}
+100%{transform:translate3d(291px,76px,0)}
+}
+@media(prefers-reduced-motion:reduce){.route-package{animation:none;will-change:auto}}
