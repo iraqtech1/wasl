@@ -4,6 +4,8 @@ import { useWasel } from "./composables/useWasel.js";
 import InstallBanner from "./components/InstallBanner.vue";
 import AppDialog from "./components/AppDialog.vue";
 import RenderContent from "./components/RenderContent.js";
+import AccountOptions from "./components/AccountOptions.vue";
+import { useNotificationBadge } from "./composables/useNotificationBadge.js";
 const {
   ui,
   state,
@@ -16,6 +18,7 @@ const {
   closeModal,
   cameraClosed,
 } = useWasel();
+const { unread, pulse, markRead } = useNotificationBadge(state);
 watch(
   () => ui.auth,
   (value) => document.body.classList.toggle("auth-mode", value),
@@ -56,21 +59,21 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
           <button
             type="button"
             data-action="notifications"
-            aria-label="الإشعارات"
-            class="icon-button"
+            :aria-label="
+              unread ? 'الإشعارات، ' + unread + ' غير مقروءة' : 'الإشعارات'
+            "
+            class="icon-button notification-bell"
+            :class="{ 'has-new-notification': pulse }"
+            @click="markRead"
           >
-            <span class="material-symbols-outlined" aria-hidden="true"
-              >notifications</span
-            ></button
-          ><button
-            type="button"
-            data-action="logout"
-            aria-label="تسجيل الخروج"
-            class="icon-button"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true"
-              >logout</span
-            >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4M12 2V1"
+              />
+            </svg>
+            <span v-if="unread" class="notification-count" aria-hidden="true">{{
+              unread > 99 ? "99+" : unread
+            }}</span>
           </button>
         </div>
       </div>
@@ -99,7 +102,17 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
         :is="currentView"
         :key="ui.page + (state.wizard?.step ?? '') + ui.formRevision"
       />
+      <AccountOptions
+        v-if="
+          state.S &&
+          !ui.auth &&
+          state.screen === 'account' &&
+          !state.registration
+        "
+        :signed-in="true"
+      />
     </main>
+    <AccountOptions v-if="ui.auth && !ui.splash" :signed-in="!!state.S" guest />
     <nav
       id="bottom-nav"
       aria-label="التنقل الرئيسي"

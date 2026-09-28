@@ -4,4 +4,7 @@ import "../styles.css";
 import "../app.css";
 import "../platform.css";
 import "../courier-registration.css";
+import "../theme.css";
+import { initTheme } from "./services/theme.js";
+initTheme();
 createApp(App).mount("#wasel-root");

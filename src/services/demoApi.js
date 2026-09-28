@@ -83,8 +83,20 @@ export function createDemoApi(storage = globalThis.localStorage) {
       profileLocked: false,
     });
   }
+  function notify(owner, text, orderId) {
+    if (!owner) return;
+    data.notifications.unshift({
+      id: id("NOTICE"),
+      owner,
+      text,
+      orderId,
+      at: now(),
+    });
+  }
   function change(o, status, text) {
     o.status = status;
+    for (const owner of new Set([o.merchant, o.courier].filter(Boolean)))
+      notify(owner, `${o.id} — ${text || statuses[status]}`, o.id);
     o.updatedAt = now();
     o.history.push({
       at: now(),
@@ -108,6 +120,11 @@ export function createDemoApi(storage = globalThis.localStorage) {
     }
     if (p.action === "chat") {
       if (!p.text?.trim()) fail("اكتب رسالة");
+      notify(
+        u.role === "merchant" ? o.courier : o.merchant,
+        "رسالة جديدة بخصوص الطلب " + o.id,
+        o.id,
+      );
       data.messages.unshift({
         id: id("MSG"),
         owner: u.id,

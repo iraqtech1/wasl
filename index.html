@@ -2,6 +2,13 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
+    <script>
+      try {
+        const theme = localStorage.getItem("wasel-theme");
+        document.documentElement.dataset.theme = theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch {}
+    </script>
+    <style>html[data-theme=dark]{--lightningcss-light: ;--lightningcss-dark:initial;color-scheme:dark;background:#0c1d29}</style>
     <base href="/wasl/" />
     <meta
       name="viewport"
@@ -29,8 +36,8 @@
       href="/wasl/assets/apple-touch-icon.png"
     />
     <link rel="stylesheet" href="/wasl/assets/fonts.css?v=cairo-1" />
-    <script type="module" crossorigin src="/wasl/assets/index-DsOM0VL6.js"></script>
-    <link rel="stylesheet" crossorigin href="/wasl/assets/index-X6T2JjZQ.css">
+    <script type="module" crossorigin src="/wasl/assets/index--7VwihgV.js"></script>
+    <link rel="stylesheet" crossorigin href="/wasl/assets/index-QbNs7ZZM.css">
   </head>
   <body>
     <div id="wasel-root"></div>
