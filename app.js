@@ -1,4 +1,6 @@
 'use strict';
+const staticPreview=location.hostname.endsWith('.github.io');
+if(staticPreview)document.getElementById('hosting-notice').hidden=false;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>new Intl.NumberFormat('en-US').format(n||0),date=x=>x?new Date(x).toLocaleString('ar-IQ'):'';
@@ -11,7 +13,7 @@ const provinces=['بغداد','البصرة','نينوى','أربيل','النج
 let S=null,screen='home',filter='all',query='',wizard=null,registration=null,installPrompt=null,toastTimer,activeOrder=null;
 let offline=false,trackingId=null,lastLocationSent=0;
 function toast(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5000);}
-async function api(url,data){let r;try{r=await fetch(url,{method:data===undefined?'GET':'POST',headers:data===undefined?{}:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});}catch{offline=true;throw Error('الاتصال بالخادم غير متاح. يمكنك حفظ مسودة على الجهاز.');}const p=await r.json();if(!r.ok)throw Object.assign(Error(p.error||'تعذر الإجراء'),{status:r.status});offline=false;return p;}
+async function api(url,data){if(staticPreview)throw Error('هذه نسخة عرض على GitHub Pages. تسجيل الدخول والطلبات يحتاجان استضافة خادم التطبيق.');let r;try{r=await fetch(url,{method:data===undefined?'GET':'POST',headers:data===undefined?{}:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});}catch{offline=true;throw Error('الاتصال بالخادم غير متاح. يمكنك حفظ مسودة على الجهاز.');}const p=await r.json();if(!r.ok)throw Object.assign(Error(p.error||'تعذر الإجراء'),{status:r.status});offline=false;return p;}
 function modal(title,content){$('#dialog-title').textContent=title;$('#dialog-content').innerHTML=content;if(!$('#app-dialog').open)$('#app-dialog').showModal();}
 function closeModal(){$('#app-dialog').close();activeOrder=null;}
 function row(label,value){return `<div class="detail-row"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`;}
@@ -151,7 +153,7 @@ $('#close-dialog').addEventListener('click',closeModal);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 window.addEventListener('offline',()=>{offline=true;if(S&&!wizard&&!$('#app-dialog').open)render();});
 window.addEventListener('online',()=>{if(S)refresh(!wizard&&!$('#app-dialog').open);});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
+if(!staticPreview&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 setInterval(()=>{if(S&&!wizard&&!registration&&!$('#app-dialog').open&&!$('#status-menu')?.matches(':popover-open')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))refresh();},12000);
 showWelcomeSplash().then(()=>loginPage());
 
