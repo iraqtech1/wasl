@@ -1,8 +1,8 @@
 "use strict";
 const BASE = new URL("./", self.location.href);
 const PREFIX = "wasel-vue-" + BASE.pathname + "-";
-const CACHE = PREFIX + "ac9784ef9cbe";
-const FILES = ["./","assets/apple-touch-icon.png","assets/bal3d.css","assets/bal3d.js","assets/cairo-variable.ttf","assets/favicon-32.png","assets/favicon-48.png","assets/font-0-0.ttf","assets/font-0-1.ttf","assets/font-0-2.ttf","assets/font-0-3.ttf","assets/font-1-3.ttf","assets/fonts.css","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-192.png","assets/icon-maskable-512.png","assets/index-BUwP2AzZ.css","assets/index-hvdOGhTi.js","assets/LICENSE-Material-Symbols.txt","assets/OFL-Cairo.txt","assets/OFL-IBM-Plex.txt","assets/profile-0.png","assets/wasel-brand-B1pZ3qtI.jpeg","assets/wasel-brand.jpeg","index.html","manifest.webmanifest"].map((file) => new URL(file, BASE).href);
+const CACHE = PREFIX + "bdafa270c08c";
+const FILES = ["./","assets/apple-touch-icon.png","assets/bal3d.css","assets/bal3d.js","assets/cairo-variable.ttf","assets/favicon-32.png","assets/favicon-48.png","assets/font-0-0.ttf","assets/font-0-1.ttf","assets/font-0-2.ttf","assets/font-0-3.ttf","assets/font-1-3.ttf","assets/fonts.css","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-192.png","assets/icon-maskable-512.png","assets/index-a0JZYcVV.css","assets/index-D9fg-ntB.js","assets/LICENSE-Material-Symbols.txt","assets/OFL-Cairo.txt","assets/OFL-IBM-Plex.txt","assets/profile-0.png","assets/wasel-brand-B1pZ3qtI.jpeg","assets/wasel-brand.jpeg","index.html","manifest.webmanifest"].map((file) => new URL(file, BASE).href);
 self.addEventListener("install", (event) =>
   event.waitUntil(
     caches
