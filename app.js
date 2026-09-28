@@ -151,7 +151,7 @@ $('#close-dialog').addEventListener('click',closeModal);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
 window.addEventListener('offline',()=>{offline=true;if(S&&!wizard&&!$('#app-dialog').open)render();});
 window.addEventListener('online',()=>{if(S)refresh(!wizard&&!$('#app-dialog').open);});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 setInterval(()=>{if(S&&!wizard&&!registration&&!$('#app-dialog').open&&!$('#status-menu')?.matches(':popover-open')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))refresh();},12000);
 showWelcomeSplash().then(()=>loginPage());
 
