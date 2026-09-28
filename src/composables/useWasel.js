@@ -568,16 +568,7 @@ export function useWasel() {
     if (!b) return;
     const a = b.dataset.action;
     try {
-      if (a === "demo")
-        await login(
-          b.dataset.role,
-          {
-            merchant: "07700000001",
-            courier: "07700000002",
-          }[b.dataset.role],
-          "WaselDemo2026!",
-        );
-      else if (a === "logout") {
+      if (a === "logout") {
         if (state.trackingId !== null) {
           navigator.geolocation.clearWatch(state.trackingId);
           state.trackingId = null;
@@ -881,7 +872,7 @@ export function useWasel() {
     const submit = form.querySelector("button[type=submit],button:not([type])");
     if (submit) submit.disabled = true;
     try {
-      if (form.id === "login-form") await login(f.role, f.phone, f.password);
+      if (form.id === "login-form") await login(f.role);
       else if (form.id === "courier-register-form") reviewCourierRegistration();
       else if (form.id === "order-form") {
         gatherOrder(form);

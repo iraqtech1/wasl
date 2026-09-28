@@ -213,3 +213,42 @@ h1,h2,h3,h4,h5,h6,strong,b{font-weight:700}button{font-weight:600}
 
 .install-banner[hidden]{display:none}.install-banner{display:flex;align-items:center;gap:12px;max-width:680px;margin:16px auto;padding:12px 16px;background:linear-gradient(140deg,#ffffffef,#f2f9fbdd 55%,#fff4ebe0);border:1px solid #ffffff;border-radius:18px;backdrop-filter:blur(22px) saturate(165%);box-shadow:0 20px 44px -16px #f47d2fa6,0 6px 18px -10px #f47d2f59,inset 0 1px 0 #fff;color:#00567a;position:relative;isolation:isolate}.install-banner:before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(120deg,#f47d2f80,transparent 45%,#00567a33);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:-1}.install-banner img{border-radius:12px;flex-shrink:0}.install-banner>div{flex:1;min-width:0}.install-banner strong{display:block;font-size:15px}.install-banner span{display:block;font-size:12px;color:#607e8b}.install-cta{font:700 14px Cairo,sans-serif;border:0;border-radius:12px;padding:12px 16px;background:#f47d2f;color:#173b4b;cursor:pointer;flex-shrink:0}.install-cta:focus-visible{outline:3px solid #00567a;outline-offset:3px}.install-cta:disabled{opacity:.6;cursor:wait}@media(max-width:600px){.install-banner{margin:12px;gap:8px;padding:10px}.install-banner img{width:40px;height:40px}.install-banner strong{font-size:13px}.install-banner span{font-size:11px}.install-cta{font-size:12px;padding:11px}}
 .demo-login-title{font-size:15px!important;text-align:center;margin:0 0 8px!important}
+
+/* Keep role selection within the available screen, including the install banner. */
+.wasel-app.is-role-choice{height:100svh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.is-role-choice>.install-banner{flex-shrink:0;width:calc(100% - 24px);box-sizing:border-box}
+.auth-mode .is-role-choice #app{flex:1;min-height:0;width:100%;margin:0;overflow:hidden}
+.is-role-choice .glass-entry{height:100%;min-height:0;box-sizing:border-box;padding:16px 20px}
+.is-role-choice .entry-brand{margin-bottom:18px}
+.is-role-choice .glass-role-grid{margin:20px 0}
+.is-role-choice .entry-signature{margin-top:18px}
+@media(max-height:740px){
+.is-role-choice .entry-brand{margin-bottom:10px}
+.is-role-choice .entry-brand .auth-logo-art{width:90px;height:48px;background-size:195px 195px;background-position:-50px -24px}
+.is-role-choice .entry-brand>strong{font-size:23px;margin-top:2px}
+.is-role-choice .entry-intro h1{font-size:25px;margin:3px 0}
+.is-role-choice .entry-intro p{margin:4px 0;font-size:12px}
+.is-role-choice .glass-role-grid{margin:14px 0;gap:12px}
+.is-role-choice .glass-role{padding:16px 10px 12px;gap:6px}
+.is-role-choice .glass-role-icon{width:48px;height:48px;border-radius:16px}
+.is-role-choice .glass-role-icon .material-symbols-outlined{font-size:28px}
+.is-role-choice .role-enter{margin-top:4px;padding-top:8px}
+.is-role-choice .entry-signature{margin-top:8px}
+}
+@media(max-height:500px) and (min-width:550px){
+.is-role-choice .entry-content{width:min(100%,850px);display:grid;grid-template-columns:1fr 1.5fr;column-gap:24px;align-items:center}
+.is-role-choice .entry-brand{grid-column:1;grid-row:1;margin:0;align-self:end}
+.is-role-choice .entry-intro{grid-column:1;grid-row:2;align-self:start}
+.is-role-choice .glass-role-grid{grid-column:2;grid-row:1 / 3;margin:0}
+.is-role-choice .entry-promise,.is-role-choice .entry-signature{display:none}
+}
+@media(max-height:620px) and (max-width:549px){
+.is-role-choice .glass-entry{padding-block:8px}
+.is-role-choice .entry-brand{margin-bottom:4px}
+.is-role-choice .entry-brand>strong{font-size:20px}
+.is-role-choice .entry-intro h1{font-size:22px}
+.is-role-choice .glass-role-grid{margin:10px 0}
+.is-role-choice .glass-role{padding-block:12px 10px;gap:4px}
+.is-role-choice .glass-role>strong{font-size:20px}
+.is-role-choice .entry-signature{margin-top:4px;font-size:10px}
+}

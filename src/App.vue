@@ -26,6 +26,9 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
 <template>
   <div
     class="wasel-app"
+    :class="{
+      'is-role-choice': ui.auth && ui.page === 'AuthView' && !state.authRole,
+    }"
     @click="dispatch('click', $event)"
     @submit.prevent="dispatch('submit', $event)"
     @change="dispatch('change', $event)"

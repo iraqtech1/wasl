@@ -146,6 +146,7 @@ export function createAuthRenderers(context) {
               "form",
               {
                 id: "login-form",
+                novalidate: true,
                 class: "form-stack",
               },
               [
@@ -162,7 +163,7 @@ export function createAuthRenderers(context) {
                   "phone",
                   "رقم الهاتف",
                   "",
-                  'required type="tel" dir="ltr" inputmode="tel" autocomplete="username" placeholder="077xxxxxxxx"',
+                  'type="tel" dir="ltr" inputmode="tel" autocomplete="username" placeholder="077xxxxxxxx"',
                 ),
                 h(
                   "div",
@@ -174,7 +175,7 @@ export function createAuthRenderers(context) {
                       "password",
                       "كلمة المرور",
                       "",
-                      'required type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"',
+                      'type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"',
                     ),
                     button(
                       "toggle-password",
@@ -210,22 +211,6 @@ export function createAuthRenderers(context) {
               [
                 "أول مرة ويانا؟ ",
                 button("register", "أنشئ حسابك", "", "auth-text-button"),
-              ],
-            ),
-            h(
-              "section",
-              {
-                class: "login-demo",
-              },
-              [
-                h("h2", { class: "demo-login-title" }, ["معاينة الحساب"]),
-                h("p", {}, ["حساب تجريبي للفحص"]),
-                button(
-                  "demo",
-                  "دخول تجريبي — " + roleNames[state.authRole],
-                  `data-role="${state.authRole}"`,
-                  "full-width secondary-button",
-                ),
               ],
             ),
           ],
