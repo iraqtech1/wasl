@@ -22,4 +22,5 @@ Thumbs.db
 # Vue generated server build and temporary tools
 dist/
 site/
+tools/.probe/
 *.tmp
