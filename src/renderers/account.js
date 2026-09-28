@@ -10,96 +10,99 @@ export function createAccountRenderers(context) {
       maps,
       fallback,
       offlineDraftsView,
+      money,
+      vehicleNames,
     } = context();
     const u = state.S.user;
-    return [
-      h(
-        "section",
-        {
-          class: "surface",
-        },
-        [
-          h("h2", {}, [u.name]),
-          row("معرف الدور الثابت", u.id),
-          row("معرف المحفظة", u.walletId),
-          row("الهاتف", u.phone),
-          row("الدور", roleNames[u.role]),
-          row("العنوان", u.province + " — " + u.area + " — " + u.address),
-          state.S.profileLocked
-            ? h(
-                "p",
-                {
-                  class: "profile-lock",
-                },
-                [
-                  icon("lock"),
-                  " تعديل الملف مقفل حتى إكمال الطلبات والمرتجعات وتسوياتها المالية.",
-                ],
-              )
-            : button("edit-profile", "تعديل الملف"),
-          h(
-            "div",
-            {
-              class: "contact-actions",
-              style: "margin-top:14px",
-            },
-            [maps(u.location)],
-          ),
-        ],
-      ),
-      h(
-        "section",
-        {
-          class: "surface",
-        },
-        [
-          h("h3", {}, ["التقييمات"]),
-          fallback(
-            state.S.ratings
-              .filter((r) => r.target === u.id)
-              .map((r) =>
-                h(
-                  "p",
-                  {
-                    class: "info-line",
-                  },
-                  ["★".repeat(r.stars), " — ", r.text, " (", r.orderId, ")"],
-                ),
-              ),
-            h(
-              "p",
-              {
-                class: "muted",
-              },
-              ["لا توجد تقييمات بعد."],
+    const section = (title, symbol, content) =>
+      h("details", { class: "account-disclosure" }, [
+        h("summary", { class: "account-option" }, [
+          h("span", { class: "option-icon" }, [icon(symbol)]),
+          h("strong", {}, [title]),
+          h("span", { class: "option-chevron", "aria-hidden": "true" }, ["‹"]),
+        ]),
+        h("div", { class: "account-disclosure-content" }, content),
+      ]);
+    return h("div", { class: "account-options account-profile-options" }, [
+      section("معلومات الحساب", "person", [
+        h("h2", {}, [u.name]),
+        row("رقم الحساب", u.id),
+        row("رقم المحفظة", u.walletId),
+        row("الهاتف", u.phone),
+        ...(u.phone2 ? [row("الهاتف الإضافي", u.phone2)] : []),
+        row("نوع الحساب", roleNames[u.role]),
+        row("المحافظة", u.province),
+        row("المنطقة", u.area),
+        row("العنوان", u.address),
+        ...(u.vehicle
+          ? [row("نوع المركبة", vehicleNames[u.vehicle] || u.vehicle)]
+          : []),
+        ...(u.plate ? [row("رقم لوحة المركبة", u.plate)] : []),
+        ...(u.role === "courier"
+          ? [
+              row("ميزانية العمل", money(u.budget) + " د.ع"),
+              row("نطاق العمل", (u.radius || 0) + " كم"),
+            ]
+          : []),
+        state.S.profileLocked
+          ? h("p", { class: "profile-lock" }, [
+              "تعديل الملف مقفل حتى إكمال الطلبات والتسويات.",
+            ])
+          : button("edit-profile", "تعديل معلومات الحساب"),
+        button("change-password", "تغيير كلمة مرور الحساب"),
+        h("div", { class: "contact-actions" }, [maps(u.location)]),
+      ]),
+      section("التقييمات", "star", [
+        ...fallback(
+          state.S.ratings
+            .filter((r) => r.target === u.id)
+            .map((r) =>
+              h("p", { class: "info-line" }, [
+                "★".repeat(r.stars),
+                " — ",
+                r.text,
+                " (",
+                r.orderId,
+                ")",
+              ]),
             ),
-          ),
-        ],
-      ),
+          [h("p", { class: "muted" }, ["لا توجد تقييمات بعد."])],
+        ),
+      ]),
       h(
-        "section",
+        "button",
         {
-          class: "surface",
+          type: "button",
+          class: "account-option",
+          "data-action": "preferences",
+          role: "switch",
+          "aria-checked": u.motivational !== false,
         },
         [
-          h("h3", {}, ["التنبيهات التحفيزية"]),
+          h("span", { class: "option-icon" }, [icon("notifications_active")]),
+          h("strong", {}, ["التنبيهات التحفيزية"]),
           h(
-            "p",
+            "span",
             {
-              class: "muted",
+              class: "theme-switch" + (u.motivational !== false ? " on" : ""),
+              "aria-hidden": "true",
             },
-            ["إشعارات الطلبات الجارية تبقى ظاهرة في سجل الإشعارات."],
-          ),
-          button(
-            "preferences",
-            u.motivational === false
-              ? "تفعيل تنبيهات الطلبات القريبة"
-              : "إيقاف تنبيهات الطلبات القريبة",
+            [],
           ),
         ],
       ),
-      offlineDraftsView(),
-    ];
+      section("المسودات", "draft", [
+        ...state.S.orders
+          .filter((o) => o.status === "draft")
+          .map((o) =>
+            h("div", { class: "detail-row" }, [
+              h("span", {}, [o.id, " — ", o.recipient?.name || ""]),
+              button("order", "عرض المسودة", `data-id="${o.id}"`),
+            ]),
+          ),
+        offlineDraftsView(),
+      ]),
+    ]);
   }
   function walletView() {
     const { state, h, icon, money, button, ledger } = context();
@@ -456,7 +459,7 @@ export function createAccountRenderers(context) {
         class: "surface",
       },
       [
-        h("h3", {}, ["مسودات غير متزامنة"]),
+        h("h3", {}, ["مسودات الجهاز"]),
         h(
           "p",
           {
@@ -472,7 +475,7 @@ export function createAccountRenderers(context) {
             },
             [
               h("span", {}, [d.recipient.name]),
-              button("sync-draft", "حفظ بالخادم دون نشر", `data-index="${i}"`),
+              button("sync-draft", "حفظ ضمن المسودات", `data-index="${i}"`),
             ],
           ),
         ),

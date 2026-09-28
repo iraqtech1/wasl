@@ -32,14 +32,10 @@ const icons = {
     ><span>الإعدادات</span>
   </button>
   <section v-else class="account-options" aria-label="إعدادات الحساب">
-    <button class="account-option" data-action="logout" type="button">
-      <span class="option-icon"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.logout" /></svg></span
-      ><strong>تسجيل الخروج</strong><span class="option-chevron">‹</span>
-    </button>
     <button class="account-option" type="button" @click="open('privacy')">
       <span class="option-icon"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.privacy" /></svg></span
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path :d="icons.privacy" /></svg></span
       ><strong>الخصوصية والشروط</strong><span class="option-chevron">‹</span>
     </button>
     <button class="account-option" type="button" @click="open('about')">
@@ -49,6 +45,13 @@ const icons = {
           <path :d="icons.about" /></svg></span
       ><strong>حول التطبيق</strong><span class="option-chevron">‹</span>
     </button>
+    <button class="account-option" data-action="logout" type="button">
+      <span class="option-icon"
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path :d="icons.logout" /></svg></span
+      ><strong>تسجيل الخروج</strong><span class="option-chevron">‹</span>
+    </button>
+
     <button
       class="account-option"
       type="button"
@@ -57,7 +60,8 @@ const icons = {
       @click="toggleTheme"
     >
       <span class="option-icon"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.moon" /></svg></span
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path :d="icons.moon" /></svg></span
       ><strong>الوضع الليلي</strong
       ><span
         class="theme-switch"
@@ -103,13 +107,15 @@ const icons = {
         @click="close"
       >
         <span class="option-icon"
-          ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.logout" /></svg></span
+          ><svg viewBox="0 0 24 24" aria-hidden="true">
+            <path :d="icons.logout" /></svg></span
         ><strong>{{ signedIn ? "تسجيل الخروج" : "تسجيل الدخول" }}</strong
         ><span class="option-chevron">‹</span>
       </button>
       <button type="button" class="account-option" @click="open('privacy')">
         <span class="option-icon"
-          ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.privacy" /></svg></span
+          ><svg viewBox="0 0 24 24" aria-hidden="true">
+            <path :d="icons.privacy" /></svg></span
         ><strong>الخصوصية والشروط</strong><span class="option-chevron">‹</span>
       </button>
       <button type="button" class="account-option" @click="open('about')">
@@ -127,7 +133,8 @@ const icons = {
         @click="toggleTheme"
       >
         <span class="option-icon"
-          ><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons.moon" /></svg></span
+          ><svg viewBox="0 0 24 24" aria-hidden="true">
+            <path :d="icons.moon" /></svg></span
         ><strong>الوضع الليلي</strong
         ><span
           class="theme-switch"

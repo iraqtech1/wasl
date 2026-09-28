@@ -254,7 +254,17 @@ export function useWasel() {
         })[c],
     );
   const money = (n) => new Intl.NumberFormat("en-US").format(n || 0),
-    date = (x) => (x ? new Date(x).toLocaleString("ar-IQ") : "");
+    date = (x) =>
+      x
+        ? new Date(x).toLocaleString("en-GB", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        : "";
   const icon = (n) =>
     h(
       "span",
@@ -310,8 +320,7 @@ export function useWasel() {
     "دهوك",
   ];
   let installPrompt = null,
-    toastTimer,
-    activeOrder = null;
+    toastTimer;
   let lastLocationSent = 0;
   function toast(text) {
     ui.toast = text;
@@ -329,7 +338,6 @@ export function useWasel() {
   }
   function closeModal() {
     $("#app-dialog")?.close();
-    activeOrder = null;
     ui.dialogContent = null;
   }
   function customerDue(o) {
@@ -774,7 +782,30 @@ export function useWasel() {
           toast("المشاركة تعمل أثناء فتح التطبيق فقط");
         }
       } else if (a === "edit-profile") profileForm();
-      else if (a === "preferences") {
+      else if (a === "change-password") {
+        modal("تغيير كلمة مرور الحساب", [
+          h("p", { class: "muted" }, [
+            "هذه معاينة في النسخة التجريبية. تغيير كلمة المرور الفعلي يتفعّل عند ربط الحسابات بالخادم.",
+          ]),
+          h("form", { id: "password-change-form", class: "form-stack" }, [
+            input(
+              "newPassword",
+              "كلمة المرور الجديدة",
+              "",
+              'type="password" required minlength="8" autocomplete="new-password"',
+            ),
+            input(
+              "confirmPassword",
+              "تأكيد كلمة المرور",
+              "",
+              'type="password" required minlength="8" autocomplete="new-password"',
+            ),
+            h("button", { type: "submit", class: "primary-button" }, [
+              "التحقق من كلمة المرور",
+            ]),
+          ]),
+        ]);
+      } else if (a === "preferences") {
         await api("/api/profile", {
           action: "preferences",
           motivational: state.S.user.motivational === false,
@@ -873,7 +904,16 @@ export function useWasel() {
     if (submit) submit.disabled = true;
     try {
       if (form.id === "login-form") await login(f.role);
-      else if (form.id === "courier-register-form") reviewCourierRegistration();
+      else if (form.id === "password-change-form") {
+        if (f.newPassword.length < 8)
+          throw Error("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
+        if (f.newPassword !== f.confirmPassword)
+          throw Error("كلمتا المرور غير متطابقتين");
+        form.reset();
+        closeModal();
+        toast("كلمة المرور صالحة. الحفظ الفعلي متاح بعد ربط الخادم.");
+      } else if (form.id === "courier-register-form")
+        reviewCourierRegistration();
       else if (form.id === "order-form") {
         gatherOrder(form);
         if (state.wizard.step === 1 && state.wizard.data.kind === "free") {

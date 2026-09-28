@@ -71,3 +71,18 @@ html[data-theme=dark] #bottom-nav button.active .nav-symbol{background:#854620!i
 html[data-theme=dark] #bottom-nav button.active>span:last-child{color:#ffb676!important;font-weight:800}
 
 html[data-theme=dark] :is(.auth-logo-art,.brand-logo){background-color:transparent!important;background-image:url("./public/assets/brand-transparent.svg");mix-blend-mode:normal;border-radius:0}
+
+.account-profile-options{margin-top:0;gap:12px}
+.account-disclosure{min-width:0}
+.account-disclosure>summary{list-style:none;box-sizing:border-box}
+.account-disclosure>summary::-webkit-details-marker{display:none}
+.account-disclosure[open]>summary .option-chevron{transform:rotate(-90deg)}
+.account-disclosure-content{padding:20px;margin-top:8px;border:1px solid var(--settings-border);border-radius:18px;background:var(--settings-surface);color:var(--settings-text)}
+.account-disclosure-content>.secondary-button{margin:12px 0 0 8px}
+.account-disclosure-content .contact-actions{margin-top:14px}
+.account-disclosure-content .detail-row{overflow-wrap:anywhere}
+.account-disclosure-content .surface{padding:12px 0;margin:10px 0 0;background:transparent!important;box-shadow:none;border:0}
+.account-profile-options+.account-options{margin-top:12px}
+.account-option .option-icon .material-symbols-outlined{font-size:23px}
+.account-disclosure-content .detail-row strong{unicode-bidi:plaintext}
+.wasel-app{min-height:100vh;min-height:100dvh}

@@ -710,7 +710,6 @@ export function createOrdersRenderers(context) {
     } = context();
     const o = state.S.orders.find((o) => o.id === oid);
     if (!o) return;
-    activeOrder = oid;
     const isOwn = o.merchant === state.S.user.id;
     const offers = state.S.offers.filter((x) => x.orderId === oid);
     modal(o.id, [
@@ -990,10 +989,10 @@ export function createOrdersRenderers(context) {
           o.history
             .slice()
             .reverse()
-            .map((h) =>
+            .map((entry) =>
               h("li", {}, [
-                h.text,
-                h("small", {}, [date(h.at), " • ", h.actor]),
+                entry.text,
+                h("small", {}, [date(entry.at), " • ", entry.actor]),
               ]),
             ),
         ],

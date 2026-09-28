@@ -51,6 +51,21 @@ async function renderPage(page, configure = () => {}) {
   );
   return { html, app };
 }
+test("account drafts open order details with English history dates", async () => {
+  const { renderToString } = await import("vue/server-renderer");
+  const { h } = await import("vue");
+  const { app } = await renderPage("AccountView");
+  const order = app.state.S.orders[0];
+  assert.ok(order.history.length);
+  const button = { dataset: { action: "order", id: order.id }, disabled: false };
+  await app.dispatch("click", { target: { closest: () => button } });
+  assert.equal(app.ui.dialogTitle, order.id);
+  const html = await renderToString(h("div", app.ui.dialogContent));
+  assert.match(html, /timeline/);
+  assert.match(html, /\d{2}\/\d{2}\/\d{4}/);
+  assert.doesNotMatch(html, /[٠-٩۰-۹]/);
+});
+
 test("auth screens preserve identity and safely escape content", async () => {
   const roles = await renderPage("AuthView");
   assert.match(roles.html, /حيّاك بواصل/);
