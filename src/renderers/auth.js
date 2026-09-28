@@ -261,15 +261,6 @@ export function createAuthRenderers(context) {
     let fields = "";
     if (r.step === 0)
       fields = [
-        select(
-          "role",
-          "نوع الحساب",
-          {
-            merchant: "تاجر",
-            courier: "مندوب",
-          },
-          r.role,
-        ),
         input("name", "الاسم / اسم النشاط", r.name, 'required maxlength="80"'),
         input(
           "phone",
