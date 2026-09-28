@@ -142,13 +142,6 @@ export function createAccountRenderers(context) {
                 [
                   h("div", {}, [
                     h(
-                      "span",
-                      {
-                        class: "orbit-eyebrow",
-                      },
-                      ["WASEL WALLET"],
-                    ),
-                    h(
                       "h2",
                       {
                         id: "orbit-title",
