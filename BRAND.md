@@ -13,3 +13,20 @@
 
 - الخط الموحد للنصوص والأرقام: Cairo محلي متغير الأوزان. النص 400، التسميات والأزرار 600، العناوين 700، والأرصدة 800. تبقى Material Symbols للأيقونات فقط.
 
+## أيقونات التطبيق
+
+مصدرها صورة الهوية `assets/wasel-brand.jpeg`؛ يقصّ رمز اللانهاية فقط ويضعه على خلفية بيضاء. تولّدها الأداة `tools/make-icons.ps1` بلا أي تبعيات خارجية:
+
+```sh
+powershell -ExecutionPolicy Bypass -File tools\make-icons.ps1
+```
+
+| الملف | المقاس | الاستعمال |
+|---|---|---|
+| `icon-192.png` / `icon-512.png` | 192 / 512 | أيقونات `purpose: any` في الـ manifest |
+| `icon-maskable-192.png` / `icon-maskable-512.png` | 192 / 512 | `purpose: maskable` مع هامش أمان أوسع |
+| `apple-touch-icon.png` | 180 | iOS |
+| `favicon-48.png` / `favicon-32.png` | 48 / 32 | علامات التبويب |
+
+تُدرج هذه الملفات في `server.cjs` داخل manifest وفي `sw.js` ضمن ملفات التخزين المسبق، وتجدد رقم النسخة `CACHE` في `sw.js` بعد أي تغيير فيها.
+
