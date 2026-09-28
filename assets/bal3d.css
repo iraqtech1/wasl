@@ -1,0 +1,81 @@
+/* =====================================================================
+   بطاقة المستحق ثلاثية الأبعاد (3D Balance Card) — Zita Pro
+   مستقلة بالكامل: لا تعتمد على أي متغيرات أو خطوط من النظام المضيف.
+   كل الأسماء تبدأ بـ bal3d- لتجنّب التعارض.
+   ===================================================================== */
+
+/* 1) الألوان والإعدادات — غيّرها من هنا فقط */
+.bal3d-wrap{
+  --bal3d-c1:#3730a3;          /* اللون الغامق (بداية التدرّج) */
+  --bal3d-c2:#4338ca;          /* اللون الأوسط */
+  --bal3d-c3:#4f46e5;          /* اللون الفاتح */
+  --bal3d-accent:#22d3ee;      /* لمعة الطرف (سماوي) */
+  --bal3d-tint:79 70 229;      /* لون الظل والتوهج بصيغة RGB بمسافات (بدون فواصل) */
+  --bal3d-ease:cubic-bezier(.32,.72,.35,1);
+  --bal3d-hint:#6c7484;        /* لون نص "حرّك البطاقة" */
+  --bal3d-radius:22px;
+  perspective:900px;padding:6px 6px 0;display:grid;gap:6px
+}
+.bal3d-wrap *,.bal3d-wrap *::before,.bal3d-wrap *::after{box-sizing:border-box}
+
+/* نسخة داكنة فاخرة (اختيارية): أضف الكلاس bal3d-dark على .bal3d-wrap */
+.bal3d-wrap.bal3d-dark .bal3d-bg{background:linear-gradient(135deg,#120c2e 0%,color-mix(in srgb,var(--bal3d-c2) 55%,#0b0724) 38%,var(--bal3d-c2) 72%,color-mix(in srgb,var(--bal3d-c3) 60%,var(--bal3d-accent)) 100%)}
+
+/* 2) الحاوية المتحركة */
+.bal3d{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));animation:bal3d-sway 7s ease-in-out infinite;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.bal3d.touching{animation:none;transition:transform .12s ease-out}
+.bal3d:not(.touching){transition:transform .6s var(--bal3d-ease)}
+@keyframes bal3d-sway{0%,100%{transform:rotateX(7deg) rotateY(-9deg)}50%{transform:rotateX(-4deg) rotateY(9deg)}}
+
+/* 3) التوهج خلف البطاقة */
+.bal3d-glow{position:absolute;inset:26px 26px -18px;border-radius:30px;background:rgb(var(--bal3d-tint) / .6);filter:blur(26px);transform:translateZ(-50px)}
+
+/* 4) جسم البطاقة */
+.bal3d-card{position:relative;min-height:206px;padding:18px 18px 16px;border-radius:var(--bal3d-radius);color:#fff;display:grid;gap:6px;transform-style:preserve-3d;box-shadow:0 34px 60px -26px rgb(var(--bal3d-tint) / .85),0 2px 0 rgba(255,255,255,.15) inset}
+.bal3d-bg{position:absolute;inset:0;border-radius:inherit;overflow:hidden;border:1px solid rgba(255,255,255,.2);background:linear-gradient(135deg,color-mix(in srgb,var(--bal3d-c1) 88%,#000) 0%,var(--bal3d-c2) 40%,var(--bal3d-c3) 70%,color-mix(in srgb,var(--bal3d-c3) 55%,var(--bal3d-accent)) 100%)}
+.bal3d-pattern{position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.05) 0 1px,transparent 1px 14px),radial-gradient(circle at 12% 110%,rgba(255,255,255,.18),transparent 45%)}
+.bal3d-ring{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.22)}
+.bal3d-ring.r1{width:240px;height:240px;inset-inline-end:-90px;top:-110px;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 70%)}
+.bal3d-ring.r2{width:150px;height:150px;inset-inline-end:-30px;top:-50px}
+.bal3d-shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 45%,transparent 58%);background-size:250% 100%;animation:bal3d-shine 5s ease-in-out infinite}
+@keyframes bal3d-shine{0%,45%{background-position:130% 0}80%,100%{background-position:-60% 0}}
+.bal3d-spot{position:absolute;inset:0;background:radial-gradient(circle at var(--mx,70%) var(--my,20%),rgba(255,255,255,.3),transparent 42%);opacity:.8;transition:opacity .3s}
+
+/* 5) الطبقات الأمامية (كل طبقة على عمق مختلف = إحساس 3D) */
+.bal3d-top{position:relative;display:flex;align-items:center;gap:10px;transform:translateZ(24px)}
+.bal3d-chip{position:relative;width:40px;height:30px;border-radius:7px;background:linear-gradient(135deg,#f7e48a,#cfa640 45%,#faeeb0 70%,#b8892c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 3px 8px rgba(0,0,0,.25);display:grid;grid-template-rows:repeat(3,1fr);padding:4px 5px;gap:3px}
+.bal3d-chip i{border-top:1px solid rgba(90,60,0,.35)}
+.bal3d-wave{opacity:.85;transform:rotate(90deg);display:grid}
+.bal3d-wave svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bal3d-brand{margin-inline-start:auto;display:flex;align-items:center;gap:6px;padding:4px 9px 4px 5px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.bal3d-brand img{width:20px;height:20px;border-radius:6px;background:#fff;padding:1px;object-fit:contain}
+.bal3d-brand b{font-size:10px;letter-spacing:1.4px}
+.bal3d-label{position:relative;margin-top:8px;font-size:11.5px;font-weight:700;opacity:.88;transform:translateZ(20px)}
+.bal3d-amount{position:relative;display:flex;align-items:baseline;gap:6px;transform:translateZ(48px);text-shadow:0 6px 18px rgba(0,0,0,.35)}
+.bal3d-amount span{font-size:32px;font-weight:900;line-height:1.05;letter-spacing:.5px}
+.bal3d-amount small{font-size:13px;font-weight:800;opacity:.85}
+.bal3d-row{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;transform:translateZ(30px)}
+.bal3d-row>div{display:grid;gap:1px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.bal3d-row small{font-size:9.5px;opacity:.9}
+.bal3d-row b{font-size:12.5px}
+.bal3d-foot{position:relative;display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-size:10px;font-weight:700;opacity:.85;transform:translateZ(18px)}
+.bal3d-hint{margin:0;text-align:center;font-size:9.5px;font-weight:700;color:var(--bal3d-hint)}
+
+/* الأرقام تبقى من اليسار لليمين حتى داخل صفحة عربية */
+.bal3d-num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+
+/* احترام إعداد "تقليل الحركة" في الجهاز */
+@media (prefers-reduced-motion:reduce){.bal3d,.bal3d-shine{animation:none}}
+
+/* Wasel integration: preserve the supplied 3D layers and use brand colors. */
+.wasel-balance{--bal3d-c1:#003c56;--bal3d-c2:#00567a;--bal3d-c3:#08799a;--bal3d-accent:#f47d2f;--bal3d-tint:0 86 122;max-width:560px;margin:18px auto 24px;padding:12px 18px 0;gap:24px}
+.wasel-balance .bal3d{touch-action:pan-y}
+.wasel-balance .bal3d-card{min-height:270px;padding:24px;gap:10px}
+.wasel-balance .bal3d-label{font-size:14px;margin-bottom:0;color:#fff}
+.wasel-balance .bal3d-amount span{font-size:44px}
+.wasel-balance .bal3d-row small{font-size:12px}.wasel-balance .bal3d-row b{font-size:15px}
+.wasel-balance .bal3d-foot{font-size:11px;align-items:center}.wasel-balance .bal3d-foot>span:last-child{max-width:60%;text-align:end;overflow-wrap:anywhere}
+.bal3d-logo{display:block;width:30px;height:20px;border-radius:4px;background:#fff url('/assets/wasel-brand.jpeg') no-repeat -16px -7px;background-size:62px 62px}
+.balance-controls{max-width:560px;margin:0 auto 24px}.balance-controls .wallet-card-actions button{min-height:58px;font-size:16px;border-radius:16px}.balance-controls .wallet-card-actions .material-symbols-outlined{font-size:26px}.balance-controls .wallet-statement{background:#00567a}.balance-controls .wallet-statement:hover{background:#004460}.balance-copy{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 0;background:transparent;border:0;color:#00567a;font:inherit;font-size:12px;cursor:pointer;padding:8px}.balance-copy .material-symbols-outlined{font-size:18px}
+@media(max-width:380px){.wasel-balance{padding-inline:12px}.wasel-balance .bal3d-card{padding:18px;min-height:240px}.wasel-balance .bal3d-amount span{font-size:36px}.wasel-balance .bal3d-row b{font-size:12px}.wasel-balance .bal3d-row small{font-size:10px}.balance-controls .wallet-card-actions button{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.wasel-balance .bal3d-hint{visibility:hidden}}
