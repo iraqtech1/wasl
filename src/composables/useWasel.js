@@ -1,3 +1,5 @@
+import { api as frontendApi } from "../services/api.js";
+import { parseRoute, routeHash } from "../services/routes.js";
 import { createCameraRenderers } from "../renderers/camera.js";
 import { createAccountRenderers } from "../renderers/account.js";
 import { createOrdersRenderers } from "../renderers/orders.js";
@@ -209,6 +211,7 @@ export function useWasel() {
       : node;
   }
   function loginPage(error = "") {
+    writeRoute(state.authRole, "login");
     ui.passwordVisible = false;
     ui.auth = true;
     ui.page = "AuthView";
@@ -218,6 +221,7 @@ export function useWasel() {
     window.scrollTo(0, 0);
   }
   function registrationView() {
+    writeRoute(state.registration.role, "register");
     ui.formError = "";
     ui.auth = state.registration.role === "courier";
     ui.page =
@@ -228,12 +232,12 @@ export function useWasel() {
     ui.revision++;
   }
   function courierRegistrationView() {
+    writeRoute("courier", "register");
     ui.auth = true;
     ui.page = "CourierRegistration";
     ui.revision++;
   }
   ("use strict");
-  const staticPreview = location.hostname.endsWith(".github.io");
 
   const $ = (s) => document.querySelector(s),
     $$ = (s) => [...document.querySelectorAll(s)];
@@ -315,33 +319,7 @@ export function useWasel() {
     toastTimer = setTimeout(() => (ui.toast = ""), 5000);
   }
   async function api(url, data) {
-    if (staticPreview)
-      throw Error(
-        "هذه نسخة عرض على GitHub Pages. تسجيل الدخول والطلبات يحتاجان استضافة خادم التطبيق.",
-      );
-    let r;
-    try {
-      r = await fetch(url, {
-        method: data === undefined ? "GET" : "POST",
-        headers:
-          data === undefined
-            ? {}
-            : {
-                "Content-Type": "application/json",
-              },
-        body: data === undefined ? undefined : JSON.stringify(data),
-      });
-    } catch {
-      state.offline = true;
-      throw Error("الاتصال بالخادم غير متاح. يمكنك حفظ مسودة على الجهاز.");
-    }
-    const p = await r.json();
-    if (!r.ok)
-      throw Object.assign(Error(p.error || "تعذر الإجراء"), {
-        status: r.status,
-      });
-    state.offline = false;
-    return p;
+    return frontendApi(url, data);
   }
   function modal(title, content) {
     ui.formError = "";
@@ -360,28 +338,13 @@ export function useWasel() {
   async function refresh(draw = true) {
     try {
       state.S = await api("/api/state");
-      localStorage.setItem(
-        "wasel-platform-two-role-snapshot",
-        JSON.stringify(state.S),
-      );
+      state.offline = false;
       if (draw) render();
-    } catch (e) {
-      if (e.status === 401) {
+    } catch (error) {
+      if (error.status === 401) {
         state.S = null;
         loginPage();
-      } else {
-        if (!state.S) {
-          try {
-            state.S = JSON.parse(
-              localStorage.getItem("wasel-platform-two-role-snapshot"),
-            );
-          } catch {}
-        }
-        if (state.S) {
-          state.offline = true;
-          if (draw) render();
-        } else loginPage(e.message);
-      }
+      } else toast(error.message);
     }
   }
   function showWelcomeSplash() {
@@ -406,9 +369,7 @@ export function useWasel() {
     });
     state.screen = "home";
     state.filter = "all";
-    history.replaceState(null, "", `/${role}/`);
-    document.querySelector("link[rel=manifest]").href =
-      `/${role}/manifest.webmanifest`;
+
     await refresh();
   }
   function nav() {
@@ -452,6 +413,7 @@ export function useWasel() {
   function render() {
     ui.formError = "";
     if (!state.S) return loginPage();
+    writeRoute(state.S.user.role, state.screen);
     ui.auth = false;
     ui.page =
       {
@@ -728,7 +690,7 @@ export function useWasel() {
           ...state.wizard.data,
           publish: b.dataset.publish === "true",
         };
-        if (state.offline || !navigator.onLine) {
+        if (state.offline) {
           if (state.wizard.id || data.publish)
             throw Error("يمكن حفظ مسودة جديدة دون نشر فقط أثناء عدم الاتصال");
           const drafts = readDrafts();
@@ -1107,7 +1069,8 @@ export function useWasel() {
   });
   listen(standaloneMode, "change", updateInstallBanner);
   listen(window, "offline", () => {
-    state.offline = true;
+    // Demo actions remain available without a network connection.
+    state.offline = false;
     if (state.S && !state.wizard && !$("#app-dialog").open) render();
   });
   listen(window, "online", () => {
@@ -1386,9 +1349,68 @@ export function useWasel() {
     ui.cameraContent = null;
     ui.cameraReady = false;
   }
+
+  let restoringRoute = false;
+  function writeRoute(role, page) {
+    if (restoringRoute) return;
+    const hash = routeHash(role, page);
+    if (location.hash !== hash) history.pushState(null, "", hash);
+  }
+  async function restoreRoute() {
+    restoringRoute = true;
+    try {
+      closeModal();
+      cameraDialog()?.close();
+      const route = parseRoute(location.hash);
+      state.authRole = route.role;
+      if (!route.role || route.page === "login") {
+        state.S = null;
+        state.registration = null;
+        state.wizard = null;
+        loginPage();
+        return;
+      }
+      if (route.page === "register") {
+        state.S = null;
+        state.registration = {
+          step: 0,
+          role: route.role,
+          activity: "shop",
+          vehicle: "sedan",
+          province: "بغداد",
+          photos: [],
+          documents: {},
+          location: { lat: 33.3, lng: 44.43 },
+        };
+        registrationView();
+        return;
+      }
+      state.registration = null;
+      if (!state.S || state.S.user.role !== route.role) {
+        await api("/api/login", { role: route.role });
+        await refresh(false);
+      }
+      state.screen = route.page;
+      state.filter = "all";
+      state.query = "";
+      if (route.page === "new") {
+        if (!state.wizard) startOrder();
+        else render();
+      } else {
+        state.wizard = null;
+        render();
+      }
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      restoringRoute = false;
+    }
+  }
+  listen(window, "hashchange", restoreRoute);
+
   onMounted(() => {
     showWelcomeSplash().then(() => {
-      loginPage();
+      restoreRoute();
       updateInstallBanner();
     });
     if ("serviceWorker" in navigator)
@@ -1424,7 +1446,6 @@ export function useWasel() {
   return {
     ui,
     state,
-    staticPreview,
     currentView,
     Navigation,
     SplashArt,

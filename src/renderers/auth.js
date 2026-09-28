@@ -213,16 +213,16 @@ export function createAuthRenderers(context) {
               ],
             ),
             h(
-              "details",
+              "section",
               {
                 class: "login-demo",
               },
               [
-                h("summary", {}, ["تجربة الحساب ", icon("expand_more")]),
+                h("h2", { class: "demo-login-title" }, ["معاينة الحساب"]),
                 h("p", {}, ["حساب تجريبي للفحص"]),
                 button(
                   "demo",
-                  "فتح حساب " + roleNames[state.authRole] + " التجريبي",
+                  "دخول تجريبي — " + roleNames[state.authRole],
                   `data-role="${state.authRole}"`,
                   "full-width secondary-button",
                 ),

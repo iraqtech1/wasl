@@ -72,7 +72,7 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
       <template v-if="state.S && !ui.auth && !state.registration"
         ><div class="demo-notice">
           <span
-            >بيئة محلية • {{ state.S.user.id }} •
+            >حساب تجريبي • {{ state.S.user.id }} •
             {{ state.S.user.approved ? "حساب معتمد" : "الحساب غير نشط" }}</span
           ><button
             v-if="!ui.installed"
