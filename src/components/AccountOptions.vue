@@ -96,7 +96,9 @@ const icons = {
         aria-label="إغلاق"
         @click="close"
       >
-        ×
+        <svg class="dialog-close-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
       </button>
     </div>
     <div v-if="page === 'menu'" class="account-options">

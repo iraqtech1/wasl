@@ -86,3 +86,17 @@ html[data-theme=dark] :is(.auth-logo-art,.brand-logo){background-color:transpare
 .account-option .option-icon .material-symbols-outlined{font-size:23px}
 .account-disclosure-content .detail-row strong{unicode-bidi:plaintext}
 .wasel-app{min-height:100vh;min-height:100dvh}
+
+/* Clear, font-independent dialog controls in both themes. */
+.dialog-head :is(#close-dialog,.settings-close){display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid #f47d2f80;border-radius:50%;background:#fff0e5;color:#c45408;cursor:pointer;box-shadow:none}
+.dialog-close-mark{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.dialog-head :is(#close-dialog,.settings-close):hover{background:#f47d2f;color:#102636}
+.dialog-head :is(#close-dialog,.settings-close):focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
+html[data-theme=dark] .dialog-head :is(#close-dialog,.settings-close){background:#3e3028;color:#ffac6d;border-color:#f47d2f}
+html[data-theme=dark] .dialog-head :is(#close-dialog,.settings-close):hover{background:#f47d2f;color:#102636}
+/* VIP keeps its delivery status while receiving a distinct premium treatment. */
+.order-card.order-card-vip{border:1px solid #f47d2f!important;border-inline-start:4px solid #f47d2f!important;background:linear-gradient(135deg,#fff5e9,#fff 65%);box-shadow:0 5px 20px #f47d2f16}
+.vip-badge{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;white-space:nowrap;padding:6px 12px;border:1px solid #e89944;border-radius:999px;background:linear-gradient(120deg,#ffe3a4,#ffc482);color:#57300c;font-size:12px;font-weight:800;letter-spacing:.6px;line-height:1.5;box-shadow:0 2px 8px #d9812420}
+.vip-badge .material-symbols-outlined{font-size:20px}.vip-detail{margin:12px 0}
+html[data-theme=dark] #app .order-card.order-card-vip{background:linear-gradient(135deg,#3d3028,#142c3d 70%)!important;border-color:#f47d2f!important;box-shadow:0 5px 20px #0003}
+html[data-theme=dark] .vip-badge{background:linear-gradient(120deg,#624219,#463022);color:#ffda91;border-color:#eea552;box-shadow:0 2px 10px #0002}

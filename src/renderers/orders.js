@@ -483,7 +483,8 @@ export function createOrdersRenderers(context) {
           h(
             "article",
             {
-              class: "order-card",
+              class:
+                "order-card" + (o.service === "vip" ? " order-card-vip" : ""),
             },
             [
               h(
@@ -545,9 +546,10 @@ export function createOrdersRenderers(context) {
                     ? h(
                         "span",
                         {
-                          class: "chip pickup",
+                          class: "vip-badge",
+                          "aria-label": "طلب VIP — مندوب مخصص",
                         },
-                        ["VIP"],
+                        [icon("workspace_premium"), "VIP"],
                       )
                     : "",
                 ],
@@ -730,6 +732,12 @@ export function createOrdersRenderers(context) {
         [state.S.statuses[o.status]],
       ),
       row("المرسل", o.sender.name),
+      o.service === "vip"
+        ? h("span", { class: "vip-badge vip-detail" }, [
+            icon("workspace_premium"),
+            "VIP — مندوب مخصص",
+          ])
+        : "",
       row("المستلم", o.recipient.name || "محجوب حتى الاستلام"),
       row("عنوان التسليم", o.recipient.address || o.recipient.area),
       o.recipient.landmark ? row("نقطة دالة", o.recipient.landmark) : "",
