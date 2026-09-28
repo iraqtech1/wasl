@@ -64,8 +64,10 @@ html[data-theme=dark] .wizard-steps li.active span{background:#f47d2f!important;
 #bottom-nav button.active{background:#f47d2f1c}
 #bottom-nav button.active>span:last-child{color:#ad4c0b;font-weight:800}
 #bottom-nav button.active .nav-symbol{background:#fff0e3;color:#c35b17;box-shadow:0 0 0 3px #f47d2f16,0 5px 14px #f47d2f28}
-#bottom-nav button.active .nav-symbol:after{border-top-color:#f47d2f;border-right-color:#f47d2f;border-left-color:#f47d2f;border-bottom-color:transparent;transform:rotate(-25deg) scale(1);border-width:3px}
+#bottom-nav button.active .nav-symbol:after{border-top-color:#f47d2f;border-right-color:#f47d2f;border-left-color:#f47d2f;border-bottom-color:#f47d2f;transform:rotate(-25deg) scale(1);border-width:3px}
 #bottom-nav button.new.active .nav-symbol:after{border-top-color:#f47d2f}
 html[data-theme=dark] #bottom-nav button.active{background:#f47d2f2e!important}
 html[data-theme=dark] #bottom-nav button.active .nav-symbol{background:#854620!important;color:#ffd6ad!important;box-shadow:0 0 12px #f47d2f35!important}
 html[data-theme=dark] #bottom-nav button.active>span:last-child{color:#ffb676!important;font-weight:800}
+
+html[data-theme=dark] :is(.auth-logo-art,.brand-logo){background-color:transparent!important;background-image:url("./public/assets/brand-transparent.svg");mix-blend-mode:normal;border-radius:0}
