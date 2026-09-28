@@ -362,18 +362,65 @@ export function useWasel() {
       } else toast(error.message);
     }
   }
+  const splashKey = "wasel-splash-shown";
+  function splashSeen() {
+    try {
+      return sessionStorage.getItem(splashKey) === "1";
+    } catch {
+      return false;
+    }
+  }
+  function rememberSplash() {
+    try {
+      sessionStorage.setItem(splashKey, "1");
+    } catch {}
+  }
+  function reducedMotion() {
+    try {
+      return matchMedia("(prefers-reduced-motion: reduce)").matches;
+    } catch {
+      return false;
+    }
+  }
   function showWelcomeSplash() {
+    // A refresh, a back-navigation or a re-entry must neither replay the
+    // greeting nor trap the visitor behind it.
+    if (splashSeen()) return Promise.resolve();
+    rememberSplash();
     ui.auth = true;
     ui.splash = true;
     return new Promise((resolve) => {
-      const timer = setTimeout(
-        () => {
-          ui.splash = false;
-          resolve();
-        },
-        matchMedia("(prefers-reduced-motion: reduce)").matches ? 700 : 3000,
-      );
-      cleanups.push(() => clearTimeout(timer));
+      const started = Date.now();
+      let settled = false;
+      let timer;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        document.removeEventListener("visibilitychange", dismissEarly);
+        document.removeEventListener("pointerdown", dismissEarly);
+        ui.splash = false;
+        resolve();
+      };
+      // A tab restored from the background can drop pending timers, and a
+      // visitor must always be able to step past the greeting — so coming
+      // back to the page or tapping once closes it as well.
+      const dismissEarly = () => {
+        if (
+          document.visibilityState === "visible" &&
+          Date.now() - started >= 1000
+        )
+          finish();
+      };
+      timer = setTimeout(finish, reducedMotion() ? 700 : 3000);
+      document.addEventListener("visibilitychange", dismissEarly);
+      document.addEventListener("pointerdown", dismissEarly);
+      cleanups.push(() => {
+        clearTimeout(timer);
+        document.removeEventListener("visibilitychange", dismissEarly);
+        document.removeEventListener("pointerdown", dismissEarly);
+        finish();
+      });
     });
   }
   async function login(role, phone, password) {
