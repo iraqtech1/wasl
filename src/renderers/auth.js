@@ -17,7 +17,13 @@ export function createAuthRenderers(context) {
           [],
         ),
         h("strong", {}, ["واصل"]),
-        h("span", {}, ["WASIL · FOR DELIVERY"]),
+        h("span", { class: "entry-english" }, ["WASIL · FOR DELIVERY"]),
+        state.authRole
+          ? h("div", { class: "login-role-label" }, [
+              "حساب ",
+              roleNames[state.authRole],
+            ])
+          : null,
       ],
     );
     const roles = [
@@ -111,36 +117,11 @@ export function createAuthRenderers(context) {
               "entry-back",
             ),
             h(
-              "div",
-              {
-                class: "selected-role-icon " + state.authRole,
-              },
-              [
-                icon(
-                  state.authRole === "merchant" ? "storefront" : "two_wheeler",
-                ),
-              ],
-            ),
-            h(
-              "span",
-              {
-                class: "entry-kicker",
-              },
-              ["حساب ", roleNames[state.authRole]],
-            ),
-            h(
               "h1",
               {
                 id: "login-title",
               },
               ["نورتنا من جديد"],
-            ),
-            h(
-              "p",
-              {
-                class: "login-subtitle",
-              },
-              ["أدخل بياناتك وابدأ مشوارك."],
             ),
             h(
               "form",

@@ -253,46 +253,34 @@ h1,h2,h3,h4,h5,h6,strong,b{font-weight:700}button{font-weight:600}
 .is-role-choice .entry-signature{margin-top:4px;font-size:10px}
 }
 
-
-.opening-logo { display:block; width:180px; height:95px; overflow:visible; }
-.logo-half { transform-box:view-box; transform-origin:center; animation-duration:2.1s; animation-timing-function:cubic-bezier(.22,.7,.25,1); animation-fill-mode:both; }
-.logo-half-orange { animation-name:orange-arrive; }
-.logo-half-blue { animation-name:blue-arrive; }
-@keyframes orange-arrive {
-  0%, 8% { transform:translate(-125px,-28px) rotate(-18deg); opacity:0; }
-  25% { opacity:1; }
-  72% { transform:translate(12px,0) rotate(2deg); }
-  100% { transform:translate(0,0) rotate(0); opacity:1; }
-}
-@keyframes blue-arrive {
-  0%, 8% { transform:translate(125px,28px) rotate(18deg); opacity:0; }
-  25% { opacity:1; }
-  72% { transform:translate(-12px,0) rotate(-2deg); }
-  100% { transform:translate(0,0) rotate(0); opacity:1; }
-}
-@media(max-width:600px) { .opening-logo { width:120px; height:62px; } }
-@media(prefers-reduced-motion:reduce) { .logo-half { animation:none; } }
-
-/* Composite cached logo images rather than live color filters each frame. */
-.opening-logo{position:relative;isolation:isolate}
-.opening-logo .logo-half{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;will-change:transform,opacity;backface-visibility:hidden}
+/* Compact, shared merchant/courier login layout. */
+.glass-entry.is-login{min-height:calc(100svh - 104px);padding:18px 16px}
+.is-login .entry-content{width:min(100%,380px)}
+.is-login .entry-brand{margin-bottom:12px}
+.is-login .entry-brand>strong{font-size:25px;margin-top:3px}
+.entry-brand>.entry-english{font-size:9px;color:#628898;letter-spacing:1.5px;margin-top:3px}
+.login-role-label{font-size:13px;font-weight:700;color:#b35a20;margin-top:8px}
+.is-login .glass-login{padding:18px 22px;border-radius:24px}
+.is-login .entry-back{font-size:11px;padding-bottom:8px}
+.is-login .glass-login h1{font-size:21px;margin:0 0 14px;text-align:center}
+.is-login .form-stack{gap:12px}
+.is-login .glass-login .form-stack input:not([type=hidden]){min-height:44px;margin-top:4px;padding:9px 12px}
+.is-login .glass-login .login-submit{min-height:46px;margin-top:2px}
+.is-login .login-create{margin:14px 0 0;font-size:12px}
+.is-login .entry-signature{margin-top:12px;font-size:11px}
+/* Keep the full bike animation and smooth continuous parcel path. */
 .city-rider{will-change:transform;animation-timing-function:linear}
 @keyframes cityCruise{from{transform:translate3d(-95px,0,0)}to{transform:translate3d(95px,0,0)}}
-/* Moving the road avoids repainting its dashed stroke on every frame. */
-.city-road{will-change:transform}
-@keyframes roadSlide{to{transform:translate3d(38px,0,0)}}
-@media(prefers-reduced-motion:reduce){.opening-logo .logo-half,.city-rider,.city-road{will-change:auto;animation:none}}
-/* Transform-only package motion follows the same route without SVG SMIL repaint. */
-.route-package{will-change:transform;animation:packageTravel 2.6s linear infinite}
-@keyframes packageTravel{
-0%{transform:translate3d(24px,76px,0)}
-22%{transform:translate3d(89px,76px,0)}
-30%{transform:translate3d(112px,66px,0)}
-38%{transform:translate3d(130px,41px,0)}
-46%{transform:translate3d(159px,32px,0)}
-65%{transform:translate3d(214px,32px,0)}
-75%{transform:translate3d(242px,44px,0)}
-85%{transform:translate3d(261px,68px,0)}
-100%{transform:translate3d(291px,76px,0)}
+@media(prefers-reduced-motion:reduce){.city-rider{will-change:auto}}
+@media(max-height:650px){
+.glass-entry.is-login{padding-block:10px}
+.is-login .entry-brand{margin-bottom:8px}
+.is-login .glass-login{padding:14px 18px}
+.is-login .glass-login h1{font-size:19px;margin-bottom:10px}
+.is-login .login-role-label{margin-top:4px}
 }
-@media(prefers-reduced-motion:reduce){.route-package{animation:none;will-change:auto}}
+.auth-mode #app:has(.glass-entry.is-login){min-height:0}
+.wasel-app.is-login-screen{min-height:100svh;min-height:100dvh;display:flex;flex-direction:column}
+.auth-mode .is-login-screen #app{min-height:0;flex:1;display:grid}
+.is-login-screen .glass-entry.is-login{min-height:0}
+.is-login-screen>.install-banner{width:calc(100% - 24px);box-sizing:border-box}

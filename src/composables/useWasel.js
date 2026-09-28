@@ -1,5 +1,4 @@
 import { api as frontendApi } from "../services/api.js";
-import AnimatedLogo from "../components/AnimatedLogo.js";
 import { parseRoute, routeHash } from "../services/routes.js";
 import { createCameraRenderers } from "../renderers/camera.js";
 import { createAccountRenderers } from "../renderers/account.js";
@@ -1301,7 +1300,11 @@ export function useWasel() {
             class: "splash-content",
           },
           [
-            vueH(AnimatedLogo),
+            h("span", {
+              class: "auth-logo-art",
+              role: "img",
+              "aria-label": "شعار واصل",
+            }),
             h("strong", "واصل"),
             h(
               "span",

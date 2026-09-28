@@ -27,6 +27,7 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
   <div
     class="wasel-app"
     :class="{
+      'is-login-screen': ui.auth && ui.page === 'AuthView' && !!state.authRole,
       'is-role-choice': ui.auth && ui.page === 'AuthView' && !state.authRole,
     }"
     @click="dispatch('click', $event)"

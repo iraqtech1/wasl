@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { build } from "vite";
-import "./build-logo-layers.mjs";
 const pages = process.argv.includes("--pages");
 if (pages) process.env.PAGES_BUILD = "1";
 await build();
