@@ -17,7 +17,7 @@ export function createAuthRenderers(context) {
           [],
         ),
         h("strong", {}, ["واصل"]),
-        h("span", {}, ["ALWASIL · FOR DELIVERY"]),
+        h("span", {}, ["WASIL · FOR DELIVERY"]),
       ],
     );
     const roles = [

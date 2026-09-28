@@ -1311,7 +1311,7 @@ export function useWasel() {
               {
                 class: "splash-english",
               },
-              "ALWASIL DELIVERY",
+              "WASIL · FOR DELIVERY",
             ),
             h("p", "من بابك… لكل وجهة"),
             routeLines(),
