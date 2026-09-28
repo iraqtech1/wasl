@@ -3,6 +3,16 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
+test('Pages worker precaches real files within its scope and serves offline shell',async()=>{
+ const handlers={},entries=new Map();let urls=[];
+ const cache={addAll:async list=>{urls=list;for(const url of list){const file=new URL(url).pathname.replace('/wasl/','')||'index.html';assert.ok(fs.existsSync(file),file);entries.set(url,new Response(file));}},match:async key=>entries.get(key.url||key)};
+ vm.runInNewContext(fs.readFileSync('pages-sw.js','utf8'),{URL,Response,fetch:async()=>{throw Error('offline');},caches:{open:async()=>cache},self:{location:{href:'https://example.test/wasl/pages-sw.js'},skipWaiting:async()=>{},addEventListener:(name,fn)=>handlers[name]=fn}});
+ let installed;handlers.install({waitUntil:p=>installed=p});await installed;
+ assert.ok(urls.every(url=>url.startsWith('https://example.test/wasl/')));
+ let result;handlers.fetch({request:{url:'https://example.test/wasl/?from=install',method:'GET',mode:'navigate'},respondWith:p=>result=p});
+ assert.equal(await (await result).text(),'index.html');
+ result=undefined;handlers.fetch({request:{url:'https://example.test/other/',method:'GET'},respondWith:p=>result=p});assert.equal(result,undefined);
+});
 function worker(fetch){
  const handlers={},entries=new Map();
  const cache={match:async key=>entries.get(key.url||key),put:async(key,value)=>entries.set(key.url||key,value)};

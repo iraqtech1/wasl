@@ -135,7 +135,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-acti
  else if(a==='gps'){if(!navigator.geolocation)throw Error('الموقع غير مدعوم في المتصفح');const form=b.closest('form');b.disabled=true;navigator.geolocation.getCurrentPosition(p=>{form.elements.lat.value=p.coords.latitude;form.elements.lng.value=p.coords.longitude;b.disabled=false;toast('تم تحديد الموقع؛ راجع العنوان والمنطقة');},()=>{b.disabled=false;toast('تعذر تحديد الموقع؛ يمكنك إدخال الإحداثيات يدوياً');},{enableHighAccuracy:true,timeout:15000});}
  else if(a==='register'){registration={step:0,role:authRole||'merchant',activity:'shop',vehicle:'sedan',province:'بغداد',photos:[],location:{lat:33.3,lng:44.43}};registrationView();}
  else if(a==='register-back'){registration.step--;registrationView();}
- else if(a==='install'){if(installPrompt){const p=installPrompt;installPrompt=null;await p.prompt();}else modal('تثبيت واصل','<p>Android: قائمة Chrome ← تثبيت التطبيق.</p><p>iPhone: مشاركة في Safari ← إضافة إلى الشاشة الرئيسية.</p><p class="file-help">على الهاتف يحتاج التطبيق استضافة HTTPS. الخادم الحالي محلي على الكمبيوتر.</p>');}
+ else if(a==='install'){await requestAppInstall(b);}
  }catch(err){toast(err.message);b.disabled=false;}});
 document.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;const f=Object.fromEntries(new FormData(form));const error=form.querySelector('.inline-error');if(error)error.textContent='';const submit=form.querySelector('button[type=submit],button:not([type])');if(submit)submit.disabled=true;try{
  if(form.id==='login-form')await login(f.role,f.phone,f.password);
@@ -150,12 +150,32 @@ document.addEventListener('change',e=>{if(e.target.name==='savedCustomer'&&e.tar
 let searchTimer;document.addEventListener('input',e=>{if(e.target.id==='order-search'){const pos=e.target.selectionStart;query=e.target.value;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{render();const input=$('#order-search');input.focus();input.setSelectionRange(pos,pos);},250);}});
 document.addEventListener('keydown',e=>{const menu=$('#status-menu');if(!menu?.matches(':popover-open'))return;const options=[...menu.querySelectorAll('[role=option]')],index=options.indexOf(document.activeElement);if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?options.length-1:(index+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;options[next].focus();}if(e.key==='Escape')$('#status-trigger').setAttribute('aria-expanded','false');});
 $('#close-dialog').addEventListener('click',closeModal);
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
+const standaloneMode=window.matchMedia('(display-mode: standalone)');
+let installedThisSession=false;
+function updateInstallBanner(){
+ const installed=installedThisSession||standaloneMode.matches||navigator.standalone===true;
+ $('#install-banner').hidden=installed;
+ document.querySelectorAll('[data-action="install"]').forEach(button=>button.hidden=installed);
+}
+async function requestAppInstall(button){
+ if(standaloneMode.matches||navigator.standalone===true||installedThisSession){updateInstallBanner();return;}
+ if(installPrompt){
+  const prompt=installPrompt;installPrompt=null;button.disabled=true;
+  try{await prompt.prompt();const choice=await prompt.userChoice;if(choice.outcome==='accepted'){installedThisSession=true;updateInstallBanner();}}
+  finally{button.disabled=false;}
+ }else{
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  modal('تثبيت واصل',ios?'<p>افتح الرابط في Safari، ثم اضغط «مشاركة» واختر «إضافة إلى الشاشة الرئيسية»، ثم «إضافة».</p>':'<p>من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p><p>إذا فتحت الرابط داخل تطبيق آخر، افتحه في Chrome أو Edge أولاً. قد تحتاج زيارة الصفحة مجددًا حتى يتيح المتصفح التثبيت.</p>');
+ }
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;updateInstallBanner();});
+window.addEventListener('appinstalled',()=>{installPrompt=null;installedThisSession=true;updateInstallBanner();});
+standaloneMode.addEventListener('change',updateInstallBanner);
 window.addEventListener('offline',()=>{offline=true;if(S&&!wizard&&!$('#app-dialog').open)render();});
 window.addEventListener('online',()=>{if(S)refresh(!wizard&&!$('#app-dialog').open);});
-if(!staticPreview&&'serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register(staticPreview?new URL('pages-sw.js',document.baseURI).href:'/sw.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 setInterval(()=>{if(S&&!wizard&&!registration&&!$('#app-dialog').open&&!$('#status-menu')?.matches(':popover-open')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))refresh();},12000);
-showWelcomeSplash().then(()=>loginPage());
+showWelcomeSplash().then(()=>{loginPage();updateInstallBanner();});
 
 // Adapted from the supplied Bal3D interaction, keeping the existing wallet artwork.
 function stopWalletMotion(){if(initWalletMotion.cleanup){initWalletMotion.cleanup();initWalletMotion.cleanup=null;}}
