@@ -1,5 +1,6 @@
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const clientRoot=path.join(__dirname,'dist');
 const d=require('./domain.cjs');const port=Number(process.env.PORT||4173);
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpeg':'image/jpeg','.jpg':'image/jpeg','.ttf':'font/ttf','.txt':'text/plain; charset=utf-8'};
 const rate=new Map();
@@ -31,9 +32,9 @@ const server=http.createServer(async(req,res)=>{
  if(!['GET','HEAD'].includes(req.method))d.fail('الطريقة غير متاحة',405);
  const role=/^\/(merchant|courier)\//.exec(route)?.[1];
  if(/^\/(merchant|courier)\/manifest\.webmanifest$/.test(route)||route==='/manifest.webmanifest'){const r=role||'merchant',names={merchant:'التاجر',courier:'المندوب'};res.writeHead(200,{'Content-Type':'application/manifest+json','Cache-Control':'no-cache'});return res.end(JSON.stringify({id:`/${r}/`,name:`واصل — ${names[r]}`,short_name:`واصل ${names[r]}`,description:'منصة واصل للتوصيل: إنشاء الطلبات، الحجز، الاستلام، التوصيل، الإرجاع، التسوية والمحفظة.',lang:'ar',dir:'rtl',categories:['business','productivity','navigation'],start_url:`/${r}/`,scope:'/',display:'standalone',display_override:['standalone','minimal-ui'],orientation:'portrait',theme_color:'#00567a',background_color:'#f8f9ff',icons:[{src:'/assets/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'/assets/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'/assets/icon-maskable-192.png',sizes:'192x192',type:'image/png',purpose:'maskable'},{src:'/assets/icon-maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]}));}
- if(route==='/'||/^\/(merchant|courier)\/?$/.test(route)||route==='/index.html'){let html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8').replace('<base href="./">','<base href="/">').replace('href="manifest.webmanifest"',`href="/${role||'merchant'}/manifest.webmanifest"`);res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-cache'});return res.end(html);}
- const allowed=['/courier-registration.js','/courier-registration.css','/app.js','/app.css','/platform.css','/styles.css','/sw.js'];if(!allowed.includes(route)&&!/^\/assets\/[a-zA-Z0-9._-]+$/.test(route))d.fail('غير موجود',404);
- const file=path.join(__dirname,route);if(!fs.existsSync(file))d.fail('غير موجود',404);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});fs.createReadStream(file).pipe(res);
+ if(route==='/'||/^\/(merchant|courier)\/?$/.test(route)||route==='/index.html'){let html=fs.readFileSync(path.join(clientRoot,'index.html'),'utf8').replace('href="/manifest.webmanifest"',`href="/${role||'merchant'}/manifest.webmanifest"`);res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-cache'});return res.end(html);}
+ const allowed=['/sw.js'];if(!allowed.includes(route)&&!/^\/assets\/[a-zA-Z0-9._-]+$/.test(route))d.fail('غير موجود',404);
+ const file=path.join(clientRoot,route);if(!fs.existsSync(file))d.fail('غير موجود',404);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});fs.createReadStream(file).pipe(res);
  }catch(e){json(res,{error:e.status?e.message:'تعذر إكمال العملية؛ أعد المحاولة.'},e.status||500);if(!e.status)console.error(e);}
 });
 const host=process.env.HOST||'127.0.0.1';

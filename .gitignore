@@ -18,3 +18,8 @@ coverage/
 *.zip
 .DS_Store
 Thumbs.db
+
+# Vue generated server build and temporary tools
+dist/
+site/
+*.tmp

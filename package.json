@@ -1,1 +1,27 @@
-{"name":"wasel-platform","version":"2.0.0","private":true,"engines":{"node":">=24"},"scripts":{"start":"node server.cjs","test":"node tests.cjs && node --test pwa-tests.cjs"}}
+{
+  "name": "wasel-platform",
+  "version": "3.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "node tools/build.mjs",
+    "build:pages": "node tools/build.mjs --pages",
+    "prestart": "node tools/build.mjs",
+    "start": "node server.cjs",
+    "test": "node tests.cjs && node --test vue-tests.cjs",
+    "check": "node tools/verify-vue.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "prettier": "^3.9.9",
+    "vite": "^8.3.1"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "type": "module"
+}
