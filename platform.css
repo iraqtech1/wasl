@@ -302,3 +302,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 @media(max-height:500px) and (min-width:650px){.is-login .entry-content{max-width:780px;display:grid;grid-template-columns:minmax(180px,1fr) minmax(300px,1.5fr);gap:12px 28px;align-items:center}.is-login .entry-brand{margin:0}.is-login .entry-signature{grid-column:1 / -1;margin:0}}
 .is-login-screen .glass-entry.is-login{isolation:auto}
 .is-login .glass-orb{display:none}
+
+/* The dashboard header belongs to the home page and scrolls with its content. */
+.platform-header{position:relative;inset:auto;width:calc(100% - 24px);margin:12px auto 0}
+body:not(.auth-mode) .wasel-app>#app{padding-top:20px!important}

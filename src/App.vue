@@ -37,7 +37,10 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
     @keydown="dispatch('keydown', $event)"
   >
     <InstallBanner v-if="ui.installVisible && !ui.splash && !ui.installed" />
-    <header v-if="!ui.auth" class="platform-header">
+    <header
+      v-if="!ui.auth && state.screen === 'home' && !state.registration"
+      class="platform-header"
+    >
       <div class="header-inner">
         <div class="brand">
           <span class="brand-logo" role="img" aria-label="شعار واصل"></span>
