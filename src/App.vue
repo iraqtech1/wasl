@@ -7,7 +7,6 @@ import RenderContent from "./components/RenderContent.js";
 const {
   ui,
   state,
-  staticPreview,
   currentView,
   Navigation,
   SplashArt,
@@ -33,10 +32,6 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
     @input="dispatch('input', $event)"
     @keydown="dispatch('keydown', $event)"
   >
-    <aside v-if="staticPreview" id="hosting-notice" class="hosting-notice">
-      هذه معاينة للواجهة فقط. تسجيل الدخول والطلبات يحتاجان رابط التطبيق
-      المستضاف على خادم.
-    </aside>
     <InstallBanner v-if="ui.installVisible && !ui.splash && !ui.installed" />
     <header v-if="!ui.auth" class="platform-header">
       <div class="header-inner">
@@ -134,15 +129,6 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
   </div>
 </template>
 <style>
-.hosting-notice {
-  padding: 12px 18px;
-  background: #fff0e5;
-  color: #173b4b;
-  text-align: center;
-  font:
-    14px Cairo,
-    sans-serif;
-}
 .welcome-splash > div {
   display: contents;
 }
