@@ -1,3 +1,4 @@
+import { PHONE_ATTRIBUTES } from "./helpers.js";
 export function createOrdersRenderers(context) {
   function homeView() {
     const {
@@ -1152,7 +1153,7 @@ export function createOrdersRenderers(context) {
                 "senderPhone",
                 "هاتف المرسل",
                 d.sender.phone,
-                'required type="tel" dir="ltr"',
+                `required ${PHONE_ATTRIBUTES} autocomplete="tel"`,
               ),
               input(
                 "senderAddress",
@@ -1254,13 +1255,13 @@ export function createOrdersRenderers(context) {
               "phone",
               "رقم الهاتف",
               r.phone,
-              'required type="tel" dir="ltr"',
+              `required ${PHONE_ATTRIBUTES} autocomplete="tel"`,
             ),
             input(
               "phone2",
               "رقم إضافي (اختياري)",
               r.phone2,
-              'type="tel" dir="ltr"',
+              `${PHONE_ATTRIBUTES} autocomplete="tel"`,
             ),
             input("province", "المحافظة", u.province, "readonly"),
             input("area", "المنطقة", r.area, 'required maxlength="80"'),

@@ -16,7 +16,14 @@ import {
   onBeforeUnmount,
   withDirectives,
 } from "vue";
-import { attributes, fallback, clone } from "../renderers/helpers.js";
+import {
+  attributes,
+  fallback,
+  clone,
+  phoneDigits,
+  phoneError,
+  PHONE_FIELDS,
+} from "../renderers/helpers.js";
 import { walletMotion } from "../renderers/walletMotion.js";
 export function useWasel() {
   function viewContext() {
@@ -903,6 +910,12 @@ export function useWasel() {
     const submit = form.querySelector("button[type=submit],button:not([type])");
     if (submit) submit.disabled = true;
     try {
+      // Every phone field must hold eleven English digits once the user submits.
+      for (const phoneField of form.elements)
+        if (PHONE_FIELDS.has(phoneField.name)) {
+          const problem = phoneError(phoneField.value);
+          if (problem) throw Error(problem);
+        }
       if (form.id === "login-form") await login(f.role);
       else if (form.id === "password-change-form") {
         if (f.newPassword.length < 8)
@@ -1004,7 +1017,22 @@ export function useWasel() {
   });
   let searchTimer;
   onEvent("input", (e) => {
-    if (e.target.id === "order-search") {
+    const field = e.target;
+    // Phone fields accept English digits only and never exceed eleven characters.
+    if (PHONE_FIELDS.has(field.name) && typeof field.value === "string") {
+      const clean = phoneDigits(field.value);
+      if (clean !== field.value) {
+        const at = field.selectionStart ?? clean.length;
+        field.value = clean;
+        const next = Math.min(at, clean.length);
+        try {
+          field.setSelectionRange(next, next);
+        } catch {
+          /* Some input types expose no caret; overwriting the value is enough. */
+        }
+      }
+    }
+    if (field.id === "order-search") {
       const pos = e.target.selectionStart;
       state.query = e.target.value;
       clearTimeout(searchTimer);

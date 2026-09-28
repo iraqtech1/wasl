@@ -1,3 +1,4 @@
+import { PHONE_ATTRIBUTES } from "./helpers.js";
 export function createAuthRenderers(context) {
   function authView(error = "") {
     const { h, icon, roleNames, state, button, input } = context();
@@ -144,7 +145,7 @@ export function createAuthRenderers(context) {
                   "phone",
                   "رقم الهاتف",
                   "",
-                  'type="tel" dir="ltr" inputmode="tel" autocomplete="username" placeholder="077xxxxxxxx"',
+                  `${PHONE_ATTRIBUTES} autocomplete="username" placeholder="07700000000"`,
                 ),
                 h(
                   "div",
@@ -274,7 +275,7 @@ export function createAuthRenderers(context) {
           "phone",
           "رقم الهاتف",
           r.phone,
-          'type="tel" required dir="ltr" placeholder="077xxxxxxxx"',
+          `required ${PHONE_ATTRIBUTES} autocomplete="tel" placeholder="07700000000"`,
         ),
         input(
           "password",
@@ -287,7 +288,9 @@ export function createAuthRenderers(context) {
           {
             class: "file-help",
           },
-          ["الأرقام المسموحة077 و078 و079. يمكن استخدام صيغة +964 أيضاً."],
+          [
+            "رقم عراقي من 11 رقماً يبدأ بـ077 أو078 أو079. تُقبل الأرقام الإنجليزية فقط.",
+          ],
         ),
       ];
     else if (r.step === 1)
@@ -699,8 +702,8 @@ export function createAuthRenderers(context) {
                   "phone",
                   "رقم الهاتف",
                   "call",
-                  "tel",
-                  'dir="ltr" inputmode="tel" autocomplete="tel" maxlength="20"',
+                  "text",
+                  `${PHONE_ATTRIBUTES} autocomplete="tel"`,
                 ),
                 password("password", "كلمة المرور"),
                 password("confirmPassword", "تأكيد كلمة المرور"),

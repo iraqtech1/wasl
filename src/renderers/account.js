@@ -1,3 +1,4 @@
+import { PHONE_ATTRIBUTES } from "./helpers.js";
 export function createAccountRenderers(context) {
   function accountView() {
     const {
@@ -580,7 +581,7 @@ export function createAccountRenderers(context) {
             "phone2",
             "هاتف احتياطي",
             u.phone2 || "",
-            'type="tel" dir="ltr"',
+            `${PHONE_ATTRIBUTES} autocomplete="tel"`,
           ),
           coords(u.location),
           h(

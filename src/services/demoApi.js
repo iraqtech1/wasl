@@ -275,6 +275,8 @@ export function createDemoApi(storage = globalThis.localStorage) {
         !p.phone?.trim()
       )
         fail("أكمل بيانات الحساب");
+      if (!/^[0-9]{11}$/.test(String(p.phone).trim()))
+        fail("رقم الهاتف يتكون من 11 رقماً بالأرقام الإنجليزية فقط");
       if (p.role === "courier" && p.password !== p.confirmPassword)
         fail("كلمة المرور وتأكيدها غير متطابقين");
       const uid = id(p.role === "merchant" ? "MER" : "COU");
