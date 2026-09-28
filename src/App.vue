@@ -79,25 +79,6 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
       </div>
     </header>
     <main id="app" v-show="!ui.splash">
-      <template v-if="state.S && !ui.auth && !state.registration"
-        ><div class="demo-notice">
-          <span
-            >حساب تجريبي • {{ state.S.user.id }} •
-            {{ state.S.user.approved ? "حساب معتمد" : "الحساب غير نشط" }}</span
-          ><button
-            v-if="!ui.installed"
-            type="button"
-            data-action="install"
-            class="secondary-button"
-          >
-            تثبيت التطبيق
-          </button>
-        </div>
-        <p v-if="state.offline" class="status-note">
-          الخادم غير متاح — المعروض آخر نسخة محفوظة. الإجراءات المشتركة تحتاج
-          الاتصال.
-        </p></template
-      >
       <component
         :is="currentView"
         :key="ui.page + (state.wizard?.step ?? '') + ui.formRevision"
