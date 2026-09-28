@@ -8,6 +8,7 @@ function worker(fetch){
  const cache={match:async key=>entries.get(key.url||key),put:async(key,value)=>entries.set(key.url||key,value)};
  vm.runInNewContext(fs.readFileSync('sw.js','utf8'),{URL,Response,fetch,caches:{open:async()=>cache},self:{location:{origin:'https://wasel.test'},addEventListener:(name,fn)=>handlers[name]=fn}});
  return {entries,request:(path,mode='cors',method='GET')=>{let result;handlers.fetch({request:{url:'https://wasel.test'+path,mode,method},respondWith:value=>result=value});return result;}};
+}
 test('refresh retrieves updated assets and saves the new offline copy',async()=>{
  const w=worker(async(req,options)=>{assert.equal(options.cache,'no-store');return new Response('new');});
  w.entries.set('https://wasel.test/app.js',new Response('old'));
