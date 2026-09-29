@@ -169,6 +169,8 @@ export function useWasel() {
     installed: false,
     installVisible: false,
     passwordVisible: false,
+    loginPassword: "",
+    loginPhone: "",
   });
   function h(tag, props, children) {
     if (typeof props === "object" && !Array.isArray(props) && props) {
@@ -199,7 +201,22 @@ export function useWasel() {
         props.name === "password" &&
         ui.page === "AuthView"
       )
-        props = { ...props, type: ui.passwordVisible ? "text" : "password" };
+        props = {
+          ...props,
+          type: ui.passwordVisible ? "text" : "password",
+          value: ui.loginPassword,
+          onInput: (event) => {
+            ui.loginPassword = event.target.value;
+          },
+        };
+      if (tag === "input" && props.name === "phone" && ui.page === "AuthView")
+        props = {
+          ...props,
+          value: ui.loginPhone,
+          onInput: (event) => {
+            ui.loginPhone = phoneDigits(event.target.value);
+          },
+        };
       if (props["data-action"] === "toggle-password")
         children = [icon(ui.passwordVisible ? "visibility_off" : "visibility")];
     }
@@ -220,6 +237,8 @@ export function useWasel() {
   function loginPage(error = "") {
     writeRoute(state.authRole, "login");
     ui.passwordVisible = false;
+    ui.loginPassword = "";
+    ui.loginPhone = "";
     ui.auth = true;
     ui.page = "AuthView";
     ui.authError = error;
@@ -431,7 +450,8 @@ export function useWasel() {
     });
     state.screen = "home";
     state.filter = "all";
-
+    ui.loginPassword = "";
+    ui.loginPhone = "";
     await refresh();
   }
   function nav() {
@@ -693,7 +713,11 @@ export function useWasel() {
       else if (a === "toggle-password") {
         const p = document.querySelector("#login-form input[name=password]");
         const visible = p.type === "password";
-        p.type = visible ? "text" : "password";
+        // Capture autofilled values as well before Vue patches the input type.
+        ui.loginPassword = p.value;
+        ui.loginPhone = document.querySelector(
+          "#login-form input[name=phone]",
+        ).value;
         ui.passwordVisible = visible;
         b.setAttribute(
           "aria-label",
