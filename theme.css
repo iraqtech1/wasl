@@ -131,13 +131,13 @@ html[data-theme=dark] #dialog-content .detail-row{border-color:#365565}
 .status-menu{border:1px solid #cbdfe7;border-radius:20px;background:#f8fcfd;color:#00567a;scrollbar-width:thin;scrollbar-color:#a9bdc6 transparent}
 html[data-theme=dark] #status-menu .status-option{background:transparent!important;box-shadow:none;color:#dcebf2}
 html[data-theme=dark] #status-menu .status-option:is(:hover,[aria-selected=true]){background:#f47d2f24!important;color:#ffb676}
-/* A short quarter-arc motion overshoots gently, then settles at the top. */
+/* The quarter arc travels halfway around the icon, then returns to the top. */
 #bottom-nav button .nav-symbol:after{display:none}
 #bottom-nav button .nav-symbol svg.nav-progress-ring{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);fill:none;stroke:#f47d2f;stroke-width:2.7;pointer-events:none;transform:rotate(-135deg);overflow:visible;opacity:0}
 .nav-progress-ring circle{stroke-dasharray:25 75;stroke-dashoffset:0;stroke-linecap:round}
 #bottom-nav button.active .nav-symbol svg.nav-progress-ring{opacity:1}
-#bottom-nav button.active .nav-progress-ring circle{stroke-dashoffset:0;animation:navRingSettle .5s ease-out both}
-@keyframes navRingSettle{0%{stroke-dashoffset:18}70%{stroke-dashoffset:-3}100%{stroke-dashoffset:0}}
+#bottom-nav button.active .nav-progress-ring circle{stroke-dashoffset:0;animation:navRingSettle .85s ease-in-out both}
+@keyframes navRingSettle{0%{stroke-dashoffset:0}50%{stroke-dashoffset:-50}100%{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){#bottom-nav button.active .nav-progress-ring circle{animation:none}}
 #status-menu .status-option:is(:hover,[aria-selected=true]){background:#fff0e3;color:#a64c10}
 #status-menu .status-option:focus-visible{outline:2px solid #f47d2f;outline-offset:-2px}
