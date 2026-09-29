@@ -1425,6 +1425,8 @@ export function useWasel() {
               "span",
               {
                 class: "splash-english",
+                dir: "ltr",
+                lang: "en",
               },
               "WASIL · FOR DELIVERY",
             ),
