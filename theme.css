@@ -109,3 +109,36 @@ html[data-theme=dark] .vip-badge{background:linear-gradient(120deg,#624219,#4630
 .entry-promise>span{justify-content:center;min-width:0;white-space:nowrap;gap:6px;line-height:1.6}
 .entry-promise>span>.material-symbols-outlined{flex:0 0 20px;width:20px;line-height:1}
 @media(max-width:600px){.entry-promise{width:min(100%,290px);column-gap:14px}}
+
+/* Mobile gestures and scroll containment for top-layer panels. */
+html,body{overscroll-behavior:none;touch-action:pan-y}
+html{overflow-x:clip}
+html.panel-open{overflow:hidden;overscroll-behavior:none}
+dialog,[popover]{overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+button,a,input,select,textarea{touch-action:pan-y}
+@media(pointer:coarse){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}}
+/* One continuous rounded surface, including the scrollbar edges. */
+#app-dialog,.settings-dialog{box-sizing:border-box;width:min(calc(100vw - 28px),580px);max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);padding:22px;border:1px solid #cbdfe7;border-radius:24px;background:linear-gradient(145deg,#f8fcfd,#fff7f0);color:#00567a;overflow:auto;scrollbar-width:thin;scrollbar-color:#a9bdc6 transparent;clip-path:inset(0 round 24px)}
+#app-dialog::backdrop,.settings-dialog::backdrop{background:#06233399;backdrop-filter:blur(5px)}
+#app-dialog .dialog-head,.settings-dialog .dialog-head{align-items:center;gap:12px;margin-bottom:20px}
+#app-dialog .dialog-head h2,.settings-dialog .dialog-head h2{min-width:0;overflow-wrap:anywhere;font-size:18px}
+#dialog-content{min-width:0;overflow-wrap:anywhere}
+#dialog-content .detail-row{gap:12px;padding-block:10px;border-bottom:1px solid #00567a15}
+#dialog-content .detail-row strong{text-align:end}
+#dialog-content .order-actions{gap:8px;margin-block:18px}
+html[data-theme=dark] #app-dialog,html[data-theme=dark] .settings-dialog{background:linear-gradient(145deg,#193446,#102938)!important;border:1px solid #365565!important;color:#e5f1f5;scrollbar-color:#547080 transparent}
+html[data-theme=dark] #dialog-content .detail-row{border-color:#365565}
+.status-menu{border:1px solid #cbdfe7;border-radius:20px;background:#f8fcfd;color:#00567a;scrollbar-width:thin;scrollbar-color:#a9bdc6 transparent}
+html[data-theme=dark] #status-menu .status-option{background:transparent!important;box-shadow:none;color:#dcebf2}
+html[data-theme=dark] #status-menu .status-option:is(:hover,[aria-selected=true]){background:#f47d2f24!important;color:#ffb676}
+/* Draw the selected tab's orange ring clockwise until the circle is complete. */
+#bottom-nav button .nav-symbol:after{display:none}
+#bottom-nav button .nav-symbol svg.nav-progress-ring{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);fill:none;stroke:#f47d2f;stroke-width:2.7;pointer-events:none;transform:rotate(-90deg);overflow:visible;opacity:0}
+.nav-progress-ring circle{stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round}
+#bottom-nav button.active .nav-symbol svg.nav-progress-ring{opacity:1}
+#bottom-nav button.active .nav-progress-ring circle{stroke-dashoffset:0;animation:navRingDraw .6s cubic-bezier(.25,.6,.35,1) both}
+@keyframes navRingDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){#bottom-nav button.active .nav-progress-ring circle{animation:none}}
+#status-menu .status-option:is(:hover,[aria-selected=true]){background:#fff0e3;color:#a64c10}
+#status-menu .status-option:focus-visible{outline:2px solid #f47d2f;outline-offset:-2px}
+html[data-theme=dark] #dialog-content .code{color:#ffb676}

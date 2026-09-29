@@ -6,5 +6,7 @@ import "../platform.css";
 import "../courier-registration.css";
 import "../theme.css";
 import { initTheme } from "./services/theme.js";
+import { initInteractions } from "./services/interaction.js";
 initTheme();
 createApp(App).mount("#wasel-root");
+initInteractions();

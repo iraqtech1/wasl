@@ -629,6 +629,15 @@ export function createUiRenderers(context) {
         h(
           "svg",
           {
+            class: "nav-progress-ring",
+            viewBox: "0 0 48 48",
+            "aria-hidden": "true",
+          },
+          [h("circle", { cx: "24", cy: "24", r: "21", pathLength: "100" }, [])],
+        ),
+        h(
+          "svg",
+          {
             viewBox: "0 0 24 24",
             fill: "none",
             stroke: "currentColor",
