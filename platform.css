@@ -164,7 +164,6 @@ h1,h2,h3,h4,h5,h6,strong,b{font-weight:700}button{font-weight:600}
 #bottom-nav button.new .nav-symbol svg{width:25px;height:25px}
 #bottom-nav button .nav-symbol:after{inset:-3px;border-width:2.5px}
 .platform-header{inset:10px 12px auto;max-width:976px;margin-inline:auto;border:1px solid #fff;border-radius:36px;background:linear-gradient(125deg,#ffffffed,#eef5f8df 60%,#fff0e5e6);backdrop-filter:blur(24px) saturate(150%);box-shadow:0 8px 28px #003e5914,inset 0 1px 0 #fff}
-.platform-header:after{content:'';position:absolute;bottom:-1px;left:30%;right:30%;height:2px;border-radius:50%;background:linear-gradient(90deg,transparent,#f47d2f88,transparent);pointer-events:none}
 .header-inner{height:64px;padding-inline:18px;gap:10px}
 .platform-header .icon-button{width:36px;min-width:36px;height:36px;border:1px solid #fff;border-radius:50%;background:#ffffffa6;color:#426e81;box-shadow:0 3px 9px #00567a08}
 .platform-header .icon-button .material-symbols-outlined{font-size:20px}
