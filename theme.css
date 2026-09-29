@@ -103,3 +103,9 @@ html[data-theme=dark] .vip-badge{background:linear-gradient(120deg,#624219,#4630
 
 /* Keep the English splash tagline centered and unbroken on mobile Safari. */
 .splash-content>.splash-english{display:block;align-self:center;width:max-content;max-width:calc(100vw - 32px);white-space:nowrap;direction:ltr;unicode-bidi:isolate;text-align:center;font-size:clamp(9px,2.8vw,11px);letter-spacing:clamp(1.5px,.65vw,3px);line-height:1.6;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* Equal-width promises keep the gap aligned with the center of the role cards. */
+.entry-promise{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,320px);margin-inline:auto;column-gap:24px;align-items:center}
+.entry-promise>span{justify-content:center;min-width:0;white-space:nowrap;gap:6px;line-height:1.6}
+.entry-promise>span>.material-symbols-outlined{flex:0 0 20px;width:20px;line-height:1}
+@media(max-width:600px){.entry-promise{width:min(100%,290px);column-gap:14px}}
