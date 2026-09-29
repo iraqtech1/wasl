@@ -93,7 +93,6 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
         :signed-in="true"
       />
     </main>
-    <AccountOptions v-if="ui.auth && !ui.splash" :signed-in="!!state.S" guest />
     <nav
       id="bottom-nav"
       aria-label="التنقل الرئيسي"

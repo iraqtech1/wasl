@@ -8,19 +8,8 @@ export function applyTheme(value) {
     ?.setAttribute("content", value ? "#102636" : "#00567a");
 }
 export function initTheme() {
-  let saved;
-  try {
-    saved = localStorage.getItem("wasel-theme");
-  } catch {}
-  applyTheme(
-    saved
-      ? saved === "dark"
-      : matchMedia("(prefers-color-scheme: dark)").matches,
-  );
+  applyTheme(false);
 }
 export function toggleTheme() {
   applyTheme(!darkMode.value);
-  try {
-    localStorage.setItem("wasel-theme", darkMode.value ? "dark" : "light");
-  } catch {}
 }
