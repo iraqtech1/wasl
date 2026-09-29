@@ -642,7 +642,7 @@ export function createUiRenderers(context) {
       ],
     );
   }
-  function metric(label, value, caption, ic, color = "") {
+  function metric(label, value, ic, color = "") {
     const { h, icon } = context();
     return h(
       "div",
@@ -664,7 +664,6 @@ export function createUiRenderers(context) {
           },
           [value],
         ),
-        h("small", {}, [caption]),
       ],
     );
   }

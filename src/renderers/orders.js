@@ -151,24 +151,21 @@ export function createOrdersRenderers(context) {
           class: "metrics-grid",
         },
         [
-          metric("شحنات نشطة", active, "بعهدة المندوب", "local_shipping"),
+          metric("شحنات نشطة", active, "local_shipping"),
           metric(
             "قبل الاستلام",
             pickup,
-            "حجوزات قيد المتابعة",
             "inventory_2",
             "orange",
           ),
           metric(
             "رصيد المحفظة",
             money(state.S.balance),
-            "د.ع • منفصل عن قيمة البضاعة",
             "payments",
           ),
           metric(
             "تعذر ومرتجعات",
             returns,
-            "تحتاج متابعة وتسوية",
             "assignment_return",
             "red",
           ),
