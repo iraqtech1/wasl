@@ -40,5 +40,20 @@ if (pages) {
     fs.copyFileSync(path.join(dir, file), target);
   }
   fs.writeFileSync(".nojekyll", "");
+  // Remove only obsolete Vite entry bundles, never hand-authored public assets.
+  const assetDir = path.resolve("assets");
+  const currentAssets = new Set(files);
+  let removed = 0;
+  for (const entry of fs.readdirSync(assetDir, { withFileTypes: true })) {
+    if (
+      entry.isFile() &&
+      /^index-[A-Za-z0-9_-]+\.(?:js|css)$/.test(entry.name) &&
+      !currentAssets.has(`assets/${entry.name}`)
+    ) {
+      fs.unlinkSync(path.join(assetDir, entry.name));
+      removed++;
+    }
+  }
+  console.log(`Removed ${removed} obsolete Pages bundles`);
 }
 console.log(`Vue ${pages ? "Pages" : "server"} build ${version}`);
