@@ -322,6 +322,18 @@ const settingsLabels = {
     @input.stop
   >
     <div class="workspace-dialog-head">
+      <button
+        v-if="page === 'admin' && adminPage && portal !== 'outlet'"
+        type="button"
+        class="admin-back-icon"
+        aria-label="الرجوع إلى خيارات الإدارة"
+        title="الرجوع إلى خيارات الإدارة"
+        @click="openAdminPage('')"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m13 5 7 7-7 7M20 12H4" />
+        </svg>
+      </button>
       <h2 tabindex="-1">
         {{
           page === "admin" && adminPage
@@ -689,9 +701,7 @@ const settingsLabels = {
                 ><strong>{{ selectedOutlet?.name || "اختر المنفذ" }}</strong
                 ><small v-if="selectedOutlet"
                   >الرصيد:
-                  {{
-                    selectedOutlet.balance.toLocaleString("en-US")
-                  }}
+                  {{ selectedOutlet.balance.toLocaleString("en-US") }}
                   د.ع</small
                 ></span
               >
@@ -982,6 +992,45 @@ const settingsLabels = {
 }
 .workspace-dialog-head h2 {
   margin: 0;
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+.workspace-dialog-head .admin-back-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #00567a30;
+  border-radius: 50%;
+  background: #e8f3f7;
+  color: #00567a;
+  cursor: pointer;
+}
+.admin-back-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.workspace-dialog-head .admin-back-icon:hover {
+  background: #d4eaf2;
+}
+.admin-back-icon:focus-visible {
+  outline: 3px solid #f47d2f;
+  outline-offset: 3px;
+}
+[data-theme="dark"] .workspace-dialog-head .admin-back-icon {
+  background: #264b61;
+  color: #a9dce9;
+  border-color: #497086;
 }
 
 .geographic-map {
