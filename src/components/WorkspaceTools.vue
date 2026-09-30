@@ -327,14 +327,6 @@ const settingsLabels = {
         <CloseIcon />
       </button>
     </div>
-    <button
-      v-if="page === 'admin' && adminPage && portal !== 'outlet'"
-      type="button"
-      class="admin-back"
-      @click="openAdminPage('')"
-    >
-      → الرجوع إلى خيارات الإدارة
-    </button>
     <p v-if="error" role="alert" class="inline-error">{{ error }}</p>
     <p v-if="message" role="status" class="status-note">{{ message }}</p>
     <template v-if="['addresses', 'customers'].includes(page)">
@@ -838,18 +830,6 @@ const settingsLabels = {
   </dialog>
 </template>
 <style>
-.admin-back {
-  width: 100%;
-  min-height: 44px;
-  margin: 0 0 14px;
-  padding: 10px 14px;
-  border: 1px solid #f47d2f55;
-  border-radius: 12px;
-  background: #fff0e3;
-  color: #99501d;
-  cursor: pointer;
-  font: inherit;
-}
 .admin-options {
   gap: 10px;
 }
@@ -862,10 +842,6 @@ const settingsLabels = {
 }
 .admin-page {
   padding: 4px 0 12px;
-}
-[data-theme="dark"] .admin-back {
-  background: #493426;
-  color: #ffbc8d;
 }
 .workspace-dialog {
   width: min(94vw, 680px);
