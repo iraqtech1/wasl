@@ -207,9 +207,27 @@ export function createOrdersRenderers(context) {
                 class: "status-trigger-count",
               },
               [
-                baseOrders().filter(
-                  (o) => state.filter === "all" || o.status === state.filter,
-                ).length,
+                h(
+                  "svg",
+                  { viewBox: "0 0 28 28", class: "status-count-number" },
+                  [
+                    h(
+                      "text",
+                      {
+                        x: 14,
+                        y: 14,
+                        "text-anchor": "middle",
+                        "dominant-baseline": "central",
+                      },
+                      [
+                        baseOrders().filter(
+                          (o) =>
+                            state.filter === "all" || o.status === state.filter,
+                        ).length,
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
             icon("expand_more"),

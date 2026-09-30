@@ -225,11 +225,15 @@ html[data-theme=dark] .metrics-grid .metric.teal{--metric-ink:#7cdbcd;--metric-s
 html[data-theme=dark] .metrics-grid .metric.red{--metric-ink:#ffa6a6;--metric-soft:#512e37}
 html[data-theme=dark] .metrics-grid .metric .metric-value,html[data-theme=dark] .metrics-grid .metric .metric-label .material-symbols-outlined{color:var(--metric-ink)!important}
 html[data-theme=dark] .metrics-grid .metric .metric-label .material-symbols-outlined{background:var(--metric-soft)!important}
-.status-trigger .status-trigger-count{display:inline-grid;place-items:center;flex-shrink:0;min-width:28px;height:28px;padding:0 6px;box-sizing:border-box;border:1px solid #ffffff40;border-radius:999px;background:#ffb47d;color:#173744;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
-html[data-theme=dark] .status-trigger .status-trigger-count{background:#ffb47d;color:#173744;border-color:#ffcda866}
+.status-trigger .status-trigger-count{display:inline-grid;place-items:center;flex-shrink:0;min-width:28px;height:28px;padding:0 6px;box-sizing:border-box;border:1px solid #ffffff40;border-radius:999px;background:linear-gradient(145deg,#ff9b52,#f47d2f);color:#173744;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+html[data-theme=dark] .status-trigger .status-trigger-count{background:linear-gradient(145deg,#ff9b52,#f47d2f);color:#173744;border-color:#ffcda866}
 
 .status-trigger{background:#176e8d;box-shadow:0 5px 16px #00567a1a}
 .status-trigger:hover,.status-trigger[aria-expanded=true]{background:#11627f}
 
 /* Center the count using numeral metrics independent of Cairo's baseline. */
 .status-trigger .status-trigger-count{display:inline-flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;line-height:1;text-align:center;letter-spacing:0;direction:ltr}
+
+.status-trigger .status-trigger-count{width:28px;min-width:28px;height:28px;padding:0;border-color:#ffc494}
+.status-trigger-count .status-count-number{display:block;width:100%;height:100%;overflow:visible;fill:currentColor}
+.status-count-number text{font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0}
