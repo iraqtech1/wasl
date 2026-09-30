@@ -773,9 +773,11 @@ export function useWasel() {
             );
         }
       } else if (a === "filter") {
+        const menu = $("#status-menu");
+        if (menu?.matches(":popover-open")) menu.hidePopover();
         state.filter = b.dataset.value;
         render();
-        $("#status-trigger")?.focus();
+        $("#status-trigger")?.focus({ preventScroll: true });
       } else if (a === "wizard-back") {
         state.wizard.step--;
         ui.formRevision++;
