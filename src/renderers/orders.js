@@ -1,3 +1,4 @@
+import AdSlider from "../components/AdSlider.vue";
 import LocationMap from "../components/LocationMap.js";
 import LocationShare from "../components/LocationShare.vue";
 import { trackingLink } from "../services/tracking.js";
@@ -34,69 +35,47 @@ export function createOrdersRenderers(context) {
         ),
       ).length;
     return [
-      h(
-        "section",
-        {
-          class: "surface",
-        },
-        [
-          h(
-            "div",
+      u.role === "merchant"
+        ? h(AdSlider)
+        : h(
+            "section",
             {
-              class: "row",
+              class: "surface",
             },
             [
-              h("div", {}, [
-                h("h2", {}, [u.name]),
-                h(
-                  "p",
-                  {
-                    class: "muted",
-                  },
-                  [
-                    icon("location_on"),
-                    " ",
-                    u.province,
-                    "، ",
-                    u.area,
-                    " ",
-                    h("b", {}, ["• ", u.id]),
-                  ],
-                ),
-              ]),
-              button(
-                "refresh",
-                icon("sync"),
-                'aria-label="تحديث البيانات"',
-                "icon-button",
-              ),
-            ],
-          ),
-          u.role === "merchant"
-            ? h(
+              h(
                 "div",
                 {
-                  class: "order-strip",
-                  style: "margin-top:14px",
+                  class: "row",
                 },
                 [
                   h("div", {}, [
-                    h("strong", {}, [
-                      state.S.couriers.length,
-                      " مناديب متاحين ضمن20 كم",
-                    ]),
+                    h("h2", {}, [u.name]),
                     h(
                       "p",
                       {
                         class: "muted",
                       },
-                      ["حسب آخر موقع مسجل في النسخة المحلية"],
+                      [
+                        icon("location_on"),
+                        " ",
+                        u.province,
+                        "، ",
+                        u.area,
+                        " ",
+                        h("b", {}, ["• ", u.id]),
+                      ],
                     ),
                   ]),
-                  button("nearby", "عرض المواقع"),
+                  button(
+                    "refresh",
+                    icon("sync"),
+                    'aria-label="تحديث البيانات"',
+                    "icon-button",
+                  ),
                 ],
-              )
-            : [
+              ),
+              [
                 h(
                   "div",
                   {
@@ -147,8 +126,8 @@ export function createOrdersRenderers(context) {
                     )
                   : "",
               ],
-        ],
-      ),
+            ],
+          ),
       h(
         "div",
         {
@@ -195,86 +174,6 @@ export function createOrdersRenderers(context) {
           )
           .slice(0, 10),
       ),
-      u.role === "merchant"
-        ? h(
-            "section",
-            {
-              class: "express-card",
-              "aria-labelledby": "express-title",
-            },
-            [
-              h(
-                "div",
-                {
-                  class: "express-copy",
-                },
-                [
-                  h(
-                    "div",
-                    {
-                      class: "express-heading",
-                    },
-                    [
-                      h(
-                        "span",
-                        {
-                          class: "express-badge",
-                        },
-                        ["شحن", h("br", {}, []), "فوري"],
-                      ),
-                      h(
-                        "h3",
-                        {
-                          id: "express-title",
-                        },
-                        ["توصيل حر", h("br", {}, []), "ومستعجل؟"],
-                      ),
-                    ],
-                  ),
-                  h("p", {}, [
-                    "احجز أقرب كابتن فوري لشحنة",
-                    h(
-                      "br",
-                      {
-                        class: "express-break",
-                      },
-                      [],
-                    ),
-                    " سريعة بدون جدولة زمنية.",
-                  ]),
-                ],
-              ),
-              button(
-                "new-free",
-                [
-                  "طلب كابتن ",
-                  h(
-                    "svg",
-                    {
-                      viewBox: "0 0 24 24",
-                      fill: "none",
-                      "aria-hidden": "true",
-                    },
-                    [
-                      h(
-                        "path",
-                        {
-                          d: "M3 4l18 8-18 8V4Zm0 8h18",
-                          stroke: "currentColor",
-                          "stroke-width": "2.5",
-                          "stroke-linejoin": "round",
-                        },
-                        [],
-                      ),
-                    ],
-                  ),
-                ],
-                "",
-                "express-button",
-              ),
-            ],
-          )
-        : "",
     ];
   }
   function statusPicker() {
@@ -426,28 +325,30 @@ export function createOrdersRenderers(context) {
           JSON.stringify([o.id, o.recipient, o.sender]).includes(state.query)),
     );
     return [
-      h(
-        "section",
-        {
-          class: "search-row",
-        },
-        [
-          h(
-            "input",
+      u.role === "merchant"
+        ? h(AdSlider)
+        : h(
+            "section",
             {
-              id: "order-search",
-              "aria-label": "البحث عن طلب",
-              placeholder: "ابحث برقم الطلب أو الاسم أو المنطقة",
-              value: state.query,
+              class: "search-row",
             },
-            [],
+            [
+              h(
+                "input",
+                {
+                  id: "order-search",
+                  "aria-label": "البحث عن طلب",
+                  placeholder: "ابحث برقم الطلب أو الاسم أو المنطقة",
+                  value: state.query,
+                },
+                [],
+              ),
+              statusPicker(),
+              state.screen === "available"
+                ? button("merchant-map", [icon("map"), " تجميع حسب الموقع"])
+                : "",
+            ],
           ),
-          statusPicker(),
-          state.screen === "available"
-            ? button("merchant-map", [icon("map"), " تجميع حسب الموقع"])
-            : "",
-        ],
-      ),
       h(
         "p",
         {

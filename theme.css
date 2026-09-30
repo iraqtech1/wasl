@@ -1,4 +1,32 @@
 :root{--settings-surface:linear-gradient(135deg,#fff,#eef5f8);--settings-text:#00567a;--settings-border:#d8e5eb;--settings-muted:#607e8b}
+/* Home shortcuts and promotional space use the existing Wasil palette. */
+.wasel-app>.install-banner{box-shadow:0 -6px 28px -12px #f47d2f38,0 2px 10px #00567a08,inset 0 1px 0 #fff}
+.platform-header{background:radial-gradient(ellipse at 100% -45%,#f47d2f12,transparent 65%),linear-gradient(125deg,#ffffffed,#eef5f8ed)}
+#header-actions{align-items:center;gap:8px;flex-shrink:0}
+.platform-header #header-actions .icon-button{position:relative;width:42px;min-width:42px;height:42px;border:1px solid #00567a18;background:#f5fafc;color:#00567a;box-shadow:0 3px 10px #00567a0a}
+.header-shortcut svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.platform-header #header-actions .captain-shortcut{background:#fff1e6;border-color:#f47d2f35;color:#be5410}
+.shortcut-dot{position:absolute;top:2px;right:1px;width:8px;height:8px;border:2px solid white;border-radius:50%;background:#f47d2f}
+#header-actions .icon-button:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
+.ad-slider{position:relative;overflow:hidden;border-radius:24px;padding:22px 24px 10px;margin-bottom:18px;background:radial-gradient(ellipse at 0 0,#14799570,transparent 60%),linear-gradient(120deg,#003e59,#00567a);color:#fff;box-shadow:0 10px 24px #00567a18;touch-action:pan-y}
+.ad-slide{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:150px}
+.ad-copy{min-width:0;position:relative;z-index:1}
+.ad-eyebrow{font-size:11px;letter-spacing:.5px;color:#ffbc8d}
+.ad-copy h2{font-size:24px;font-weight:800;line-height:1.5;margin:4px 0;color:#fff}
+.ad-copy p{font-size:13px;color:#d1e6ee;line-height:1.8;margin:0 0 13px}
+.ad-cta{display:inline-flex;align-items:center;gap:18px;background:#f47d2f;color:#142f3b;border-radius:12px;padding:8px 14px;font-size:12px;font-weight:700;min-height:42px}
+.ad-art{display:grid;place-items:center;flex:0 0 112px;width:112px;height:112px;border:1px solid #ffffff28;border-radius:30px;background:linear-gradient(145deg,#ffffff17,#ffffff05);transform:rotate(-8deg)}
+.ad-art svg{width:76px;height:76px;stroke:#ffd2ad;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transform:rotate(8deg)}
+.ad-controls{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:7px;direction:ltr}
+.ad-controls>button{display:grid;place-items:center;min-width:34px;height:34px;font-size:23px;color:#e7f3f8;border-radius:50%}
+.ad-controls>button:hover{background:#ffffff18}
+.ad-controls>.ad-pause{position:absolute;left:18px;font-size:17px}
+.ad-dots{display:flex;align-items:center;gap:0}
+.ad-dots button{display:grid;place-items:center;width:26px;height:34px}
+.ad-dots button:after{content:'';width:6px;height:6px;background:#ffffff60;border-radius:8px;transition:width .2s,background .2s}
+.ad-dots button[aria-current=true]:after{width:20px;background:#f47d2f}
+.ad-slider button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media(max-width:480px){.ad-slider{padding:18px 18px 8px}.ad-slide{min-height:155px;gap:8px}.ad-copy h2{font-size:20px}.ad-copy p{font-size:12px}.ad-art{flex-basis:80px;width:80px;height:90px;border-radius:22px}.ad-art svg{width:60px;height:60px}.platform-header .header-inner{padding-inline:12px}}
 .account-options{display:grid;gap:12px;margin:20px 0 0}
 .account-option{display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:14px 18px;border:1px solid var(--settings-border);border-radius:20px;background:var(--settings-surface);color:var(--settings-text);font:inherit;text-align:right;cursor:pointer;box-shadow:0 5px 20px #00567a08}
 .account-option strong{font-size:16px;font-weight:700;flex:1}.option-icon{display:grid;place-items:center;background:#f47d2f18;border-radius:14px;width:46px;height:46px;color:#d96820;flex:none}
