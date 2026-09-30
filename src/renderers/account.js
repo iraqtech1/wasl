@@ -45,6 +45,11 @@ export function createAccountRenderers(context) {
               row("نطاق العمل", (u.radius || 0) + " كم"),
             ]
           : []),
+        u.pendingProfile
+          ? h("p", { class: "status-note" }, [
+              "تعديل بيانات الحساب بانتظار موافقة الإدارة.",
+            ])
+          : "",
         state.S.profileLocked
           ? h("p", { class: "profile-lock" }, [
               "تعديل الملف مقفل حتى إكمال الطلبات والتسويات.",
@@ -560,7 +565,7 @@ export function createAccountRenderers(context) {
             {
               class: "file-help",
             },
-            ["يُحفظ التعديل مباشرة مع بقاء المعرف ثابتاً."],
+            ["يرسل التعديل لمراجعة الإدارة مع بقاء رقم الحساب ثابتاً."],
           ),
           h(
             "p",
@@ -574,7 +579,7 @@ export function createAccountRenderers(context) {
             {
               class: "primary-button",
             },
-            ["حفظ التعديل"],
+            ["إرسال التعديل للمراجعة"],
           ),
         ],
       ),

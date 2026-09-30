@@ -142,3 +142,5 @@ html[data-theme=dark] #status-menu .status-option:is(:hover,[aria-selected=true]
 #status-menu .status-option:is(:hover,[aria-selected=true]){background:#fff0e3;color:#a64c10}
 #status-menu .status-option:focus-visible{outline:2px solid #f47d2f;outline-offset:-2px}
 html[data-theme=dark] #dialog-content .code{color:#ffb676}
+
+.courier-step{border:0;padding:0;margin:0;min-width:0}.courier-step[hidden],.other-area-field[hidden]{display:none!important}.other-area-field>label{display:grid;gap:8px}.workspace-dialog input[type=search]{border-radius:14px;border:1px solid #8ca4b640;padding:10px 14px;font:inherit}

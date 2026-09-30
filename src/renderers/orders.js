@@ -1,3 +1,6 @@
+import LocationMap from "../components/LocationMap.js";
+import { trackingLink } from "../services/tracking.js";
+import { areas } from "../services/orderPolicy.js";
 import { PHONE_ATTRIBUTES } from "./helpers.js";
 export function createOrdersRenderers(context) {
   function homeView() {
@@ -152,23 +155,9 @@ export function createOrdersRenderers(context) {
         },
         [
           metric("شحنات نشطة", active, "local_shipping"),
-          metric(
-            "قبل الاستلام",
-            pickup,
-            "inventory_2",
-            "orange",
-          ),
-          metric(
-            "رصيد المحفظة",
-            money(state.S.balance),
-            "payments",
-          ),
-          metric(
-            "تعذر ومرتجعات",
-            returns,
-            "assignment_return",
-            "red",
-          ),
+          metric("قبل الاستلام", pickup, "inventory_2", "orange"),
+          metric("رصيد المحفظة", money(state.S.balance), "payments"),
+          metric("تعذر ومرتجعات", returns, "assignment_return", "red"),
         ],
       ),
       u.role === "merchant"
@@ -613,6 +602,16 @@ export function createOrdersRenderers(context) {
       assigned = state.S.user.id === o.courier,
       entries = [];
     const add = (action, label) => entries.push([action, label]);
+    if (own && o.extensionRequest) {
+      add("approve_extension", "الموافقة على التمديد");
+      add("reject_extension", "رفض التمديد وإعادة النشر");
+    }
+    if (assigned && o.editPending) {
+      add("keep_edit", "قبول بيانات الطلب المعدلة");
+      add("decline_edit", "رفض التعديل دون عقوبة");
+    }
+    if (assigned && o.settled && ["delivered", "returned"].includes(o.status))
+      add("complete", "إنهاء الطلب");
     if (own) {
       if (before.includes(o.status)) {
         add("edit", "تعديل الطلب");
@@ -638,13 +637,17 @@ export function createOrdersRenderers(context) {
     }
     if (state.S.user.role === "courier" && o.status === "published") {
       add("reserve", "حجز الطلب");
-      add("offer", "اقتراح أجرة");
+      if (
+        Date.now() - Date.parse(o.publishedAt || o.createdAt) >=
+        state.S.settings.offerAfterMinutes * 60000
+      )
+        add("offer", "اقتراح أجرة");
     }
     if (assigned) {
       if (o.status === "reserved") add("depart", "أنا في الطريق");
       if (["reserved", "approaching"].includes(o.status)) {
         add("arrive", "وصلت إلى موقع الاستلام");
-        if (!o.extended) add("extend", "تمديد المهلة");
+        if (!o.extended && !o.extensionRequest) add("extend", "تمديد المهلة");
       }
       if (["reserved", "approaching", "arrived", "waiting"].includes(o.status))
         add("release", "إلغاء الحجز مع سبب");
@@ -664,8 +667,7 @@ export function createOrdersRenderers(context) {
       if (["transit", "at_customer", "retry"].includes(o.status))
         add("fail", "تعذر التسليم");
       if (o.status === "failed") {
-        if (o.attempts < state.S.settings.maxAttempts)
-          add("retry", "اقتراح إعادة المحاولة");
+        if (true) add("retry", "اقتراح إعادة المحاولة");
         add("return", "بدء مسار الإرجاع");
       }
       if (["return_pending", "partial_pending"].includes(o.status))
@@ -756,6 +758,22 @@ export function createOrdersRenderers(context) {
       ),
       row("أجرة الراجع", money(o.returnFee) + " د.ع"),
       row("المطلوب من الزبون", money(customerDue(o)) + " د.ع"),
+      Number.isFinite(o.distanceKm)
+        ? row(
+            "مسافة التوصيل التقريبية",
+            o.distanceKm.toFixed(1) + " كم — مسافة مباشرة",
+          )
+        : "",
+      isOwn || o.courier === state.S.user.id
+        ? h("label", {}, [
+            "رابط متابعة الحالة (نسخة عند المشاركة)",
+            h(
+              "input",
+              { readonly: true, dir: "ltr", value: trackingLink(o) },
+              [],
+            ),
+          ])
+        : "",
       row("تسوية الأموال", o.settled ? "مكتملة" : "غير مكتملة"),
       o.notes ? row("الملاحظات", o.notes) : "",
       o.courierInfo?.photo
@@ -845,7 +863,7 @@ export function createOrdersRenderers(context) {
         },
         [
           maps(o.sender.location, "موقع الاستلام"),
-          !isOwn
+          !isOwn && o.sender.phone
             ? [
                 h(
                   "a",
@@ -859,7 +877,7 @@ export function createOrdersRenderers(context) {
                   {
                     target: "_blank",
                     rel: "noopener noreferrer",
-                    href: "https://wa.me/964" + o.sender.phone.slice(1),
+                    href: "https://wa.me/964" + (o.sender.phone || "").slice(1),
                   },
                   ["واتساب المرسل"],
                 ),
@@ -895,7 +913,7 @@ export function createOrdersRenderers(context) {
                 [icon("phone"), " المستلم"],
               )
             : "",
-          isOwn && o.recipient.phone && !before.includes(o.status)
+          o.courier === state.S.user.id && o.recipient.phone && o.goodsPaid
             ? h(
                 "a",
                 {
@@ -906,9 +924,16 @@ export function createOrdersRenderers(context) {
                     o.recipient.phone.slice(1) +
                     "?text=" +
                     encodeURIComponent(
-                      "تم تسليم طلبك " +
+                      "مرحباً، تم استلام طلبك " +
                         o.id +
-                        " إلى المندوب وهو الآن في طريقه إليك.",
+                        " من " +
+                        o.sender.name +
+                        ". المندوب: " +
+                        (o.courierInfo?.name || "") +
+                        "، الهاتف: " +
+                        (o.courierInfo?.phone || "") +
+                        ". حالة الطلب وقت المشاركة: " +
+                        trackingLink(o),
                     ),
                 },
                 ["تجهيز رسالة الزبون"],
@@ -1049,7 +1074,6 @@ export function createOrdersRenderers(context) {
                   "نوع التوصيل الحر",
                   {
                     none: "توصيل فقط دون تحصيل",
-                    collect: "توصيل مع تحصيل مبلغ",
                   },
                   d.collection,
                 )
@@ -1057,8 +1081,9 @@ export function createOrdersRenderers(context) {
             input(
               "amount",
               "قيمة البضاعة (د.ع)",
-              d.amount,
-              'type="number" min="0" max="100000000" required',
+              d.kind === "free" ? 0 : d.amount,
+              'type="number" min="0" max="100000000" required' +
+                (d.kind === "free" ? " readonly" : ""),
             ),
             input(
               "count",
@@ -1116,11 +1141,28 @@ export function createOrdersRenderers(context) {
               },
               d.feePayer,
             ),
+            h("label", { class: "checkbox" }, [
+              h(
+                "input",
+                {
+                  type: "checkbox",
+                  name: "hasReturn",
+                  checked: d.returnFee > 0,
+                  onChange: (e) => {
+                    e.target.form.elements.returnFee.disabled =
+                      !e.target.checked;
+                  },
+                },
+                [],
+              ),
+              "يتضمن أجرة راجع",
+            ]),
             input(
               "returnFee",
               "أجرة الراجع (د.ع)",
               d.returnFee,
-              'type="number" min="0" required',
+              'type="number" min="0" required' +
+                (d.returnFee > 0 ? "" : " disabled"),
             ),
           ],
         ),
@@ -1158,6 +1200,12 @@ export function createOrdersRenderers(context) {
                 d.sender.address,
                 'required maxlength="200"',
               ),
+              input(
+                "senderArea",
+                "منطقة المرسل",
+                d.sender.area,
+                'required maxlength="80"',
+              ),
               coords(d.sender.location),
               h("label", {}, [
                 "صورة الشحنة من الكاميرا",
@@ -1189,9 +1237,7 @@ export function createOrdersRenderers(context) {
                 {
                   class: "status-note",
                 },
-                [
-                  "لا يُدفع مبلغ الشحنة للمرسل مقدماً في التوصيل الحر؛ هذه السياسة بانتظار اعتماد مستقل.",
-                ],
+                ["التوصيل الحر مقابل أجرة فقط، دون دفع أو تحصيل قيمة البضاعة."],
               ),
             ]
           : [
@@ -1204,7 +1250,21 @@ export function createOrdersRenderers(context) {
                   "تُعبّأ هذه البيانات من الملف المعتمد، ويرتبط الطلب بموقع النشاط المحفوظ.",
                 ],
               ),
-              row("المعرف الثابت", u.id),
+              select(
+                "pickupAddress",
+                "عنوان الاستلام",
+                {
+                  "": "عنوان النشاط الأساسي",
+                  ...Object.fromEntries(
+                    (u.addresses || []).map((a) => [
+                      a.id,
+                      a.name + " — " + a.address,
+                    ]),
+                  ),
+                },
+                d.sender.addressId || "",
+              ),
+              row("رقم الحساب", u.id),
               row("اسم النشاط", u.name),
               row("المحافظة والمنطقة", u.province + " — " + u.area),
               row("العنوان", u.address),
@@ -1220,6 +1280,20 @@ export function createOrdersRenderers(context) {
             ];
     } else if (state.wizard.step === 2) {
       fields = [
+        h(
+          "datalist",
+          { id: "recipient-names" },
+          (u.customers || [])
+            .filter((c) => !r.phone || c.phone === r.phone)
+            .map((c) => h("option", { value: c.name }, [])),
+        ),
+        h(
+          "datalist",
+          { id: "recipient-addresses" },
+          (u.customers || [])
+            .filter((c) => !r.phone || c.phone === r.phone)
+            .map((c) => h("option", { value: c.address }, [])),
+        ),
         (u.customers || []).length
           ? select(
               "savedCustomer",
@@ -1229,7 +1303,7 @@ export function createOrdersRenderers(context) {
                 ...Object.fromEntries(
                   u.customers.map((r, i) => [
                     String(i),
-                    r.name + " — " + r.phone,
+                    r.name + " — " + r.phone + " — " + r.address,
                   ]),
                 ),
               },
@@ -1243,16 +1317,16 @@ export function createOrdersRenderers(context) {
           },
           [
             input(
-              "name",
-              "اسم المستلم",
-              r.name,
-              'required maxlength="80" autocomplete="name"',
-            ),
-            input(
               "phone",
               "رقم الهاتف",
               r.phone,
               `required ${PHONE_ATTRIBUTES} autocomplete="tel"`,
+            ),
+            input(
+              "name",
+              "اسم المستلم",
+              r.name,
+              'required maxlength="80" autocomplete="name" list="recipient-names"',
             ),
             input(
               "phone2",
@@ -1261,8 +1335,44 @@ export function createOrdersRenderers(context) {
               `${PHONE_ATTRIBUTES} autocomplete="tel"`,
             ),
             input("province", "المحافظة", u.province, "readonly"),
-            input("area", "المنطقة", r.area, 'required maxlength="80"'),
-            input("address", "العنوان", r.address, 'required maxlength="200"'),
+            select(
+              "area",
+              "المنطقة",
+              {
+                "": "اختر المنطقة",
+                ...Object.fromEntries(
+                  (areas[u.province] || []).map((a) => [a, a]),
+                ),
+                other: "منطقة أخرى",
+              },
+              (areas[u.province] || []).includes(r.area)
+                ? r.area
+                : r.area
+                  ? "other"
+                  : "",
+              "required",
+            ),
+            h(
+              "div",
+              {
+                class: "other-area-field",
+                hidden: (areas[u.province] || []).includes(r.area) || !r.area,
+              },
+              [
+                input(
+                  "otherArea",
+                  "المنطقة الأخرى (عند اختيار أخرى)",
+                  r.area,
+                  'maxlength="80"',
+                ),
+              ],
+            ),
+            input(
+              "address",
+              "العنوان",
+              r.address,
+              'required maxlength="200" list="recipient-addresses"',
+            ),
             input("landmark", "أقرب نقطة دالة", r.landmark, 'maxlength="200"'),
             input(
               "lat",
@@ -1278,6 +1388,15 @@ export function createOrdersRenderers(context) {
             ),
           ],
         ),
+        h("label", { class: "checkbox" }, [
+          h(
+            "input",
+            { type: "checkbox", name: "saveCustomer", checked: d.saveCustomer },
+            [],
+          ),
+          "حفظ المستلم في زبائني",
+        ]),
+        button("gps", "تحديد موقع المستلم الحالي واقتراح المنطقة"),
         h("label", {}, [
           "ملاحظات التوصيل",
           h(
@@ -1581,6 +1700,37 @@ export function createOrdersRenderers(context) {
       partial_approve: "الموافقة على القطع والقيمة المقترحة للتسليم الجزئي.",
     };
     let fields = contents[op] ? h("p", {}, [contents[op]]) : "";
+    if (op === "extend")
+      fields = [
+        input(
+          "minutes",
+          "دقائق التمديد",
+          "1",
+          `type="number" min="1" max="${Math.ceil(((o.originalMinutes || 5) * state.S.settings.extensionPercent) / 100)}" required`,
+        ),
+        input("reason", "سبب التمديد", "", 'required maxlength="300"'),
+        h("p", {}, ["يُعاد النشر إن لم يوافق التاجر خلال دقيقة."]),
+      ];
+    if (op === "arrive")
+      fields = [
+        input(
+          "reason",
+          "سبب الوصول اليدوي إذا تعذر GPS",
+          "",
+          'maxlength="300"',
+        ),
+        h("p", {}, ["يُقبل GPS ضمن نطاق الوصول؛ خارج النطاق يجب توضيح السبب."]),
+      ];
+    if (
+      [
+        "complete",
+        "keep_edit",
+        "decline_edit",
+        "approve_extension",
+        "reject_extension",
+      ].includes(op)
+    )
+      fields = confirm("راجعت البيانات وأؤكد هذا الإجراء.");
     if (op === "raise_fee" || op === "offer")
       fields = input(
         "fee",
@@ -1726,13 +1876,20 @@ export function createOrdersRenderers(context) {
       fields = [
         h("p", {}, [
           "قيمة البضاعة الواجب استردادها: ",
-          money(o.goodsPaid ? o.amount - (o.partial?.amount || 0) : 0),
+          money(
+            o.goodsPaid
+              ? o.amount - (o.partialDelivered ? o.partial.amount : 0)
+              : 0,
+          ),
           " د.ع",
         ]),
         input(
           "fees",
           "أجور الذهاب والراجع المسواة",
-          o.fee + o.returnFee,
+          Number(o.returnFee) +
+            (o.partialDelivered && o.feePayer === "customer"
+              ? 0
+              : Number(o.fee)),
           'type="number" min="0" required',
         ),
         confirm(
@@ -1767,7 +1924,7 @@ export function createOrdersRenderers(context) {
       ];
     if (op === "partial_confirm")
       fields = confirm(
-        "سلمت الجزء المعتمد وحصلت قيمته دون الأجور. تُسوّى الأجور مع الإرجاع.",
+        "سلمت الجزء المعتمد وحصلت قيمته مع أجرة التوصيل إذا كانت على الزبون.",
       );
     if (op === "rate")
       fields = [
@@ -1832,99 +1989,7 @@ export function createOrdersRenderers(context) {
   }
   function mapPlot(groups) {
     const { h } = context();
-    if (!groups.length) return "";
-    const lats = groups.map((g) => g.location.lat),
-      lngs = groups.map((g) => g.location.lng),
-      minLat = Math.min(...lats) - 0.005,
-      maxLat = Math.max(...lats) + 0.005,
-      minLng = Math.min(...lngs) - 0.005,
-      maxLng = Math.max(...lngs) + 0.005;
-    return h(
-      "div",
-      {
-        class: "coordinate-map",
-      },
-      [
-        h(
-          "svg",
-          {
-            viewBox: "0 0 600 230",
-            role: "img",
-            "aria-label": "مخطط مواقع تقريبي حسب الإحداثيات",
-          },
-          [
-            h(
-              "rect",
-              {
-                width: "600",
-                height: "230",
-                rx: "16",
-                fill: "#eff4ff",
-              },
-              [],
-            ),
-            h(
-              "path",
-              {
-                d: "M0 57H600M0 115H600M0 173H600M150 0V230M300 0V230M450 0V230",
-                stroke: "#d8e5f1",
-                "stroke-width": "1",
-              },
-              [],
-            ),
-            groups.map((g) => {
-              const x =
-                  40 + ((g.location.lng - minLng) / (maxLng - minLng)) * 520,
-                y = 35 + ((maxLat - g.location.lat) / (maxLat - minLat)) * 150;
-              return h("g", {}, [
-                h(
-                  "circle",
-                  {
-                    cx: x,
-                    cy: y,
-                    r: "18",
-                    fill: "#f47d2f",
-                  },
-                  [],
-                ),
-                h(
-                  "text",
-                  {
-                    x: x,
-                    y: y + 5,
-                    "text-anchor": "middle",
-                    fill: "white",
-                    "font-size": "14",
-                    "font-weight": "700",
-                  },
-                  [g.count],
-                ),
-                h(
-                  "text",
-                  {
-                    x: x,
-                    y: y + 38,
-                    "text-anchor": "middle",
-                    fill: "#00567a",
-                    "font-size": "11",
-                  },
-                  [g.name],
-                ),
-              ]);
-            }),
-          ],
-        ),
-        h(
-          "p",
-          {
-            class: "file-help",
-          },
-          [
-            "مخطط إحداثيات تقريبي، لا يعرض الطرق. افتح الموقع في الخرائط للملاحة.",
-          ],
-        ),
-      ],
-    );
+    return h(LocationMap, { groups }, []);
   }
   function localMap(couriers = false) {
     const { state, baseOrders, modal, h, mapPlot, fallback, maps, button } =
@@ -1938,15 +2003,22 @@ export function createOrdersRenderers(context) {
         }))
       : Object.values(
           baseOrders().reduce((a, o) => {
-            a[o.merchant] ??= {
-              id: o.merchant,
+            const key =
+              o.merchant +
+              ":" +
+              (o.sender.addressId ||
+                o.sender.address ||
+                JSON.stringify(o.sender.location));
+            a[key] ??= {
+              id: key,
               name: o.sender.name,
               location: o.sender.location,
               count: 0,
               ids: [],
             };
-            a[o.merchant].count++;
-            a[o.merchant].ids.push(o.id);
+            a[key].vip ||= o.service === "vip";
+            a[key].count++;
+            a[key].ids.push(o.id);
             return a;
           }, {}),
         );
@@ -1972,7 +2044,8 @@ export function createOrdersRenderers(context) {
               h(
                 "div",
                 {
-                  class: "map-pin",
+                  class: "map-pin" + (g.vip ? " vip-order" : ""),
+                  id: "map-group-" + g.id,
                 },
                 [
                   h(

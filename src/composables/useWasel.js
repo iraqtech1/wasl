@@ -1,3 +1,8 @@
+import {
+  recommendVehicle,
+  areas,
+  nearestArea,
+} from "../services/orderPolicy.js";
 import { api as frontendApi } from "../services/api.js";
 import { parseRoute, routeHash } from "../services/routes.js";
 import { createCameraRenderers } from "../renderers/camera.js";
@@ -324,7 +329,7 @@ export function useWasel() {
       "arrived",
       "waiting",
     ],
-    closed = ["delivered", "returned", "cancelled"];
+    closed = ["delivered", "returned", "cancelled", "completed"];
   const provinces = [
     "بغداد",
     "البصرة",
@@ -372,7 +377,7 @@ export function useWasel() {
   async function refresh(draw = true) {
     try {
       state.S = await api("/api/state");
-      state.offline = false;
+      state.offline = navigator.onLine === false;
       if (draw) render();
     } catch (error) {
       if (error.status === 401) {
@@ -523,7 +528,7 @@ export function useWasel() {
             width: 20,
             height: 20,
             nature: "normal",
-            vehicle: "sedan",
+            vehicle: "motorcycle",
             baseFee: 5000,
             fee: 5000,
             returnFee: 0,
@@ -568,9 +573,13 @@ export function useWasel() {
       for (const key of ["nature", "vehicle", "service", "feePayer"])
         d[key] = f[key];
       d.collection = f.collection || d.collection;
+      if (!f.hasReturn) d.returnFee = 0;
       d.fee =
         d.baseFee + (d.service === "vip" ? state.S.settings.vipSurcharge : 0);
-      if (d.kind === "free" && d.collection === "none") d.amount = 0;
+      if (d.kind === "free") {
+        d.amount = 0;
+        d.collection = "none";
+      }
       if (d.returnFee > d.fee)
         throw Error("أجرة الراجع لا تتجاوز أجرة التوصيل");
       if (d.nature === "cold" && d.vehicle !== "refrigerated")
@@ -580,12 +589,20 @@ export function useWasel() {
         name: f.senderName,
         phone: f.senderPhone,
         address: f.senderAddress,
+        area: f.senderArea,
         province: state.S.user.province,
         location: {
           lat: Number(f.lat),
           lng: Number(f.lng),
         },
       };
+    } else if (state.wizard.step === 1) {
+      const address = state.S.user.addresses?.find(
+        (a) => a.id === f.pickupAddress,
+      );
+      d.sender = address
+        ? { ...state.S.user, ...address, addressId: address.id }
+        : { ...state.S.user };
     } else if (state.wizard.step === 2) {
       d.recipient = {
         name: f.name,
@@ -605,6 +622,8 @@ export function useWasel() {
       };
       if (!!f.lat !== !!f.lng) throw Error("أدخل خط العرض والطول معاً");
       d.notes = f.notes;
+      d.saveCustomer = !!f.saveCustomer;
+      d.recipient.area = f.area === "other" ? f.otherArea : f.area;
     }
   }
   async function imageData(file) {
@@ -935,6 +954,20 @@ export function useWasel() {
           (p) => {
             form.elements.lat.value = p.coords.latitude;
             form.elements.lng.value = p.coords.longitude;
+            const area = nearestArea({
+              lat: p.coords.latitude,
+              lng: p.coords.longitude,
+            });
+            if (area && form.elements.area) {
+              if (
+                form.elements.area.tagName === "SELECT" &&
+                ![...form.elements.area.options].some((o) => o.value === area)
+              ) {
+                form.elements.area.value = "other";
+                if (form.elements.otherArea)
+                  form.elements.otherArea.value = area;
+              } else form.elements.area.value = area;
+            }
             b.disabled = false;
             toast("تم تحديد الموقع؛ راجع العنوان والمنطقة");
           },
@@ -946,6 +979,27 @@ export function useWasel() {
             enableHighAccuracy: true,
             timeout: 15000,
           },
+        );
+      } else if (a === "register-free") {
+        modal(
+          "حساب التوصيل الحر",
+          h("form", { id: "free-register-form", class: "form-stack" }, [
+            input("name", "الاسم", "", "required"),
+            input("phone", "الهاتف", "", `required ${PHONE_ATTRIBUTES}`),
+            select(
+              "province",
+              "المحافظة",
+              Object.fromEntries(provinces.map((p) => [p, p])),
+              "بغداد",
+            ),
+            input("area", "المنطقة", "", "required"),
+            input("address", "العنوان", "", "required"),
+            coords({ lat: 33.3, lng: 44.43 }),
+            h("p", { class: "inline-error" }, []),
+            h("button", { class: "primary-button", type: "submit" }, [
+              "إنشاء الحساب",
+            ]),
+          ]),
         );
       } else if (a === "register") {
         state.registration = {
@@ -987,7 +1041,17 @@ export function useWasel() {
           const problem = phoneError(phoneField.value);
           if (problem) throw Error(problem);
         }
-      if (form.id === "login-form") await login(f.role);
+      if (form.id === "free-register-form") {
+        await api("/api/register", {
+          ...f,
+          role: "merchant",
+          activity: "individual",
+          location: { lat: Number(f.lat), lng: Number(f.lng) },
+        });
+        closeModal();
+        await login("merchant", f.phone);
+        startOrder("free");
+      } else if (form.id === "login-form") await login(f.role);
       else if (form.id === "password-change-form") {
         if (f.newPassword.length < 8)
           throw Error("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
@@ -1079,6 +1143,49 @@ export function useWasel() {
     }
   });
   onEvent("change", (e) => {
+    const f = e.target.form;
+    if (f?.id === "order-form" && e.target.name === "area") {
+      const other = f.querySelector(".other-area-field");
+      if (other) other.hidden = e.target.value !== "other";
+    }
+    if (
+      f?.id === "order-form" &&
+      state.wizard?.step === 0 &&
+      ["nature", "weight", "length", "width", "height"].includes(e.target.name)
+    ) {
+      const d = Object.fromEntries(new FormData(f));
+      f.elements.vehicle.value = recommendVehicle(d, state.S.settings);
+    }
+    if (
+      f?.id === "order-form" &&
+      state.wizard?.step === 2 &&
+      e.target.name === "phone"
+    ) {
+      const matches = (state.S.user.customers || []).filter(
+        (c) => c.phone === e.target.value,
+      );
+      const select = f.elements.savedCustomer;
+      for (const [id, key] of [
+        ["recipient-names", "name"],
+        ["recipient-addresses", "address"],
+      ]) {
+        const list = document.getElementById(id);
+        if (list)
+          list.replaceChildren(
+            ...matches.map((c) =>
+              Object.assign(document.createElement("option"), {
+                value: c[key],
+              }),
+            ),
+          );
+      }
+      if (select)
+        for (const option of select.options)
+          option.hidden =
+            option.value !== "" &&
+            !matches.includes(state.S.user.customers[Number(option.value)]);
+    }
+
     if (e.target.name === "savedCustomer" && e.target.value !== "") {
       state.wizard.data.recipient = clone(
         state.S.user.customers[Number(e.target.value)],
@@ -1199,9 +1306,9 @@ export function useWasel() {
   });
   listen(standaloneMode, "change", updateInstallBanner);
   listen(window, "offline", () => {
-    // Demo actions remain available without a network connection.
-    state.offline = false;
-    if (state.S && !state.wizard && !$("#app-dialog").open) render();
+    // Keep saved records available, hide live availability until connected.
+    state.offline = navigator.onLine === false;
+    if (state.S) refresh(!state.wizard && !$("#app-dialog").open);
   });
   listen(window, "online", () => {
     if (state.S) refresh(!state.wizard && !$("#app-dialog").open);
@@ -1348,6 +1455,13 @@ export function useWasel() {
         cameraDialog().close();
         courierRegistrationView();
         $(`[data-document="${key}"]`)?.focus();
+      } else if (a === "courier-step-back") {
+        gatherCourier();
+        state.registration.step = Math.max(
+          0,
+          (state.registration.step || 0) - 1,
+        );
+        courierRegistrationView();
       } else if (a === "courier-edit") {
         closeModal();
         courierRegistrationView();

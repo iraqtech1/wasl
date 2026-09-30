@@ -193,6 +193,14 @@ export function createAuthRenderers(context) {
               [
                 "أول مرة ويانا؟ ",
                 button("register", "أنشئ حسابك", "", "auth-text-button"),
+                state.authRole === "merchant"
+                  ? button(
+                      "register-free",
+                      "توصيل شخصي بدون محل",
+                      "",
+                      "auth-text-button",
+                    )
+                  : "",
               ],
             ),
           ],
@@ -459,6 +467,12 @@ export function createAuthRenderers(context) {
     } = context();
     state.registration.documents ??= {};
     const r = state.registration;
+    const stage = Number(r.step || 0);
+    const group = (n) => ({
+      class: "courier-step",
+      hidden: stage !== n,
+      disabled: stage !== n,
+    });
     const field = (name, label, ic, type = "text", extra = "") =>
       h(
         "label",
@@ -635,203 +649,215 @@ export function createAuthRenderers(context) {
                   },
                   [],
                 ),
-                field(
-                  "name",
-                  "الاسم الكامل",
-                  "person",
-                  "text",
-                  'autocomplete="name" maxlength="80"',
-                ),
-                field(
-                  "address",
-                  "العنوان",
-                  "location_on",
-                  "text",
-                  'autocomplete="street-address" maxlength="200"',
-                ),
-                h(
-                  "label",
-                  {
-                    class: "courier-field",
-                  },
-                  [
-                    "المحافظة",
-                    h(
-                      "span",
-                      {
-                        class: "courier-input",
-                      },
-                      [
-                        icon("map"),
-                        h(
-                          "select",
-                          {
-                            name: "province",
-                            required: true,
-                          },
-                          [
-                            provinces.map((p) =>
-                              h(
-                                "option",
-                                mergeProps(
-                                  {},
-                                  attributes(
-                                    r.province === p ? "selected" : "",
-                                  ),
-                                ),
-                                [p],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                field("area", "المنطقة", "near_me", "text", 'maxlength="80"'),
-                field(
-                  "phone",
-                  "رقم الهاتف",
-                  "call",
-                  "text",
-                  `${PHONE_ATTRIBUTES} autocomplete="tel"`,
-                ),
-                password("password", "كلمة المرور"),
-                password("confirmPassword", "تأكيد كلمة المرور"),
-                h(
-                  "div",
-                  {
-                    class: "courier-divider",
-                  },
-                  [h("span", {}, ["وسيلة التوصيل · الوثائق"])],
-                ),
-                h(
-                  "fieldset",
-                  {
-                    class: "vehicle-fieldset",
-                  },
-                  [
-                    h("legend", {}, ["وسيلة التوصيل"]),
-                    h(
-                      "div",
-                      {
-                        class: "courier-vehicles",
-                      },
-                      [
-                        Object.entries(vehicleNames).map(([v, label]) =>
+                h("p", { class: "status-note" }, [
+                  `${stage + 1} / 3 — ${["المعلومات الأساسية", "وسيلة التوصيل", "الوثائق والموقع"][stage]}`,
+                ]),
+                h("fieldset", group(0), [
+                  field(
+                    "name",
+                    "الاسم الكامل",
+                    "person",
+                    "text",
+                    'autocomplete="name" maxlength="80"',
+                  ),
+                  field(
+                    "address",
+                    "العنوان",
+                    "location_on",
+                    "text",
+                    'autocomplete="street-address" maxlength="200"',
+                  ),
+                  h(
+                    "label",
+                    {
+                      class: "courier-field",
+                    },
+                    [
+                      "المحافظة",
+                      h(
+                        "span",
+                        {
+                          class: "courier-input",
+                        },
+                        [
+                          icon("map"),
                           h(
-                            "label",
+                            "select",
                             {
-                              class: "courier-vehicle",
+                              name: "province",
+                              required: true,
                             },
                             [
-                              h(
-                                "input",
-                                mergeProps(
-                                  {
-                                    type: "radio",
-                                    name: "vehicle",
-                                    value: v,
-                                    required: true,
-                                  },
-                                  attributes(r.vehicle === v ? "checked" : ""),
-                                ),
-                                [],
-                              ),
-                              h(
-                                "span",
-                                {
-                                  class: "vehicle-icon",
-                                },
-                                [
-                                  icon(
-                                    {
-                                      motorcycle: "two_wheeler",
-                                      sedan: "directions_car",
-                                      truck: "local_shipping",
-                                      refrigerated: "ac_unit",
-                                    }[v],
+                              provinces.map((p) =>
+                                h(
+                                  "option",
+                                  mergeProps(
+                                    {},
+                                    attributes(
+                                      r.province === p ? "selected" : "",
+                                    ),
                                   ),
-                                ],
+                                  [p],
+                                ),
                               ),
-                              h("strong", {}, [label]),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                field(
-                  "plate",
-                  "رقم لوحة المركبة",
-                  "pin",
-                  "text",
-                  'maxlength="40"',
-                ),
-                h(
-                  "h2",
-                  {
-                    class: "document-heading",
-                  },
-                  ["بطاقة السكن"],
-                ),
-                h(
-                  "div",
-                  {
-                    class: "document-grid single",
-                  },
-                  [doc("residenceFront")],
-                ),
-                h(
-                  "h2",
-                  {
-                    class: "document-heading",
-                  },
-                  ["البطاقة الوطنية"],
-                ),
-                h(
-                  "div",
-                  {
-                    class: "document-grid",
-                  },
-                  [doc("nationalFront"), doc("nationalBack")],
-                ),
-                h(
-                  "h2",
-                  {
-                    class: "document-heading",
-                  },
-                  ["إجازة السوق"],
-                ),
-                h(
-                  "div",
-                  {
-                    class: "document-grid",
-                  },
-                  [doc("licenseFront"), doc("licenseBack")],
-                ),
-                h(
-                  "div",
-                  {
-                    class: "courier-divider",
-                  },
-                  [h("span", {}, ["موقع الانطلاق"])],
-                ),
-                h(
-                  "p",
-                  {
-                    class: "courier-help",
-                  },
-                  ["حدّد موقعك ليظهر لك الطلب المناسب والقريب."],
-                ),
-                h(
-                  "div",
-                  {
-                    class: "courier-location",
-                  },
-                  [coords(r.location)],
-                ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  field("area", "المنطقة", "near_me", "text", 'maxlength="80"'),
+                  field(
+                    "phone",
+                    "رقم الهاتف",
+                    "call",
+                    "text",
+                    `${PHONE_ATTRIBUTES} autocomplete="tel"`,
+                  ),
+                  password("password", "كلمة المرور"),
+                  password("confirmPassword", "تأكيد كلمة المرور"),
+                ]),
+                h("fieldset", group(1), [
+                  h(
+                    "div",
+                    {
+                      class: "courier-divider",
+                    },
+                    [h("span", {}, ["وسيلة التوصيل · الوثائق"])],
+                  ),
+                  h(
+                    "fieldset",
+                    {
+                      class: "vehicle-fieldset",
+                    },
+                    [
+                      h("legend", {}, ["وسيلة التوصيل"]),
+                      h(
+                        "div",
+                        {
+                          class: "courier-vehicles",
+                        },
+                        [
+                          Object.entries(vehicleNames).map(([v, label]) =>
+                            h(
+                              "label",
+                              {
+                                class: "courier-vehicle",
+                              },
+                              [
+                                h(
+                                  "input",
+                                  mergeProps(
+                                    {
+                                      type: "radio",
+                                      name: "vehicle",
+                                      value: v,
+                                      required: true,
+                                    },
+                                    attributes(
+                                      r.vehicle === v ? "checked" : "",
+                                    ),
+                                  ),
+                                  [],
+                                ),
+                                h(
+                                  "span",
+                                  {
+                                    class: "vehicle-icon",
+                                  },
+                                  [
+                                    icon(
+                                      {
+                                        motorcycle: "two_wheeler",
+                                        sedan: "directions_car",
+                                        truck: "local_shipping",
+                                        refrigerated: "ac_unit",
+                                      }[v],
+                                    ),
+                                  ],
+                                ),
+                                h("strong", {}, [label]),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  field(
+                    "plate",
+                    "رقم لوحة المركبة",
+                    "pin",
+                    "text",
+                    'maxlength="40"',
+                  ),
+                ]),
+                h("fieldset", group(2), [
+                  h(
+                    "h2",
+                    {
+                      class: "document-heading",
+                    },
+                    ["بطاقة السكن"],
+                  ),
+                  h(
+                    "div",
+                    {
+                      class: "document-grid single",
+                    },
+                    [doc("residenceFront")],
+                  ),
+                  h(
+                    "h2",
+                    {
+                      class: "document-heading",
+                    },
+                    ["البطاقة الوطنية"],
+                  ),
+                  h(
+                    "div",
+                    {
+                      class: "document-grid",
+                    },
+                    [doc("nationalFront"), doc("nationalBack")],
+                  ),
+                  h(
+                    "h2",
+                    {
+                      class: "document-heading",
+                    },
+                    ["إجازة السوق"],
+                  ),
+                  h(
+                    "div",
+                    {
+                      class: "document-grid",
+                    },
+                    [doc("licenseFront"), doc("licenseBack")],
+                  ),
+                  h(
+                    "div",
+                    {
+                      class: "courier-divider",
+                    },
+                    [h("span", {}, ["موقع الانطلاق"])],
+                  ),
+                  h(
+                    "p",
+                    {
+                      class: "courier-help",
+                    },
+                    ["حدّد موقعك ليظهر لك الطلب المناسب والقريب."],
+                  ),
+                  h(
+                    "div",
+                    {
+                      class: "courier-location",
+                    },
+                    [coords(r.location)],
+                  ),
+                ]),
+                stage > 0 ? button("courier-step-back", "السابق") : "",
                 h(
                   "p",
                   {
@@ -847,7 +873,10 @@ export function createAuthRenderers(context) {
                     class: "courier-create",
                     type: "submit",
                   },
-                  ["مراجعة البيانات ", icon("arrow_back")],
+                  [
+                    stage < 2 ? "التالي " : "مراجعة البيانات ",
+                    icon("arrow_back"),
+                  ],
                 ),
                 h(
                   "p",
@@ -855,7 +884,7 @@ export function createAuthRenderers(context) {
                     class: "courier-help",
                   },
                   [
-                    "تُحفظ المستمسكات ضمن حسابك ولا تظهر للتجار أو المناديب الآخرين.",
+                    "صور المستمسكات للمعاينة خلال الجلسة فقط؛ لا تُرفع إلى خادم.",
                   ],
                 ),
               ],

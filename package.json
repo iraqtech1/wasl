@@ -11,12 +11,13 @@
     "build:pages": "node tools/build.mjs --pages",
     "prestart": "node tools/build.mjs",
     "start": "vite preview --host 0.0.0.0 --port 4173",
-    "test": "node --test vue-tests.cjs frontend-tests.cjs notification-tests.cjs phone-tests.cjs",
+    "test": "node --test vue-tests.cjs frontend-tests.cjs notification-tests.cjs phone-tests.cjs workflow-tests.cjs",
     "check": "node tools/verify-vue.mjs",
     "start:server": "node server.cjs",
     "test:server": "node tests.cjs"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "vue": "^3.5.43"
   },
   "devDependencies": {

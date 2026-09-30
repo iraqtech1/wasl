@@ -21,7 +21,7 @@ export const PHONE_LENGTH = 11;
 export const PHONE_FIELDS = new Set(["phone", "phone2", "senderPhone"]);
 // Shared attributes: digits-only keyboard, eleven-digit pattern, LTR alignment.
 export const PHONE_ATTRIBUTES =
-  'type="text" inputmode="numeric" pattern="[0-9]{11}" minlength="11" maxlength="11" dir="ltr"';
+  'type="text" inputmode="numeric" pattern="07[789][0-9]{8}" minlength="11" maxlength="11" dir="ltr"';
 
 // Arabic-Indic (٠-٩) and Persian (۰-۹) digits mapped to their English (0-9) forms.
 export function toEnglishDigits(value) {
@@ -34,6 +34,7 @@ export function toEnglishDigits(value) {
 export function phoneDigits(value) {
   return toEnglishDigits(value)
     .replace(/[^0-9]/g, "")
+    .replace(/^(?:00964|964)/, "0")
     .slice(0, PHONE_LENGTH);
 }
 
@@ -43,5 +44,8 @@ export function phoneError(value) {
   if (raw === "") return "";
   if (toEnglishDigits(raw) !== raw)
     return "أدخل رقم الهاتف بالأرقام الإنجليزية فقط";
-  return /^[0-9]{11}$/.test(raw) ? "" : "رقم الهاتف يتكون من 11 رقماً";
+  if (!/^[0-9]{11}$/.test(raw)) return "رقم الهاتف يتكون من 11 رقماً";
+  return /^07[789][0-9]{8}$/.test(raw)
+    ? ""
+    : "الهاتف يجب أن يبدأ بـ077 أو078 أو079";
 }

@@ -4,6 +4,7 @@ import { useWasel } from "./composables/useWasel.js";
 import InstallBanner from "./components/InstallBanner.vue";
 import AppDialog from "./components/AppDialog.vue";
 import RenderContent from "./components/RenderContent.js";
+import WorkspaceTools from "./components/WorkspaceTools.vue";
 import AccountOptions from "./components/AccountOptions.vue";
 import { useNotificationBadge } from "./composables/useNotificationBadge.js";
 const {
@@ -17,6 +18,7 @@ const {
   dispatch,
   closeModal,
   cameraClosed,
+  refresh,
 } = useWasel();
 const { unread, pulse, markRead } = useNotificationBadge(state);
 watch(
@@ -82,6 +84,16 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
       <component
         :is="currentView"
         :key="ui.page + (state.wizard?.step ?? '') + ui.formRevision"
+      />
+      <WorkspaceTools
+        v-if="
+          state.S &&
+          !ui.auth &&
+          state.screen === 'account' &&
+          !state.registration
+        "
+        :snapshot="state.S"
+        @refresh="refresh()"
       />
       <AccountOptions
         v-if="

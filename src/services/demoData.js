@@ -17,6 +17,7 @@ export const statuses = {
   partial_pending: "تسليم جزئي — بانتظار إرجاع المتبقي",
   returned: "تم الإرجاع",
   cancelled: "ملغي",
+  completed: "منتهي",
 };
 export function createDemoData() {
   const location = { lat: 33.3, lng: 44.43 };
@@ -84,7 +85,9 @@ export function createDemoData() {
     demo: true,
     createdAt: at,
     updatedAt: at,
-    settled: ["delivered", "returned", "cancelled"].includes(status),
+    settled: ["delivered", "returned", "cancelled", "completed"].includes(
+      status,
+    ),
     goodsPaid: ![
       "draft",
       "published",
@@ -165,7 +168,21 @@ export const settings = {
   subscription: 0,
   vipSurcharge: 3000,
   partialEnabled: true,
-  maxAttempts: 3,
+  offerAfterMinutes: 10,
+  arrivalBuffer: 30,
+  arrivalRadiusKm: 0.3,
+  penaltiesEnabled: false,
+  cancelSecondMinutes: 60,
+  failureThreshold: 3,
+  failureRestrictionMinutes: 180,
+  waitMinutes: 15,
+  feesStartAt: "",
+  maxCarried: 0,
+  cancelThirdMinutes: 180,
+  commissionMode: "fixed",
+  freeCommission: 0,
+  vipCommission: 0,
+  returnCommission: false,
   extensionPercent: 50,
   vehicleKg: { motorcycle: 20, sedan: 100, truck: 2000, refrigerated: 1000 },
   vehicleCm: { motorcycle: 80, sedan: 150, truck: 500, refrigerated: 400 },

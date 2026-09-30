@@ -57,7 +57,7 @@ function assertPhoneField(html, name) {
   const tag = html.match(new RegExp(`<input[^>]*name="${name}"[^>]*>`));
   assert.ok(tag, `missing input[name=${name}]`);
   assert.match(tag[0], /inputmode="numeric"/, name);
-  assert.match(tag[0], /pattern="\[0-9\]\{11\}"/, name);
+  assert.match(tag[0], /pattern="07\[789\]\[0-9\]\{8\}"/, name);
   assert.match(tag[0], /maxlength="11"/, name);
   assert.match(tag[0], /minlength="11"/, name);
   assert.match(tag[0], /dir="ltr"/, name);
@@ -68,7 +68,7 @@ test("phone helpers keep English digits and stop at eleven", async () => {
     await helpers();
   assert.equal(phoneDigits("07712345678"), "07712345678");
   assert.equal(phoneDigits("077123456789999"), "07712345678");
-  assert.equal(phoneDigits("+964 770 123 4567"), "96477012345");
+  assert.equal(phoneDigits("+964 770 123 4567"), "07701234567");
   assert.equal(toEnglishDigits("٠٧٧١٢٣٤٥٦٧٨"), "07712345678");
   assert.equal(phoneDigits("٠٧٧١٢٣٤٥٦٧٨"), "07712345678");
   assert.equal(phoneDigits("077-123 4567"), "0771234567");
@@ -82,7 +82,7 @@ test("phone helpers keep English digits and stop at eleven", async () => {
     "أدخل رقم الهاتف بالأرقام الإنجليزية فقط",
   );
   assert.match(PHONE_ATTRIBUTES, /inputmode="numeric"/);
-  assert.match(PHONE_ATTRIBUTES, /pattern="\[0-9\]\{11\}"/);
+  assert.match(PHONE_ATTRIBUTES, /pattern="07\[789\]\[0-9\]\{8\}"/);
 });
 
 test("login, registration and order forms expose a numeric eleven-digit keyboard", async () => {

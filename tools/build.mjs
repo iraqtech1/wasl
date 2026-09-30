@@ -47,7 +47,7 @@ if (pages) {
   for (const entry of fs.readdirSync(assetDir, { withFileTypes: true })) {
     if (
       entry.isFile() &&
-      /^index-[A-Za-z0-9_-]+\.(?:js|css)$/.test(entry.name) &&
+      /^(?:index|leaflet-src)-[A-Za-z0-9_-]+\.(?:js|css)$/.test(entry.name) &&
       !currentAssets.has(`assets/${entry.name}`)
     ) {
       fs.unlinkSync(path.join(assetDir, entry.name));
