@@ -34,7 +34,8 @@ export default defineComponent({
           .on("tileerror", () => (failed.value = true))
           .addTo(map);
         const points = [];
-        for (const [index, g] of props.groups.filter((g) => g.location).entries()) {
+        const courierLabels = [];
+        for (const g of props.groups.filter((g) => g.location)) {
           const point = [g.location.lat, g.location.lng];
           points.push(point);
           const label = document.createElement("div");
@@ -75,8 +76,12 @@ export default defineComponent({
           }).addTo(map);
           marker.bindTooltip(label, {
             permanent: true,
-            direction: g.vehicle && index % 2 ? "bottom" : "top",
+            direction: g.vehicle ? "center" : "top",
             className: g.vehicle ? "courier-map-tooltip" : "",
+          });
+          if (g.vehicle) courierLabels.push({
+            marker,
+            leader: L.polyline([], { color: "#c78347", weight: 1.5, opacity: .8, interactive: false }).addTo(map),
           });
           marker.on("click", () =>
             document
@@ -118,6 +123,34 @@ export default defineComponent({
             padding: props.groups.some((g) => g.vehicle) ? [90, 60] : [40, 40],
             maxZoom: 15,
           });
+        // Keep permanent names inside the map and move crowded labels apart.
+        // Leaders retain the connection to the courier's exact location.
+        const arrangeLabels = () => {
+          const size = map.getSize(), occupied = [{ left: 0, right: 48, top: 0, bottom: 82 }];
+          for (const { marker, leader } of [...courierLabels].sort((a, b) => (b.marker.getTooltip().getElement()?.offsetWidth || 0) - (a.marker.getTooltip().getElement()?.offsetWidth || 0))) {
+            const tooltip = marker.getTooltip(), element = tooltip.getElement();
+            if (!element) continue;
+            const width = element.offsetWidth, height = element.offsetHeight;
+            const point = map.latLngToContainerPoint(marker.getLatLng());
+            let best, bestScore = Infinity;
+            for (let y = height / 2 + 8; y < size.y - height / 2 - 8; y += height + 8) {
+              for (let x = width / 2 + 8; x < size.x - width / 2 - 8; x += 12) {
+                const box = { left: x - width / 2 - 3, right: x + width / 2 + 3, top: y - height / 2 - 3, bottom: y + height / 2 + 3 };
+                const overlaps = occupied.filter(b => box.left < b.right && box.right > b.left && box.top < b.bottom && box.bottom > b.top).length;
+                const score = overlaps * 1000000 + (x - point.x) ** 2 + (y - point.y) ** 2;
+                if (score < bestScore) { bestScore = score; best = { x, y, box }; }
+              }
+            }
+            if (!best) continue;
+            occupied.push(best.box);
+            tooltip.options.offset = L.point(best.x - point.x, best.y - point.y);
+            tooltip.update();
+            leader.setLatLngs([marker.getLatLng(), map.containerPointToLatLng([best.x, best.y])]);
+          }
+        };
+        map.on("moveend zoomend resize", arrangeLabels);
+        arrangeLabels();
+        document.fonts?.ready.then(() => { if (!disposed) arrangeLabels(); });
         observer = new ResizeObserver(() => map?.invalidateSize());
         observer.observe(host.value);
       } catch {
@@ -142,7 +175,7 @@ export default defineComponent({
       h("div", {}, [
         h("div", {
           ref: host,
-          class: "geographic-map",
+          class: ["geographic-map", { "has-couriers": props.groups.some((g) => g.vehicle) }],
           style:
             `height:${props.groups.some((g) => g.vehicle) ? 380 : 280}px;border-radius:18px;overflow:hidden;isolation:isolate`,
           role: "region",
