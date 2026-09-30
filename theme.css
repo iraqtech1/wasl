@@ -270,9 +270,19 @@ html[data-theme=dark] .location-panel-actions>a,html[data-theme=dark] .location-
 #status-trigger{scroll-margin-top:18px}
 html[data-theme=dark] .shipment-pagination button{background:#213f51;color:#d7edf8;border-color:#365565}
 html[data-theme=dark] .shipment-pagination button[aria-current=page]{background:#f47d2f;color:#173744;border-color:#f47d2f}
-.registry-display-options{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;color:#00567a;font-size:13px}
-.registry-display-options select{min-height:42px;max-width:100%;padding:8px 12px;border:1px solid #cbdfe7;border-radius:12px;background:#f8fcfd;color:#00567a;font:inherit}
-.registry-display-options .home-page-summary{flex-basis:100%;margin:0}
+.registry-display-options{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;padding:12px 14px;border:1px solid #f47d2f38;border-radius:16px;background:linear-gradient(120deg,#fff5eb,#fff0e3);color:#a3521c;font-size:13px}
+.registry-display-copy{min-width:0}
+.registry-display-copy>strong{font-size:13px;font-weight:700;color:#a3521c}
+.registry-display-options .home-page-summary{margin:3px 0 0;font-size:11px;color:#966a4c}
+.registry-show-all{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;min-height:42px;padding:8px 10px;border:1px solid #f47d2f55;border-radius:12px;background:#fffaf5;color:#99501d;cursor:pointer;white-space:nowrap;font-weight:600}
+.registry-show-all input{width:17px;height:17px;margin:0;accent-color:#d56b24;cursor:pointer}
+.registry-show-all:has(input:checked){background:#ffe0c5;border-color:#f47d2f}
+.registry-show-all:has(input:focus-visible){outline:2px solid #00567a;outline-offset:3px}
+html[data-theme=dark] .registry-display-options{background:linear-gradient(120deg,#332c29,#443126);border-color:#775036}
+html[data-theme=dark] .registry-display-copy>strong{color:#ffb17a}
+html[data-theme=dark] .registry-display-options .home-page-summary{color:#d6b39a}
+html[data-theme=dark] .registry-show-all{background:#493426;color:#ffbc8d;border-color:#815333}
+html[data-theme=dark] .registry-show-all:has(input:checked){background:#614026}
 
 /* Fixed search/filter columns prevent long status labels from shifting the search box. */
 .search-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:center}

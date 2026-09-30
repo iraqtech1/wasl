@@ -1163,8 +1163,8 @@ export function useWasel() {
     }
   });
   onEvent("change", (e) => {
-    if (e.target.id === "registry-page-size") {
-      state.registrySize = e.target.value === "all" ? "all" : "10";
+    if (e.target.id === "registry-show-all") {
+      state.registrySize = e.target.checked ? "all" : "10";
       state.registryPage = 1;
     }
     const f = e.target.form;

@@ -447,18 +447,28 @@ export function createOrdersRenderers(context) {
       ),
       registry
         ? h("div", { class: "registry-display-options" }, [
-            h("label", { for: "registry-page-size" }, ["عدد الطلبات المعروضة"]),
+            h("div", { class: "registry-display-copy" }, [
+              h("strong", {}, ["عدد الطلبات المعروضة"]),
+              h("p", { class: "home-page-summary", role: "status" }, [
+                `عرض ${pagination.start}–${pagination.end} من ${pagination.total} طلب`,
+              ]),
+            ]),
             h(
-              "select",
-              { id: "registry-page-size", value: state.registrySize || "10" },
+              "label",
+              { class: "registry-show-all", for: "registry-show-all" },
               [
-                h("option", { value: "10" }, ["10 طلبات لكل صفحة"]),
-                h("option", { value: "all" }, ["إظهار الكل"]),
+                h(
+                  "input",
+                  {
+                    type: "checkbox",
+                    id: "registry-show-all",
+                    checked: showAll,
+                  },
+                  [],
+                ),
+                h("span", {}, ["إظهار الكل"]),
               ],
             ),
-            h("p", { class: "home-page-summary", role: "status" }, [
-              `عرض ${pagination.start}–${pagination.end} من ${pagination.total} طلب`,
-            ]),
           ])
         : "",
       orderList(registry ? pagination.items : os),
