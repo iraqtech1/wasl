@@ -39,3 +39,7 @@ const server=http.createServer(async(req,res)=>{
 });
 const host=process.env.HOST||'127.0.0.1';
 server.listen(port,host,()=>console.log(`Wasel platform http://${host}:${port} (local demo)`));
+
+const expiryTimer=setInterval(()=>{try{d.expire();}catch(error){console.error("Reservation expiry failed",error);}},5000);
+expiryTimer.unref();
+server.on("close",()=>clearInterval(expiryTimer));

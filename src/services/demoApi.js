@@ -214,20 +214,14 @@ export function createDemoApi(storage = globalThis.localStorage) {
         o.waitAlerted = true;
       }
 
-      if (
-        o.extensionRequest &&
-        Date.parse(o.extensionRequest.expires) <= Date.now()
-      ) {
-        release(o, "انتهت مهلة موافقة التاجر على التمديد");
-        continue;
+      if (["reserved", "approaching"].includes(o.status) && o.deadline) {
+        const remaining = Date.parse(o.deadline) - Date.now();
+        if (remaining <= 0) release(o, "انتهت مهلة الوصول — أُلغي الحجز وأعيد نشر الطلب تلقائياً");
+        else if (remaining <= 120000 && o.arrivalWarnedDeadline !== o.deadline) {
+          notify(o.courier, "باقي دقيقتين أو أقل للوصول إلى الاستلام؛ يمكنك تمديد المهلة ضمن الحد المتاح", o.id);
+          o.arrivalWarnedDeadline = o.deadline;
+        }
       }
-      if (
-        ["reserved", "approaching"].includes(o.status) &&
-        !o.extensionRequest &&
-        o.deadline &&
-        Date.parse(o.deadline) <= Date.now()
-      )
-        release(o, "انتهت مهلة الوصول — إعادة نشر بلا عقوبة في التجربة");
       if (
         o.status === "published" &&
         !o.waitNotified &&
@@ -276,15 +270,12 @@ export function createDemoApi(storage = globalThis.localStorage) {
       "الحجوزات الجديدة مقيّدة مؤقتاً",
     );
     o.courier = c.id;
-    o.originalMinutes = Math.max(
-      3,
-      Math.ceil(distance(c.location, o.sender.location) * 3),
-    );
-    o.deadline = new Date(
-      Date.now() +
-        o.originalMinutes * (1 + data.config.arrivalBuffer / 100) * 60000,
-    ).toISOString();
+    o.pickupDistanceKm = distance(c.location, o.sender.location);
+    o.originalMinutes = Math.max(3, Math.ceil(o.pickupDistanceKm * 3 * (1 + data.config.arrivalBuffer / 100)));
+    o.deadline = new Date(Date.now() + o.originalMinutes * 60000).toISOString();
+    o.extensionMinutes = 0;
     o.extended = false;
+    o.arrivalWarnedDeadline = null;
     o.extensionRequest = null;
     change(o, "reserved");
   }
@@ -642,38 +633,16 @@ export function createDemoApi(storage = globalThis.localStorage) {
     if (a === "extend") {
       courier();
       requireState(["reserved", "approaching"]);
-      must(!o.extended && !o.extensionRequest, "التمديد متاح مرة واحدة");
-      const max = Math.ceil(
-        ((o.originalMinutes || 5) * data.config.extensionPercent) / 100,
-      );
-      must(
-        Number.isInteger(Number(p.minutes)) &&
-          p.minutes >= 1 &&
-          p.minutes <= max,
-        "مدة التمديد تتجاوز النسبة المسموحة",
-      );
-      must(p.reason?.trim(), "وضح سبب طلب التمديد");
-      o.extensionRequest = {
-        minutes: Number(p.minutes),
-        reason: p.reason || "",
-        expires: new Date(Date.now() + 60000).toISOString(),
-      };
-      change(o, o.status, "طلب تمديد ينتظر موافقة التاجر خلال دقيقة");
-      return;
-    }
-    if (a === "approve_extension" || a === "reject_extension") {
-      merchant();
-      must(o.extensionRequest, "لا يوجد طلب تمديد");
-      if (a === "reject_extension") release(o, "رفض التاجر التمديد");
-      else {
-        o.deadline = new Date(
-          Math.max(Date.now(), Date.parse(o.deadline)) +
-            o.extensionRequest.minutes * 60000,
-        ).toISOString();
-        o.extended = true;
-        o.extensionRequest = null;
-        change(o, o.status, "وافق التاجر على التمديد");
-      }
+      must(Date.parse(o.deadline) > Date.now(), "انتهت مهلة الحجز");
+      const used = o.extensionMinutes ?? (o.extended ? Math.ceil(o.originalMinutes / 2) : 0);
+      const max = Math.ceil(o.originalMinutes / 2) - used;
+      const minutes = Number(p.minutes);
+      must(Number.isInteger(minutes) && minutes >= 1 && minutes <= max, "تجاوزت الحد المتبقي للتمديد");
+      o.deadline = new Date(Date.parse(o.deadline) + minutes * 60000).toISOString();
+      o.extensionMinutes = used + minutes;
+      o.extended = true;
+      o.extensionRequest = null;
+      change(o, o.status, "مدد المندوب مهلة الوصول " + minutes + " دقيقة");
       return;
     }
     if (a === "approve_retry") {

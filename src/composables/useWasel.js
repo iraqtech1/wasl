@@ -1747,7 +1747,8 @@ export function useWasel() {
         )
       )
         refresh();
-    }, 12000);
+      else if (state.S) refresh(false);
+    }, 5000);
     cleanups.push(() => clearInterval(interval));
   });
   onBeforeUnmount(() => {

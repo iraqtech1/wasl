@@ -1,3 +1,4 @@
+import ArrivalCountdown from "../components/ArrivalCountdown.js";
 import LocationPanel from "../components/LocationPanel.vue";
 import OrderQr from "../components/OrderQr.js";
 import ScanCodeField from "../components/ScanCodeField.vue";
@@ -538,6 +539,7 @@ export function createOrdersRenderers(context) {
                   ),
                 ],
               ),
+              h(ArrivalCountdown, { order: o }),
               h(
                 "div",
                 {
@@ -635,10 +637,7 @@ export function createOrdersRenderers(context) {
       assigned = state.S.user.id === o.courier,
       entries = [];
     const add = (action, label) => entries.push([action, label]);
-    if (own && o.extensionRequest) {
-      add("approve_extension", "الموافقة على التمديد");
-      add("reject_extension", "رفض التمديد وإعادة النشر");
-    }
+
     if (assigned && o.editPending) {
       add("keep_edit", "قبول بيانات الطلب المعدلة");
       add("decline_edit", "رفض التعديل دون عقوبة");
@@ -680,7 +679,7 @@ export function createOrdersRenderers(context) {
       if (o.status === "reserved") add("depart", "أنا في الطريق");
       if (["reserved", "approaching"].includes(o.status)) {
         add("arrive", "وصلت إلى موقع الاستلام");
-        if (!o.extended && !o.extensionRequest) add("extend", "تمديد المهلة");
+        if ((o.extensionMinutes ?? (o.extended ? Math.ceil(o.originalMinutes / 2) : 0)) < Math.ceil(o.originalMinutes / 2)) add("extend", "تمديد المهلة");
       }
       if (["reserved", "approaching", "arrived", "waiting"].includes(o.status))
         add("release", "إلغاء الحجز مع سبب");
@@ -878,19 +877,7 @@ export function createOrdersRenderers(context) {
             ]),
           ])
         : "",
-      o.deadline && ["reserved", "approaching"].includes(o.status)
-        ? h(
-            "p",
-            {
-              class: "status-note blue",
-            },
-            [
-              "مهلة الوصول حتى ",
-              date(o.deadline),
-              " — تقدير محلي بناءً على المسافة المباشرة، وليس زمن طريق فعلياً.",
-            ],
-          )
-        : "",
+      h(ArrivalCountdown, { order: o }),
       o.retryAt
         ? row(
             "موعد إعادة المحاولة",
@@ -1713,17 +1700,15 @@ export function createOrdersRenderers(context) {
       partial_approve: "الموافقة على القطع والقيمة المقترحة للتسليم الجزئي.",
     };
     let fields = contents[op] ? h("p", {}, [contents[op]]) : "";
-    if (op === "extend")
+    if (op === "extend") {
+      const remaining = Math.max(0, Math.ceil(o.originalMinutes / 2) - (o.extensionMinutes ?? (o.extended ? Math.ceil(o.originalMinutes / 2) : 0)));
       fields = [
-        input(
-          "minutes",
-          "دقائق التمديد",
-          "1",
-          `type="number" min="1" max="${Math.ceil(((o.originalMinutes || 5) * state.S.settings.extensionPercent) / 100)}" required`,
-        ),
-        input("reason", "سبب التمديد", "", 'required maxlength="300"'),
-        h("p", {}, ["يُعاد النشر إن لم يوافق التاجر خلال دقيقة."]),
+        h("p", {}, ["التمديد مباشر؛ مجموع الإضافات لا يتجاوز نصف المهلة الأصلية مقرباً للأعلى."]),
+        h("label", {}, ["دقائق التمديد", h("select", { name: "minutes", required: true },
+          Array.from({ length: remaining }, (_, i) => h("option", { value: i + 1 }, [(i + 1) + " دقيقة"])))]),
+        h("p", {}, ["إذا انتهت المهلة ولم تصل، يُلغى الحجز ويُعاد نشر الطلب تلقائياً."]),
       ];
+    }
     if (op === "arrive")
       fields = [
         input(

@@ -178,17 +178,15 @@ test("filtering enforces distance, cash, vehicle and availability", async () => 
     assert.equal((await t.state()).orders.length, 0);
   }
 });
-test("one bounded extension requires merchant approval, arriving stops deadline", async () => {
+test("bounded direct extensions need no merchant approval, arriving stops deadline", async () => {
   const t = await setup(),
     o = await t.create();
   await t.login("courier");
   await t.act(o, "reserve");
   await assert.rejects(t.act(o, "extend", { minutes: 100, reason: "ازدحام" }));
   await t.act(o, "extend", { minutes: 1, reason: "ازدحام" });
-  await t.login("merchant");
-  await t.act(o, "approve_extension");
-  await t.login("courier");
-  await assert.rejects(t.act(o, "extend", { minutes: 1, reason: "ازدحام" }));
+  await t.act(o, "extend", { minutes: 1 });
+  await assert.rejects(t.act(o, "extend", { minutes: 1 }));
   await t.act(o, "arrive");
   assert.equal((await t.state()).orders[0].deadline, null);
 });
@@ -199,13 +197,40 @@ test("expired extension republishes without cancellation penalty", async () => {
   await t.act(o, "reserve");
   await t.act(o, "extend", { minutes: 1, reason: "ازدحام" });
   const saved = JSON.parse(t.values.get(t.key));
-  saved.orders[0].extensionRequest.expires = "2020-01-01T00:00:00Z";
+  saved.orders[0].deadline = "2020-01-01T00:00:00Z";
   t.values.set(t.key, JSON.stringify(saved));
   const api = t.createDemoApi(t.storage);
   await api("/api/login", { role: "courier" });
   const s = await api("/api/state");
   assert.equal(s.orders[0].status, "published");
   assert.equal(s.user.cancellations.length, 0);
+});
+
+test("seven-minute reservation warns once and allows only four extra minutes in total", async () => {
+  const t = await setup(), order = await t.create();
+  await t.login("courier");
+  await t.act(order, "reserve");
+  const saved = JSON.parse(t.values.get(t.key));
+  saved.orders[0].originalMinutes = 7;
+  saved.orders[0].deadline = new Date(Date.now() + 110000).toISOString();
+  t.values.set(t.key, JSON.stringify(saved));
+  const api = t.createDemoApi(t.storage);
+  await api("/api/login", { role: "courier" });
+  const before = await api("/api/state");
+  const deadline = Date.parse(before.orders[0].deadline);
+  await api("/api/state");
+  const notices = (await api("/api/state")).notifications.filter((n) => n.text.includes("باقي دقيقتين"));
+  assert.equal(notices.length, 1);
+  const extend = (minutes) => api(`/api/orders/${order.id}/action`, { action: "extend", minutes });
+  await assert.rejects(extend(5));
+  await assert.rejects(extend(1.5));
+  await extend(2);
+  await extend(2);
+  await assert.rejects(extend(1));
+  const after = (await api("/api/state")).orders[0];
+  assert.equal(Date.parse(after.deadline), deadline + 240000);
+  assert.equal(after.extensionMinutes, 4);
+  assert.equal(after.extensionRequest, null);
 });
 test("profile edits remain pending until reviewed, stable account number, unresolved orders lock edits", async () => {
   const t = await setup();
