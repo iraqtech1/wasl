@@ -222,7 +222,7 @@ test("profile edits remain pending until reviewed, stable account number, unreso
     t.api("/api/profile", { action: "profile", name: "آخر" }),
   );
 });
-test("supported networks, per-role identity, optional customer save and address edits", async () => {
+test("supported networks, per-role identity, automatic customer save and address edits", async () => {
   const t = await setup();
   await assert.rejects(
     t.api("/api/register", {
@@ -248,10 +248,33 @@ test("supported networks, per-role identity, optional customer save and address 
   });
   assert.equal((await t.state()).user.addresses[0].address, "B");
   const n = s.user.customers.length;
-  await t.create({ saveCustomer: false });
-  assert.equal((await t.state()).user.customers.length, n);
-  await t.create({ saveCustomer: true });
+  const recipient = { ...t.template.recipient, name: "مستلم جديد للحفظ" };
+  await t.create({ saveCustomer: false, recipient });
   assert.equal((await t.state()).user.customers.length, n + 1);
+  await t.create({ saveCustomer: true, recipient });
+  assert.equal((await t.state()).user.customers.length, n + 1);
+});
+
+test("saved orders remember multiple recipients per phone and pickup locations without duplicates", async () => {
+  const t = await setup();
+  const sender = { ...t.template.sender, area: "المنصور", address: "مخزن جديد", location: { lat: 33.32, lng: 44.35 } };
+  const recipient = { ...t.template.recipient, phone: "07912345671", name: "أحمد", location: { lat: 33.31, lng: 44.4 } };
+  const first = await t.create({ sender, recipient, publish: false });
+  const mother = { ...recipient, name: "والدة أحمد", address: "بيت الوالدة", location: { lat: 33.34, lng: 44.44 } };
+  await t.create({ sender, recipient: mother });
+  await t.create({ sender, recipient: mother });
+  await t.act(first, "edit", { recipient: { ...recipient, location: { lat: 33.315, lng: 44.415 } } });
+  let state = await t.state();
+  assert.equal(state.user.customers.filter((c) => c.phone === recipient.phone).length, 3);
+  assert.equal(state.user.addresses.filter((a) => a.address === sender.address).length, 1);
+  assert.equal(first.sender.addressId, state.user.addresses.find((a) => a.address === sender.address).id);
+  assert.notEqual(state.user.address, sender.address);
+  const reopened = t.createDemoApi(t.storage);
+  await reopened("/api/login", { role: "merchant" });
+  assert.deepEqual((await reopened("/api/state")).user.customers, state.user.customers);
+  await reopened("/api/register", { role: "merchant", name: "تاجر آخر", phone: "07912345672", province: "بغداد" });
+  await reopened("/api/login", { role: "merchant", phone: "07912345672" });
+  assert.equal((await reopened("/api/state")).user.customers.length, 0);
 });
 test("free delivery prevents goods collection and retry count is unlimited", async () => {
   const t = await setup();

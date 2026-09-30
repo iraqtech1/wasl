@@ -607,12 +607,12 @@ export function useWasel() {
         },
       };
     } else if (state.wizard.step === 1) {
-      const address = state.S.user.addresses?.find(
-        (a) => a.id === f.pickupAddress,
-      );
-      d.sender = address
-        ? { ...state.S.user, ...address, addressId: address.id }
-        : { ...state.S.user };
+      d.sender = {
+        name: state.S.user.name, phone: state.S.user.phone,
+        province: state.S.user.province, phone2: state.S.user.phone2,
+        area: f.senderArea, address: f.senderAddress,
+        location: { lat: Number(f.lat), lng: Number(f.lng) },
+      };
     } else if (state.wizard.step === 2) {
       d.recipient = {
         name: f.name,
@@ -632,7 +632,7 @@ export function useWasel() {
       };
       if (!!f.lat !== !!f.lng) throw Error("أدخل خط العرض والطول معاً");
       d.notes = f.notes;
-      d.saveCustomer = !!f.saveCustomer;
+      d.saveCustomer = true;
       d.recipient.area = f.area === "other" ? f.otherArea : f.area;
     }
   }
@@ -820,6 +820,8 @@ export function useWasel() {
             "wasel-offline-" + state.S.user.id,
             JSON.stringify(drafts),
           );
+          await api("/api/order-places", data);
+          state.S = await api("/api/state");
           state.screen = "account";
           state.wizard = null;
           render();
@@ -1227,17 +1229,30 @@ export function useWasel() {
             ),
           );
       }
-      if (select)
+      if (select) {
+        select.value = "";
         for (const option of select.options)
           option.hidden =
             option.value !== "" &&
             !matches.includes(state.S.user.customers[Number(option.value)]);
+      }
     }
 
-    if (e.target.name === "savedCustomer" && e.target.value !== "") {
-      state.wizard.data.recipient = clone(
-        state.S.user.customers[Number(e.target.value)],
-      );
+    if (f?.id === "order-form" && e.target.name === "pickupAddress") {
+      const address = state.S.user.addresses?.find((a) => a.id === e.target.value);
+      state.wizard.data.sender = e.target.value === "new"
+        ? { name: state.S.user.name, phone: state.S.user.phone, province: state.S.user.province }
+        : { ...state.S.user, ...address, addressId: address?.id || "" };
+      state.wizard.data.pickupChoice = e.target.value;
+      ui.formRevision++;
+      render();
+    }
+    if (f?.id === "order-form" && e.target.name === "savedCustomer") {
+      state.wizard.data.notes = f.elements.notes?.value || "";
+      state.wizard.data.recipient = e.target.value === ""
+        ? { phone: f.elements.phone.value, province: state.S.user.province }
+        : clone(state.S.user.customers[Number(e.target.value)]);
+      ui.formRevision++;
       render();
     }
   });
@@ -1257,6 +1272,9 @@ export function useWasel() {
           /* Some input types expose no caret; overwriting the value is enough. */
         }
       }
+    }
+    if (field.name === "phone" && field.form?.id === "order-form" && state.wizard?.step === 2) {
+      for (const handler of handlers.change || []) handler(e);
     }
     if (field.id === "order-search") {
       const pos = e.target.selectionStart;

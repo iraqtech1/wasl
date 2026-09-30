@@ -1,4 +1,5 @@
 import { createDemoData, statuses, settings as defaults } from "./demoData.js";
+import { rememberOrderPlaces } from "./addressBook.js";
 import {
   BEFORE,
   unresolved,
@@ -541,6 +542,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
         "photo",
       ];
       for (const k of fields) if (p[k] !== undefined) o[k] = copy(p[k]);
+      rememberOrderPlaces(u, o, id);
       if (["reserved", "approaching"].includes(o.status)) o.editPending = true;
       change(
         o,
@@ -1389,6 +1391,13 @@ export function createDemoApi(storage = globalThis.localStorage) {
       persist();
       return { ok: true };
     }
+    if (url === "/api/order-places") {
+      must(u.role === "merchant", "للتاجر فقط");
+      validateOrder(p);
+      rememberOrderPlaces(u, copy(p), id);
+      persist();
+      return { ok: true };
+    }
     if (url === "/api/orders") {
       must(u.role === "merchant", "للتاجر فقط");
       must(!p.publish || online(), "احفظ مسودة أثناء انقطاع الإنترنت");
@@ -1423,9 +1432,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       };
       data.orders.push(o);
       change(o, o.status, "إنشاء الطلب");
-      if (p.saveCustomer) {
-        u.customers.push({ ...copy(o.recipient), id: id("CUS") });
-      }
+      rememberOrderPlaces(u, o, id);
       persist();
       return visible(o, u);
     }

@@ -16,6 +16,7 @@ global.localStorage = {
   setItem: (key, value) => storage.set(key, value),
 };
 global.location = { hostname: "localhost" };
+global.history = { pushState() {} };
 global.window = {
   matchMedia: () => ({
     matches: false,
@@ -136,6 +137,29 @@ test("order wizard retains all four steps and form constraints", async () => {
     }
   }
 });
+test("saved pickup and recipient choices fill editable locations and preserve notes", async () => {
+  const address = { id: "ADR-TEST", area: "المنصور", address: "مخزن", location: { lat: 33.32, lng: 44.35 } };
+  const recipient = { name: "والدة أحمد", phone: "07912345678", area: "زيونة", address: "بيت الوالدة", location: { lat: 33.33, lng: 44.46 } };
+  const { app } = await renderPage("OrderWizard", (a) => {
+    a.state.S.user.addresses = [address];
+    a.state.S.user.customers = [recipient];
+    a.state.wizard = { step: 1, data: { kind: "merchant", sender: { ...a.state.S.user }, recipient: {} } };
+  });
+  const form = { id: "order-form", elements: { phone: { value: recipient.phone }, notes: { value: "لا تضيع الملاحظات" } } };
+  const select = async (name, value) => app.dispatch("change", { target: { name, value, form, matches: () => false } });
+  await select("pickupAddress", address.id);
+  assert.deepEqual(app.state.wizard.data.sender.location, address.location);
+  await select("pickupAddress", "new");
+  assert.equal(app.state.wizard.data.sender.location, undefined);
+  app.state.wizard.step = 2;
+  await select("savedCustomer", "0");
+  assert.deepEqual(app.state.wizard.data.recipient, recipient);
+  assert.equal(app.state.wizard.data.notes, "لا تضيع الملاحظات");
+  await select("savedCustomer", "");
+  assert.equal(app.state.wizard.data.recipient.phone, recipient.phone);
+  assert.equal(app.state.wizard.data.recipient.name, undefined);
+});
+
 test("registration preserves merchant steps and five courier documents", async () => {
   for (let step = 0; step < 4; step++) {
     const { html } = await renderPage(

@@ -1296,7 +1296,7 @@ export function createOrdersRenderers(context) {
                   class: "muted",
                 },
                 [
-                  "تُعبّأ هذه البيانات من الملف المعتمد، ويرتبط الطلب بموقع النشاط المحفوظ.",
+                  "اختر مكاناً محفوظاً أو أضف مكاناً جديداً؛ يُحفظ تلقائياً عند حفظ الطلب أو نشره.",
                 ],
               ),
               select(
@@ -1304,6 +1304,7 @@ export function createOrdersRenderers(context) {
                 "عنوان الاستلام",
                 {
                   "": "عنوان النشاط الأساسي",
+                  new: "إضافة مكان جديد",
                   ...Object.fromEntries(
                     (u.addresses || []).map((a) => [
                       a.id,
@@ -1311,21 +1312,14 @@ export function createOrdersRenderers(context) {
                     ]),
                   ),
                 },
-                d.sender.addressId || "",
+                d.pickupChoice ?? d.sender.addressId ?? "",
               ),
               row("رقم الحساب", u.id),
               row("اسم النشاط", u.name),
-              row("المحافظة والمنطقة", u.province + " — " + u.area),
-              row("العنوان", u.address),
+              input("senderArea", "منطقة الاستلام", d.sender.area, 'required maxlength="80"'),
+              input("senderAddress", "عنوان الاستلام", d.sender.address, 'required maxlength="200"'),
               row("الهاتف", u.phone),
-              row("هاتف احتياطي", u.phone2 || "غير مضاف"),
-              h(
-                "div",
-                {
-                  class: "contact-actions",
-                },
-                [maps(u.location)],
-              ),
+              h(LocationPanel, { location: d.sender.location, editable: true, required: true, name: "موقع الاستلام" }),
             ];
     } else if (state.wizard.step === 2) {
       fields = [
@@ -1333,44 +1327,32 @@ export function createOrdersRenderers(context) {
           "datalist",
           { id: "recipient-names" },
           (u.customers || [])
-            .filter((c) => !r.phone || c.phone === r.phone)
+            .filter((c) => r.phone && c.phone === r.phone)
             .map((c) => h("option", { value: c.name }, [])),
         ),
         h(
           "datalist",
           { id: "recipient-addresses" },
           (u.customers || [])
-            .filter((c) => !r.phone || c.phone === r.phone)
+            .filter((c) => r.phone && c.phone === r.phone)
             .map((c) => h("option", { value: c.address }, [])),
         ),
-        (u.customers || []).length
-          ? select(
-              "savedCustomer",
-              "استخدام بيانات زبون سابق",
-              {
-                "": "زبون جديد",
-                ...Object.fromEntries(
-                  u.customers.map((r, i) => [
-                    String(i),
-                    r.name + " — " + r.phone + " — " + r.address,
-                  ]),
-                ),
-              },
-              "",
-            )
-          : "",
+        input("phone", "رقم هاتف المستلم", r.phone, `required ${PHONE_ATTRIBUTES} autocomplete="tel"`),
+        h("label", {}, [
+          "المستلمون والمواقع المحفوظة لهذا الرقم",
+          h("select", { name: "savedCustomer" }, [
+            h("option", { value: "" }, ["إدخال مستلم أو موقع جديد"]),
+            ...(u.customers || []).map((c, i) => h("option", {
+              value: String(i), hidden: !r.phone || c.phone !== r.phone,
+            }, [c.name + " — " + c.area + " — " + c.address])),
+          ]),
+        ]),
         h(
           "div",
           {
             class: "form-grid",
           },
           [
-            input(
-              "phone",
-              "رقم الهاتف",
-              r.phone,
-              `required ${PHONE_ATTRIBUTES} autocomplete="tel"`,
-            ),
             input(
               "name",
               "اسم المستلم",
@@ -1426,14 +1408,7 @@ export function createOrdersRenderers(context) {
             h(LocationPanel, { location: r.location, editable: true }),
           ],
         ),
-        h("label", { class: "checkbox" }, [
-          h(
-            "input",
-            { type: "checkbox", name: "saveCustomer", checked: d.saveCustomer },
-            [],
-          ),
-          "حفظ المستلم في زبائني",
-        ]),
+        h("p", { class: "file-help" }, ["تُحفظ بيانات هذا المستلم وموقعه تلقائياً مع الطلب، مع الاحتفاظ ببقية الأسماء والمواقع لنفس الرقم."]),
 
         h("label", {}, [
           "ملاحظات التوصيل",
