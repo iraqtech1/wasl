@@ -1,4 +1,5 @@
 <script setup>
+import CloseIcon from "./CloseIcon.js";
 import { ref } from "vue";
 import { darkMode, toggleTheme } from "../services/theme.js";
 defineProps({ signedIn: Boolean, guest: Boolean });
@@ -92,13 +93,11 @@ const icons = {
       </h2>
       <button
         type="button"
-        class="settings-close"
+        class="settings-close wasel-close"
         aria-label="إغلاق"
         @click="close"
       >
-        <svg class="dialog-close-mark" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m6 6 12 12M18 6 6 18" />
-        </svg>
+        <CloseIcon />
       </button>
     </div>
     <div v-if="page === 'menu'" class="account-options">

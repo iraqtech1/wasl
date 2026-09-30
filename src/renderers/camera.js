@@ -1,3 +1,4 @@
+import CloseIcon from "../components/CloseIcon.js";
 export function createCameraRenderers(context) {
   function drawDocumentCamera(message = "") {
     const {
@@ -37,9 +38,9 @@ export function createCameraRenderers(context) {
             ),
             button(
               "document-close",
-              icon("close"),
+              h(CloseIcon),
               'aria-label="إغلاق الكاميرا"',
-              "camera-icon",
+              "wasel-close",
             ),
           ]),
         ],

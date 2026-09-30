@@ -1,4 +1,5 @@
 <script setup>
+import CloseIcon from "./CloseIcon.js";
 import RenderContent from "./RenderContent.js";
 defineProps({ title: String, content: [Object, Array, String], error: String });
 defineEmits(["close"]);
@@ -14,12 +15,11 @@ defineEmits(["close"]);
       <button
         type="button"
         id="close-dialog"
+        class="wasel-close"
         aria-label="إغلاق"
         @click="$emit('close')"
       >
-        <svg class="dialog-close-mark" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m6 6 12 12M18 6 6 18" />
-        </svg>
+        <CloseIcon />
       </button>
     </div>
     <div id="dialog-content">

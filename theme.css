@@ -88,12 +88,6 @@ html[data-theme=dark] :is(.auth-logo-art,.brand-logo){background-color:transpare
 .wasel-app{min-height:100vh;min-height:100dvh}
 
 /* Clear, font-independent dialog controls in both themes. */
-.dialog-head :is(#close-dialog,.settings-close){display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid #f47d2f80;border-radius:50%;background:#fff0e5;color:#c45408;cursor:pointer;box-shadow:none}
-.dialog-close-mark{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
-.dialog-head :is(#close-dialog,.settings-close):hover{background:#f47d2f;color:#102636}
-.dialog-head :is(#close-dialog,.settings-close):focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
-html[data-theme=dark] .dialog-head :is(#close-dialog,.settings-close){background:#3e3028;color:#ffac6d;border-color:#f47d2f}
-html[data-theme=dark] .dialog-head :is(#close-dialog,.settings-close):hover{background:#f47d2f;color:#102636}
 /* VIP keeps its delivery status while receiving a distinct premium treatment. */
 .order-card.order-card-vip{border:1px solid #f47d2f!important;border-inline-start:4px solid #f47d2f!important;background:linear-gradient(135deg,#fff5e9,#fff 65%);box-shadow:0 5px 20px #f47d2f16}
 .vip-badge{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;white-space:nowrap;padding:6px 12px;border:1px solid #e89944;border-radius:999px;background:linear-gradient(120deg,#ffe3a4,#ffc482);color:#57300c;font-size:12px;font-weight:800;letter-spacing:.6px;line-height:1.5;box-shadow:0 2px 8px #d9812420}
@@ -144,3 +138,10 @@ html[data-theme=dark] #status-menu .status-option:is(:hover,[aria-selected=true]
 html[data-theme=dark] #dialog-content .code{color:#ffb676}
 
 .courier-step{border:0;padding:0;margin:0;min-width:0}.courier-step[hidden],.other-area-field[hidden]{display:none!important}.other-area-field>label{display:grid;gap:8px}.workspace-dialog input[type=search]{border-radius:14px;border:1px solid #8ca4b640;padding:10px 14px;font:inherit}
+/* One dismiss control for all dialogs and the document camera. */
+button.wasel-close{display:inline-grid;place-items:center;flex:0 0 46px;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;margin:0;border:1px solid #f47d2f80;border-radius:50%;background:#fff0e5;color:#f47d2f;cursor:pointer;box-shadow:none;line-height:1;vertical-align:middle}
+button.wasel-close .dialog-close-mark{display:block;width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+button.wasel-close:hover{background:#f47d2f;color:#102636}
+button.wasel-close:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
+html[data-theme=dark] button.wasel-close{background:#3e3028;color:#ffac6d;border-color:#f47d2f}
+html[data-theme=dark] button.wasel-close:hover{background:#f47d2f;color:#102636}
