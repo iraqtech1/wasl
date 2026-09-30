@@ -107,6 +107,8 @@ export function createDemoApi(storage = globalThis.localStorage) {
     u.customers.forEach((c, i) => (c.id ??= u.id + "-CUS-" + i)),
   );
   for (const o of data.orders) {
+    if (o.status === "returning" && !o.returnArrived && !o.returnCode)
+      o.returnCode = String(Math.floor(100000 + Math.random() * 900000));
     if (o.id.startsWith("ORD-DEMO-") && o.status === "partial_pending")
       o.partialDelivered = true;
     if (o.id.startsWith("ORD-DEMO-") && o.service === "vip")
@@ -358,6 +360,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
     v.distanceApproximate = !o.recipient.location;
     if (u.id !== o.merchant) {
       delete v.handoverCode;
+      delete v.returnCode;
       delete v.batchCode;
       if (u.id !== o.courier) {
         v.sender = {
@@ -783,6 +786,18 @@ export function createDemoApi(storage = globalThis.localStorage) {
       must(p.inspected && p.paid, "أكد الفحص والدفع");
       const amount = o.kind === "free" ? 0 : o.amount;
       must(u.budget >= amount, "الميزانية لا تكفي");
+      o.history.push({
+        at: now(),
+        actor: u.id,
+        status: o.status,
+        action: "scan",
+        kind: "pickup",
+        method: p.scanMethod === "qr" ? "qr" : "manual",
+        text:
+          p.scanMethod === "qr"
+            ? "تم التحقق من QR الاستلام"
+            : "تم التحقق من رمز الاستلام يدوياً",
+      });
       cash(o, -amount, "دفع قيمة البضاعة للتاجر", "goods-paid");
       o.goodsPaid = true;
       change(o, "received");
@@ -885,11 +900,29 @@ export function createDemoApi(storage = globalThis.localStorage) {
     }
     if (a === "return_start") {
       requireState(["return_pending", "partial_pending"]);
+      o.returnCode = String(Math.floor(100000 + Math.random() * 900000));
       change(o, "returning");
       return;
     }
     if (a === "return_arrive") {
       requireState(["returning"]);
+      must(!o.returnArrived, "تم تأكيد وصول المرتجع مسبقاً");
+      must(
+        o.returnCode && String(p.code) === String(o.returnCode),
+        "رمز المرتجع غير صحيح",
+      );
+      o.history.push({
+        at: now(),
+        actor: u.id,
+        status: o.status,
+        action: "scan",
+        kind: "return",
+        method: p.scanMethod === "qr" ? "qr" : "manual",
+        text:
+          p.scanMethod === "qr"
+            ? "تم التحقق من QR المرتجع"
+            : "تم التحقق من رمز المرتجع يدوياً",
+      });
       o.returnArrived = true;
       change(o, o.status, "وصل المرتجع");
       return;

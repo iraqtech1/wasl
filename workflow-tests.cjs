@@ -86,7 +86,13 @@ test("partial delivery refunds remaining goods, collects fees once, then closes"
   await t.act(o, "partial_approve");
   await t.login("courier");
   await t.act(o, "partial_confirm", { confirmed: true });
-  for (const a of ["return_start", "return_arrive"]) await t.act(o, a);
+  await t.act(o, "return_start");
+  await t.login("merchant");
+  const returnCode = (await t.state()).orders.find(
+    (x) => x.id === o.id,
+  ).returnCode;
+  await t.login("courier");
+  await t.act(o, "return_arrive", { code: returnCode });
   await assert.rejects(
     t.act(o, "settle_return", { confirmed: true, fees: 3000 }),
   );
@@ -335,8 +341,13 @@ test("unexecuted partial proposal must not reduce full-return refund", async () 
   for (const a of ["transit", "customer_arrive"]) await t.act(o, a);
   await t.act(o, "partial_propose", { count: 1, amount: 60000 });
   await t.act(o, "fail", { reason: "رفض الزبون" });
-  for (const a of ["return", "return_start", "return_arrive"])
-    await t.act(o, a);
+  for (const a of ["return", "return_start"]) await t.act(o, a);
+  await t.login("merchant");
+  const returnCode = (await t.state()).orders.find(
+    (x) => x.id === o.id,
+  ).returnCode;
+  await t.login("courier");
+  await t.act(o, "return_arrive", { code: returnCode });
   await t.login("merchant");
   await t.act(o, "receive_return", { inspected: true });
   await t.login("courier");

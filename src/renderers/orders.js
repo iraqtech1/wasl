@@ -1,4 +1,6 @@
 import LocationPanel from "../components/LocationPanel.vue";
+import OrderQr from "../components/OrderQr.js";
+import ScanCodeField from "../components/ScanCodeField.vue";
 import { paginate } from "../services/pagination.js";
 import AdSlider from "../components/AdSlider.vue";
 import LocationMap from "../components/LocationMap.js";
@@ -848,6 +850,7 @@ export function createOrdersRenderers(context) {
             },
             [
               h("h3", {}, ["رمز الاستلام"]),
+              h(OrderQr, { code: o.handoverCode, label: "رمز الاستلام" }),
               h(
                 "p",
                 {
@@ -864,6 +867,16 @@ export function createOrdersRenderers(context) {
               ),
             ],
           )
+        : "",
+      isOwn && o.returnCode && o.status === "returning" && !o.returnArrived
+        ? h("div", { class: "review-group" }, [
+            h("h3", {}, ["رمز المرتجع"]),
+            h(OrderQr, { code: o.returnCode, label: "رمز المرتجع" }),
+            h("p", { class: "code", dir: "ltr" }, [o.returnCode]),
+            h("p", { class: "muted" }, [
+              "اعرضه للمندوب عند وصوله بالمرتجع. تأكيد الفحص والتسوية يتم بشكل منفصل.",
+            ]),
+          ])
         : "",
       o.deadline && ["reserved", "approaching"].includes(o.status)
         ? h(
@@ -1831,12 +1844,20 @@ export function createOrdersRenderers(context) {
             "دفعت القيمة المستحقة وتسلمت الشحنة.",
           ],
         ),
-        input(
-          "code",
-          "رمز الاستلام من التاجر",
-          "",
-          'required inputmode="numeric" pattern="[0-9]{6}" maxlength="6"',
-        ),
+        h(ScanCodeField, {
+          key: `${o.id}-pickup`,
+          label: "رمز الاستلام من التاجر (أو أدخله يدوياً)",
+        }),
+      ];
+    if (op === "return_arrive")
+      fields = [
+        h("p", { class: "status-note" }, [
+          "امسح رمز المرتجع من التاجر عند الوصول، أو أدخل الرمز يدوياً. هذا لا يغلق التسوية المالية.",
+        ]),
+        h(ScanCodeField, {
+          key: `${o.id}-return`,
+          label: "رمز المرتجع من التاجر",
+        }),
       ];
     if (op === "deliver")
       fields = [
