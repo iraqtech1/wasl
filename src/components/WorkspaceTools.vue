@@ -19,6 +19,17 @@ const panel = ref(),
   admin = ref(null);
 const form = reactive({});
 const adminPage = ref("");
+const outletPickerOpen = ref(false);
+const outletPickerButton = ref(null);
+const selectedOutlet = computed(() =>
+  admin.value?.outlets.find((outlet) => outlet.id === form.outlet),
+);
+async function chooseOutlet(id) {
+  form.outlet = id;
+  outletPickerOpen.value = false;
+  await nextTick();
+  outletPickerButton.value?.focus();
+}
 const adminPages = {
   settings: "ضبط الخدمات والعمولات",
   profiles: "مراجعة تعديلات الحسابات",
@@ -29,6 +40,7 @@ const adminPages = {
   audit: "سجل العمليات",
 };
 async function openAdminPage(key) {
+  outletPickerOpen.value = false;
   adminPage.value = key;
   error.value = "";
   message.value = "";
@@ -118,6 +130,7 @@ const batchOrders = computed(() =>
   ),
 );
 function reset() {
+  outletPickerOpen.value = false;
   sharedOutlet.value = null;
   for (const k of Object.keys(form)) delete form[k];
   Object.assign(form, {
@@ -658,13 +671,64 @@ const settingsLabels = {
           "
           class="form-stack"
         >
+          <div
+            class="outlet-picker"
+            @keydown.esc.stop="outletPickerOpen = false"
+          >
+            <span id="outlet-picker-label">المنفذ</span>
+            <button
+              ref="outletPickerButton"
+              type="button"
+              class="outlet-picker-trigger"
+              :aria-expanded="outletPickerOpen"
+              aria-controls="outlet-picker-options"
+              aria-labelledby="outlet-picker-label outlet-picker-value"
+              @click="outletPickerOpen = !outletPickerOpen"
+            >
+              <span id="outlet-picker-value"
+                ><strong>{{ selectedOutlet?.name || "اختر المنفذ" }}</strong
+                ><small v-if="selectedOutlet"
+                  >الرصيد:
+                  {{
+                    selectedOutlet.balance.toLocaleString("en-US")
+                  }}
+                  د.ع</small
+                ></span
+              >
+              <span aria-hidden="true">{{ outletPickerOpen ? "⌃" : "⌄" }}</span>
+            </button>
+            <div
+              v-if="outletPickerOpen"
+              id="outlet-picker-options"
+              class="outlet-picker-options"
+              role="group"
+              aria-labelledby="outlet-picker-label"
+            >
+              <label
+                v-for="outlet in admin.outlets"
+                :key="outlet.id"
+                class="outlet-picker-option"
+                :class="{ selected: form.outlet === outlet.id }"
+              >
+                <input
+                  type="radio"
+                  name="topup-outlet"
+                  :value="outlet.id"
+                  :checked="form.outlet === outlet.id"
+                  @change="chooseOutlet(outlet.id)"
+                />
+                <span
+                  ><strong>{{ outlet.name }}</strong
+                  ><small>{{ outlet.address }}</small
+                  ><small
+                    >الرصيد:
+                    {{ outlet.balance.toLocaleString("en-US") }} د.ع</small
+                  ></span
+                >
+              </label>
+            </div>
+          </div>
           <label
-            >المنفذ<select v-model="form.outlet">
-              <option v-for="o in admin.outlets" :key="o.id" :value="o.id">
-                {{ o.name }} · رصيد {{ o.balance }}
-              </option>
-            </select></label
-          ><label
             >رقم الحساب أو المحفظة<input
               v-model="form.account"
               list="account-ids"
@@ -830,6 +894,59 @@ const settingsLabels = {
   </dialog>
 </template>
 <style>
+.outlet-picker {
+  display: grid;
+  gap: 8px;
+}
+.outlet-picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  padding: 12px;
+  border: 1px solid #00567a30;
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  color: inherit;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  user-select: none;
+}
+.outlet-picker small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+}
+.outlet-picker-options {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #f47d2f55;
+  border-radius: 12px;
+  max-height: 320px;
+  overflow: auto;
+}
+.workspace-dialog .outlet-picker-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.outlet-picker-option.selected {
+  background: #f47d2f20;
+}
+.workspace-dialog .outlet-picker-option input {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  accent-color: #d56b24;
+}
 .admin-options {
   gap: 10px;
 }

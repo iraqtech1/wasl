@@ -43,6 +43,27 @@ test("both account roles can save a map point while profile is locked", async ()
     assert.deepEqual(savedOrderDetails(after.orders), savedOrderDetails(before.orders));
   }
 });
+test("demo outlet migration preserves balances and adds missing outlets only once", async () => {
+  const { api, storage, key, createDemoApi } = await setup();
+  await api("/api/login", { role: "merchant" });
+  const saved = JSON.parse(storage.getItem(key));
+  saved.outlets = saved.outlets.filter((outlet) => outlet.id === "OUT-DEMO");
+  saved.outlets[0].balance = 123456;
+  saved.expandedDemoOutlets = false;
+  storage.setItem(key, JSON.stringify(saved));
+  const upgraded = createDemoApi(storage);
+  await upgraded("/api/login", { role: "merchant" });
+  const state = await upgraded("/api/local-admin", { action: "view" });
+  assert.equal(state.outlets.length, 4);
+  assert.equal(state.outlets.find((outlet) => outlet.id === "OUT-DEMO").balance, 123456);
+  await upgraded("/api/local-admin", { action: "topup", outlet: "OUT-DEMO-MANSOUR", account: "MER-DEMO", amount: 1000 });
+  const reopened = createDemoApi(storage);
+  await reopened("/api/login", { role: "merchant" });
+  const after = await reopened("/api/local-admin", { action: "view" });
+  assert.equal(after.outlets.length, 4);
+  assert.equal(after.outlets.find((outlet) => outlet.id === "OUT-DEMO-MANSOUR").balance, 749000);
+  assert.equal(after.outlets.find((outlet) => outlet.id === "OUT-DEMO").balance, 123456);
+});
 test("both roles navigate populated frontend data without network calls", async () => {
   const { api } = await setup();
   for (const role of ["merchant", "courier"]) {

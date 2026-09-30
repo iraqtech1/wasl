@@ -64,6 +64,39 @@ export function createDemoApi(storage = globalThis.localStorage) {
       balance: 1000000,
     },
   ];
+  if (!data.expandedDemoOutlets) {
+    const samples = [
+      {
+        id: "OUT-DEMO-MANSOUR",
+        name: "منفذ المنصور — تجريبي",
+        address: "بغداد، المنصور — قرب مول المنصور",
+        phone: "07700000004",
+        location: { lat: 33.314, lng: 44.354 },
+        balance: 750000,
+      },
+      {
+        id: "OUT-DEMO-ZAYOUNA",
+        name: "منفذ زيونة — تجريبي",
+        address: "بغداد، زيونة — شارع الربيعي",
+        phone: "07700000005",
+        location: { lat: 33.324, lng: 44.465 },
+        balance: 500000,
+      },
+      {
+        id: "OUT-DEMO-ADHAMIYA",
+        name: "منفذ الأعظمية — تجريبي",
+        address: "بغداد، الأعظمية — شارع الضباط",
+        phone: "07700000006",
+        location: { lat: 33.369, lng: 44.383 },
+        balance: 1250000,
+      },
+    ];
+    for (const outlet of samples) {
+      if (!data.outlets.some((existing) => existing.id === outlet.id))
+        data.outlets.push(outlet);
+    }
+    data.expandedDemoOutlets = true;
+  }
   for (const u of data.users) {
     u.addresses ??= [];
     u.customers ??= [];
