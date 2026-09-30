@@ -217,12 +217,16 @@ export function useWasel() {
             ui.loginPassword = event.target.value;
           },
         };
-      if (tag === "input" && props.name === "phone" && ui.page === "AuthView")
+      if (
+        tag === "input" &&
+        props.name === "identifier" &&
+        ui.page === "AuthView"
+      )
         props = {
           ...props,
           value: ui.loginPhone,
           onInput: (event) => {
-            ui.loginPhone = phoneDigits(event.target.value);
+            ui.loginPhone = event.target.value;
           },
         };
       if (props["data-action"] === "toggle-password")
@@ -742,7 +746,7 @@ export function useWasel() {
         // Capture autofilled values as well before Vue patches the input type.
         ui.loginPassword = p.value;
         ui.loginPhone = document.querySelector(
-          "#login-form input[name=phone]",
+          "#login-form input[name=identifier]",
         ).value;
         ui.passwordVisible = visible;
         b.setAttribute(
@@ -1071,8 +1075,18 @@ export function useWasel() {
         closeModal();
         await login("merchant", f.phone);
         startOrder("free");
-      } else if (form.id === "login-form") await login(f.role);
-      else if (form.id === "password-change-form") {
+      } else if (form.id === "login-form") {
+        const identifier = f.identifier.trim();
+        if (identifier !== "iraq") {
+          const problem = phoneError(identifier);
+          if (problem) throw Error(problem);
+        }
+        await login(
+          f.role,
+          identifier === "iraq" ? identifier : phoneDigits(identifier),
+          f.password,
+        );
+      } else if (form.id === "password-change-form") {
         if (f.newPassword.length < 8)
           throw Error("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
         if (f.newPassword !== f.confirmPassword)

@@ -947,6 +947,19 @@ export function createDemoApi(storage = globalThis.localStorage) {
 
     if (url === "/api/login") {
       must(["merchant", "courier"].includes(p.role), "اختر الحساب");
+      // Public demo credentials select the seeded merchant, never a real account.
+      if (p.phone === "iraq") {
+        must(
+          p.role === "merchant" && p.password === "iraq",
+          "اسم المستخدم أو كلمة المرور غير صحيحة",
+        );
+        const demoMerchant = data.users.find((user) => user.id === "MER-DEMO");
+        must(demoMerchant, "الحساب التجريبي غير متوفر");
+        currentId = demoMerchant.id;
+        data.lastByRole.merchant = demoMerchant.id;
+        persist();
+        return { user: copy(demoMerchant) };
+      }
       const u =
         data.users.find((u) => u.role === p.role && u.phone === p.phone) ||
         data.users.find((u) => u.id === data.lastByRole[p.role]) ||

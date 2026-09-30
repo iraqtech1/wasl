@@ -142,10 +142,10 @@ export function createAuthRenderers(context) {
                   [],
                 ),
                 input(
-                  "phone",
-                  "رقم الهاتف",
+                  "identifier",
+                  "اسم المستخدم أو رقم الهاتف",
                   "",
-                  `${PHONE_ATTRIBUTES} autocomplete="username" placeholder="07700000000"`,
+                  'type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="اسم المستخدم أو رقم الهاتف"',
                 ),
                 h(
                   "div",

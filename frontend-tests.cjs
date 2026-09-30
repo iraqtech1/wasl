@@ -16,6 +16,16 @@ async function setup() {
     createDemoApi,
   };
 }
+test("iraq demo credentials select the populated merchant and reject a wrong password", async () => {
+  const { api } = await setup();
+  await assert.rejects(api("/api/login", { role: "merchant", phone: "iraq", password: "wrong" }));
+  await assert.rejects(api("/api/login", { role: "courier", phone: "iraq", password: "iraq" }));
+  const result = await api("/api/login", { role: "merchant", phone: "iraq", password: "iraq" });
+  assert.equal(result.user.id, "MER-DEMO");
+  const state = await api("/api/state");
+  assert.equal(state.orders.length, 54);
+  assert.ok(state.orders.some((order) => order.service === "vip"));
+});
 test("both roles navigate populated frontend data without network calls", async () => {
   const { api } = await setup();
   for (const role of ["merchant", "courier"]) {
