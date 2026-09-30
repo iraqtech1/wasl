@@ -224,6 +224,49 @@ test("offers wait for configured delay, recheck capacity and cannot be reused af
   assert.equal((await t.state()).offers.length, 0);
 });
 
+test("customer deferral preserves custody and money and needs merchant approval", async () => {
+  const t = await setup(), o = await t.create();
+  await t.login("courier");
+  await t.act(o, "reserve"); await t.act(o, "arrive");
+  const code = (await t.api("/api/login", { role: "merchant" }), (await t.state()).orders[0].handoverCode);
+  await t.login("courier");
+  await t.act(o, "pickup", { code, inspected: true, paid: true });
+  const before = await t.state();
+  await assert.rejects(t.act(o, "defer", { reason: "طلب الزبون", when: "2020-01-01" }));
+  await t.act(o, "defer", { reason: "طلب التسليم غداً", when: new Date(Date.now() + 86400000).toISOString() });
+  const after = await t.state();
+  assert.equal(after.orders[0].status, "retry");
+  assert.equal(after.orders[0].courier, before.user.id);
+  assert.equal(after.user.budget, before.user.budget);
+  assert.deepEqual(after.user.failures, before.user.failures);
+  await assert.rejects(t.act(o, "customer_arrive"));
+  await t.login("merchant"); await t.act(o, "approve_retry");
+  await t.login("courier"); await t.act(o, "customer_arrive");
+  assert.equal((await t.state()).orders[0].status, "at_customer");
+});
+
+test("return-value entry computes delivered goods without settling before approval", async () => {
+  const t = await setup(), o = await t.create({ amount: 20000, count: 2 });
+  await t.login("courier"); await t.act(o, "reserve"); await t.act(o, "arrive");
+  await t.login("merchant"); const code = (await t.state()).orders[0].handoverCode;
+  await t.login("courier"); await t.act(o, "pickup", { code, inspected: true, paid: true });
+  await t.act(o, "transit"); await t.act(o, "customer_arrive");
+  const before = (await t.state()).user.budget;
+  await assert.rejects(t.act(o, "partial_propose", { returnAmount: 20000, returnCount: 1 }));
+  await t.act(o, "partial_propose", { returnAmount: 8000, returnCount: 1 });
+  const proposed = await t.state();
+  assert.equal(proposed.orders[0].partial.amount, 12000);
+  assert.equal(proposed.orders[0].partial.count, 1);
+  assert.equal(proposed.user.budget, before);
+  await assert.rejects(t.act(o, "partial_confirm", { confirmed: true }));
+  await t.login("merchant"); await t.act(o, "partial_approve");
+  await t.login("courier"); await t.act(o, "partial_confirm", { confirmed: true });
+  const after = await t.state();
+  assert.equal(after.orders[0].status, "partial_pending");
+  assert.equal(after.orders[0].amount - after.orders[0].partial.amount, 8000);
+  assert.equal(after.user.budget, before + 12000 + o.fee);
+});
+
 test("filtering enforces distance, cash, vehicle and availability", async () => {
   const t = await setup();
   await t.create();

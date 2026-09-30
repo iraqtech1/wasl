@@ -850,6 +850,16 @@ export function createDemoApi(storage = globalThis.localStorage) {
       change(o, "failed", p.reason);
       return;
     }
+    if (a === "defer") {
+      requireState(["received", "transit", "at_customer"]);
+      must(!o.partial?.approved, "أكمل الجزء المعتمد قبل التأجيل");
+      must(p.reason?.trim() && Date.parse(p.when) > Date.now(), "حدد سبب التأجيل وموعداً مستقبلياً");
+      o.retryAt = p.when;
+      o.retryApproved = false;
+      o.deferReason = p.reason.trim().slice(0, 300);
+      change(o, "retry", "تأجيل بطلب الزبون: " + o.deferReason + " — بانتظار موافقة التاجر على الموعد");
+      return;
+    }
     if (a === "retry") {
       requireState(["failed"]);
       must(Date.parse(p.when) > Date.now(), "حدد موعداً مستقبلياً");
@@ -864,6 +874,10 @@ export function createDemoApi(storage = globalThis.localStorage) {
       return;
     }
     if (a === "partial_propose") {
+      if (p.returnAmount !== undefined || p.returnCount !== undefined) {
+        must(Number(p.returnAmount) > 0 && Number(p.returnAmount) < o.amount && Number.isInteger(Number(p.returnCount)) && Number(p.returnCount) > 0 && Number(p.returnCount) < o.count, "حدد قيمة وعدد القطع المرتجعة ضمن الطلب");
+        p = { ...p, amount: o.amount - Number(p.returnAmount), count: o.count - Number(p.returnCount) };
+      }
       must(data.config.partialEnabled, "التسليم الجزئي غير متاح");
       requireState(["at_customer"]);
       must(

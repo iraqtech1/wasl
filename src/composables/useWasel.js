@@ -1142,7 +1142,7 @@ export function useWasel() {
         for (const name of ["confirmed", "inspected", "paid"])
           if (form.elements[name]) f[name] = form.elements[name].checked;
         if (f.reasonDetails) f.reason += " — " + f.reasonDetails;
-        if (form.dataset.op === "retry")
+        if (["retry", "defer"].includes(form.dataset.op))
           f.when = new Date(f.when).toISOString();
         if (form.dataset.op === "arrive") {
           if (!navigator.geolocation) throw Error("المتصفح لا يدعم تحديد الموقع");
@@ -1283,6 +1283,13 @@ export function useWasel() {
     }
     if (field.name === "phone" && field.form?.id === "order-form" && state.wizard?.step === 2) {
       for (const handler of handlers.change || []) handler(e);
+    }
+    if (field.name === "returnAmount" && field.form?.dataset.op === "partial_propose") {
+      const preview = document.getElementById("partial-return-preview");
+      const total = Number(preview?.dataset.total), returned = Number(field.value);
+      if (preview) preview.textContent = returned > 0 && returned < total
+        ? "قيمة الجزء المسلَّم: " + money(total - returned) + " د.ع — قيمة المرتجع: " + money(returned) + " د.ع. الأجور منفصلة."
+        : "أدخل قيمة مرتجع أقل من قيمة البضاعة الكلية.";
     }
     if (field.id === "order-search") {
       const pos = e.target.selectionStart;

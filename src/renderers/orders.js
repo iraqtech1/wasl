@@ -1,3 +1,4 @@
+import VipBanner from "../components/VipBanner.js";
 import ArrivalCountdown from "../components/ArrivalCountdown.js";
 import LocationPanel from "../components/LocationPanel.vue";
 import OrderQr from "../components/OrderQr.js";
@@ -539,6 +540,7 @@ export function createOrdersRenderers(context) {
                   ),
                 ],
               ),
+              o.service === "vip" ? h(VipBanner, { compact: true }) : null,
               h(ArrivalCountdown, { order: o }),
               h(
                 "div",
@@ -676,6 +678,7 @@ export function createOrdersRenderers(context) {
       )
         add("offer", "اقتراح أجرة");
     }
+    if (assigned && ["received", "transit", "at_customer"].includes(o.status) && !o.partial?.approved) add("defer", "تأجيل بطلب الزبون");
     if (assigned) {
       if (o.status === "reserved") add("depart", "أنا في الطريق");
       if (["reserved", "approaching"].includes(o.status)) {
@@ -694,7 +697,7 @@ export function createOrdersRenderers(context) {
       if (o.status === "at_customer") {
         add("deliver", "تأكيد التسليم والتحصيل");
         if (state.S.settings.partialEnabled && o.kind !== "free") {
-          if (!o.partial) add("partial_propose", "اقتراح تسليم جزئي");
+          if (!o.partial) add("partial_propose", "اقتراح راجع جزئي");
           if (o.partial?.approved) add("partial_confirm", "تأكيد الجزء المسلم");
         }
       }
@@ -766,12 +769,7 @@ export function createOrdersRenderers(context) {
         [state.S.statuses[o.status]],
       ),
       row("المرسل", o.sender.name),
-      o.service === "vip"
-        ? h("span", { class: "vip-badge vip-detail" }, [
-            icon("workspace_premium"),
-            "VIP — مندوب مخصص",
-          ])
-        : "",
+      o.service === "vip" ? h(VipBanner) : "",
       row("المستلم", o.recipient.name || "محجوب حتى الاستلام"),
       row("عنوان التسليم", o.recipient.address || o.recipient.area),
       o.recipient.landmark ? row("نقطة دالة", o.recipient.landmark) : "",
@@ -955,6 +953,7 @@ export function createOrdersRenderers(context) {
             ? h(
                 "a",
                 {
+                  class: "customer-whatsapp-action",
                   target: "_blank",
                   rel: "noopener noreferrer",
                   href:
@@ -974,7 +973,7 @@ export function createOrdersRenderers(context) {
                         trackingLink(o),
                     ),
                 },
-                ["تجهيز رسالة الزبون"],
+                ["واتساب الزبون — طلبك بحوزتي"],
               )
             : "",
         ],
@@ -1856,6 +1855,11 @@ export function createOrdersRenderers(context) {
           ],
         ),
       ];
+    if (op === "defer") fields = [
+      input("when", "موعد التسليم الجديد", "", 'type="datetime-local" required'),
+      input("reason", "سبب التأجيل بطلب الزبون", "", 'required maxlength="300"'),
+      h("p", {}, ["تبقى الشحنة بحوزتك دون تسوية أو تسجيل تعذر. ينتظر الموعد موافقة التاجر."]),
+    ];
     if (op === "retry")
       fields = input(
         "when",
@@ -1917,21 +1921,13 @@ export function createOrdersRenderers(context) {
         ]),
         confirm("اكتملت تسوية هذه المبالغ مع المرسل."),
       ];
-    if (op === "partial_propose")
-      fields = [
-        input(
-          "count",
-          "عدد القطع المسلمة",
-          "",
-          'type="number" min="1" required',
-        ),
-        input(
-          "amount",
-          "قيمة الجزء المسلم",
-          "",
-          'type="number" min="1" required',
-        ),
-      ];
+    if (op === "partial_propose") fields = [
+      h("p", {}, ["قيمة البضاعة الكلية: " + money(o.amount) + " د.ع — " + o.count + " قطع"]),
+      input("returnCount", "عدد القطع المرتجعة", "", `type="number" min="1" max="${o.count - 1}" step="1" required`),
+      input("returnAmount", "قيمة البضاعة المرتجعة فقط", "", `type="number" min="1" max="${o.amount - 1}" step="1" required`),
+      h("p", { class: "status-note", id: "partial-return-preview", "aria-live": "polite", "data-total": o.amount }, ["المبلغ المتبقي للجزء المسلَّم يُحسب تلقائياً. أجور التوصيل والإرجاع منفصلة عن قيمة البضاعة."]),
+      h("p", {}, ["هذا اقتراح ينتظر موافقة التاجر؛ لا تسوية مالية قبل تأكيد تحصيل الجزء المسلَّم."]),
+    ];
     if (op === "partial_confirm")
       fields = confirm(
         "سلمت الجزء المعتمد وحصلت قيمته مع أجرة التوصيل إذا كانت على الزبون.",
