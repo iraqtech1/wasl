@@ -100,6 +100,26 @@ test("login allows usernames or phone numbers for both roles", async () => {
   }
 });
 
+test("personal delivery registration opens with a valid phone field", async () => {
+  const { app } = await renderPage(
+    "AuthView",
+    (a) => (a.state.authRole = "merchant"),
+  );
+  await app.dispatch("click", {
+    target: {
+      closest: () => ({ dataset: { action: "register-free" }, disabled: false }),
+    },
+  });
+  assert.equal(app.ui.dialogTitle, "حساب التوصيل الحر");
+  const { renderToString } = await import("vue/server-renderer");
+  const { h } = await import("vue");
+  const html = await renderToString(h("div", app.ui.dialogContent));
+  assert.match(html, /id="free-register-form"/);
+  assertPhoneField(html, "phone");
+  for (const name of ["name", "province", "area", "address"])
+    assert.ok(html.includes(`name="${name}"`), "missing " + name);
+});
+
 test("registration and order forms expose a numeric eleven-digit keyboard", async () => {
   for (let step = 0; step < 4; step++) {
     const { html } = await renderPage(

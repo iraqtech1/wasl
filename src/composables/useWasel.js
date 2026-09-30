@@ -28,6 +28,7 @@ import {
   phoneDigits,
   phoneError,
   PHONE_FIELDS,
+  PHONE_ATTRIBUTES,
 } from "../renderers/helpers.js";
 import { walletMotion } from "../renderers/walletMotion.js";
 export function useWasel() {
