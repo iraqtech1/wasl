@@ -49,6 +49,33 @@ export function createDemoData() {
     budget: 500000,
     radius: 5,
   };
+  const extraCouriers = [
+    ["علي كريم", "sedan", null, "الكرادة", 33.305, 44.425],
+    ["مصطفى سالم", "sedan", null, "المنصور", 33.32, 44.35],
+    ["أحمد فاضل", "sedan", null, "زيونة", 33.33, 44.465],
+    ["حسن ناظم", "motorcycle", null, "الجادرية", 33.28, 44.395],
+    ["عمر سجاد", "motorcycle", null, "الكرادة", 33.31, 44.435],
+    ["محمد رائد", "motorcycle", null, "بغداد الجديدة", 33.315, 44.49],
+    ["حسين عادل", "refrigerated", "chilled", "الأعظمية", 33.365, 44.375],
+    ["عباس مهند", "refrigerated", "chilled", "المنصور", 33.325, 44.355],
+    ["سجاد قاسم", "refrigerated", "frozen", "الدورة", 33.25, 44.4],
+    ["كرار ماجد", "refrigerated", "frozen", "زيونة", 33.335, 44.46],
+  ].map(([name, vehicle, cooling, area, lat, lng], index) => {
+    const id = "COU-DEMO-" + String(index + 1).padStart(2, "0");
+    return {
+      ...structuredClone(courier),
+      id,
+      name,
+      phone: "077000001" + String(index + 1).padStart(2, "0"),
+      walletId: "W-" + id,
+      vehicle,
+      cooling,
+      area,
+      address: "بغداد، " + area + " — عنوان تجريبي",
+      location: { lat, lng },
+      plate: "بغداد " + (20001 + index),
+    };
+  });
   const at = new Date().toISOString();
   const sampleRecipients = [
     [
@@ -207,7 +234,8 @@ export function createDemoData() {
   return {
     version: 1,
     expandedDemoCatalog: true,
-    users: [merchant, courier],
+    expandedDemoCouriers: true,
+    users: [merchant, courier, ...extraCouriers],
     orders,
     ledger,
     cashLedger: [],

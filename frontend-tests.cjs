@@ -64,6 +64,36 @@ test("demo outlet migration preserves balances and adds missing outlets only onc
   assert.equal(after.outlets.find((outlet) => outlet.id === "OUT-DEMO-MANSOUR").balance, 749000);
   assert.equal(after.outlets.find((outlet) => outlet.id === "OUT-DEMO").balance, 123456);
 });
+test("ten nearby demo couriers migrate once and preserve existing accounts", async () => {
+  const { api, storage, key, createDemoApi } = await setup();
+  await api("/api/login", { role: "merchant" });
+  const fresh = await api("/api/state");
+  const extras = fresh.couriers.filter((u) => u.id.startsWith("COU-DEMO-"));
+  assert.equal(extras.length, 10);
+  assert.equal(extras.filter((u) => u.vehicle === "sedan").length, 3);
+  assert.equal(extras.filter((u) => u.vehicle === "motorcycle").length, 3);
+  assert.equal(extras.filter((u) => u.cooling === "chilled").length, 2);
+  assert.equal(extras.filter((u) => u.cooling === "frozen").length, 2);
+  const saved = JSON.parse(storage.getItem(key));
+  saved.expandedDemoCouriers = false;
+  saved.users = saved.users.filter((u) => !u.id.startsWith("COU-DEMO-") || u.id === extras[0].id);
+  saved.users.find((u) => u.id === extras[0].id).name = "اسم معدل";
+  saved.users.find((u) => u.id === "COU-DEMO").budget = 123456;
+  const originalOrders = structuredClone(saved.orders);
+  storage.setItem(key, JSON.stringify(saved));
+  for (let pass = 0; pass < 2; pass++) {
+    const reopened = createDemoApi(storage);
+    await reopened("/api/login", { role: "merchant" });
+    const state = await reopened("/api/state");
+    assert.equal(state.couriers.length, 11);
+    assert.equal(state.couriers.find((u) => u.id === extras[0].id).name, "اسم معدل");
+    const after = JSON.parse(storage.getItem(key));
+    assert.equal(after.users.find((u) => u.id === "COU-DEMO").budget, 123456);
+    assert.deepEqual(after.orders, originalOrders);
+    assert.equal(new Set(after.users.map((u) => u.phone)).size, after.users.length);
+  }
+});
+
 test("both roles navigate populated frontend data without network calls", async () => {
   const { api } = await setup();
   for (const role of ["merchant", "courier"]) {

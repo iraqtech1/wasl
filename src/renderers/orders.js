@@ -2038,12 +2038,17 @@ export function createOrdersRenderers(context) {
     return h(LocationMap, { groups }, []);
   }
   function localMap(couriers = false) {
-    const { state, baseOrders, modal, h, mapPlot, fallback, maps, button } =
+    const { state, baseOrders, modal, h, mapPlot, fallback, maps, button, vehicleNames } =
       context();
     const groups = couriers
       ? state.S.couriers.map((c) => ({
           id: c.id,
           name: c.name,
+          vehicleLabel: c.cooling === "frozen"
+            ? "براد — تجميد"
+            : c.cooling === "chilled"
+              ? "سيارة تبريد"
+              : vehicleNames[c.vehicle] || c.vehicle,
           location: c.location,
           count: 1,
         }))
@@ -2096,6 +2101,7 @@ export function createOrdersRenderers(context) {
                 [
                   h("div", { class: "map-pin-heading" }, [
                     h("h3", {}, [g.name]),
+                    g.vehicleLabel ? h("span", { class: "muted" }, [g.vehicleLabel]) : null,
                     h("span", { class: "number" }, [g.count]),
                   ]),
                   h(

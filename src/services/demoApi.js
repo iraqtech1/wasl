@@ -50,6 +50,14 @@ export function createDemoApi(storage = globalThis.localStorage) {
     }
     data.expandedDemoCatalog = true;
   }
+  if (!data.expandedDemoCouriers) {
+    for (const courier of createDemoData().users.filter((u) =>
+      u.id.startsWith("COU-DEMO-"),
+    )) {
+      if (!data.users.some((u) => u.id === courier.id)) data.users.push(courier);
+    }
+    data.expandedDemoCouriers = true;
+  }
   data.config = { ...defaults, ...data.config };
   data.tickets ??= [];
   data.audit ??= [];
@@ -349,6 +357,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
           name: c.name,
           phone: c.phone,
           vehicle: c.vehicle,
+          cooling: c.cooling,
           plate: c.plate,
           location: c.location,
         }
@@ -423,6 +432,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
           id: c.id,
           name: c.name,
           vehicle: c.vehicle,
+          cooling: c.cooling,
           location: c.location,
         })),
       profileLocked: data.orders.some(
