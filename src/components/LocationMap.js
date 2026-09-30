@@ -1,11 +1,20 @@
-import { defineComponent, h, ref, onMounted, onBeforeUnmount } from "vue";
+import {
+  defineComponent,
+  h,
+  ref,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 export default defineComponent({
-  props: { groups: Array },
-  setup(props) {
+  props: { groups: Array, movableLocation: Object },
+  emits: ["location-change"],
+  setup(props, { emit }) {
     const host = ref(),
       failed = ref(false);
     let map,
       observer,
+      locationMarker,
       disposed = false;
     onMounted(async () => {
       try {
@@ -45,6 +54,35 @@ export default defineComponent({
               ?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
           );
         }
+        if (props.movableLocation) {
+          const point = [props.movableLocation.lat, props.movableLocation.lng];
+          points.push(point);
+          locationMarker = L.marker(point, {
+            draggable: true,
+            autoPan: true,
+            zIndexOffset: 1000,
+            title: "موقع البحث — اسحب لتغييره",
+            alt: "موقع البحث القابل للتحريك",
+            icon: L.divIcon({
+              className: "search-location-marker",
+              html: '<span aria-hidden="true"></span>',
+              iconSize: [44, 44],
+              iconAnchor: [22, 22],
+            }),
+          }).addTo(map);
+          locationMarker.bindTooltip("موقعك — اسحب العلامة", {
+            direction: "bottom",
+            offset: [0, 20],
+          });
+          const choose = (latlng) => {
+            locationMarker.setLatLng(latlng);
+            emit("location-change", { lat: latlng.lat, lng: latlng.lng });
+          };
+          locationMarker.on("dragend", () =>
+            choose(locationMarker.getLatLng()),
+          );
+          map.on("click", (event) => choose(event.latlng));
+        }
         if (points.length)
           map.fitBounds(points, { padding: [40, 40], maxZoom: 15 });
         observer = new ResizeObserver(() => map?.invalidateSize());
@@ -53,6 +91,13 @@ export default defineComponent({
         failed.value = true;
       }
     });
+    watch(
+      () => props.movableLocation,
+      (point) => {
+        if (point && locationMarker)
+          locationMarker.setLatLng([point.lat, point.lng]);
+      },
+    );
     onBeforeUnmount(() => {
       disposed = true;
       observer?.disconnect();

@@ -145,3 +145,4 @@ button.wasel-close:hover{background:#f47d2f;color:#102636}
 button.wasel-close:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
 html[data-theme=dark] button.wasel-close{background:#3e3028;color:#ffac6d;border-color:#f47d2f}
 html[data-theme=dark] button.wasel-close:hover{background:#f47d2f;color:#102636}
+.search-location-marker{display:grid;place-items:center;background:transparent;border:0;cursor:grab;touch-action:none}.search-location-marker:active{cursor:grabbing}.search-location-marker span{display:block;width:26px;height:26px;border:4px solid white;border-radius:50%;background:#f47d2f;box-shadow:0 0 0 3px #f47d2f70,0 3px 12px #00263866}.search-location-marker:focus-visible{outline:3px solid #00567a;outline-offset:3px;border-radius:50%}

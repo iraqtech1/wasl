@@ -20,6 +20,7 @@ const form = reactive({});
 const selected = ref([]);
 const query = ref("");
 const u = computed(() => props.snapshot.user);
+const searchLocation = ref(null);
 const labels = {
   addresses: "عناويني",
   customers: "زبائني",
@@ -33,8 +34,8 @@ const nearbyOutlets = computed(() =>
     .slice()
     .sort(
       (a, b) =>
-        distance(u.value.location, a.location) -
-        distance(u.value.location, b.location),
+        distance(searchLocation.value || u.value.location, a.location) -
+        distance(searchLocation.value || u.value.location, b.location),
     ),
 );
 const topics = computed(() =>
@@ -85,6 +86,10 @@ function reset() {
   message.value = "";
 }
 async function open(p) {
+  if (p === "outlets")
+    searchLocation.value = {
+      ...(u.value.location || { lat: 33.3, lng: 44.43 }),
+    };
   page.value = p;
   reset();
   query.value = "";
@@ -436,13 +441,24 @@ const settingsLabels = {
       </article></template
     >
     <template v-if="page === 'outlets'"
-      ><LocationMap :groups="nearbyOutlets.map((o) => ({ ...o, count: 1 }))" />
+      ><LocationMap
+        :groups="nearbyOutlets.map((o) => ({ ...o, count: 1 }))"
+        :movable-location="searchLocation"
+        @location-change="searchLocation = $event"
+      />
+      <p class="file-help">
+        اسحب العلامة البرتقالية أو اضغط مكانًا بالخريطة لتغيير موقع البحث.
+        العلامات الزرقاء هي منافذ الشحن.
+      </p>
+      <p class="file-help">
+        هذا الاختيار لحساب المسافات فقط؛ لا يغيّر عنوان حسابك.
+      </p>
       <p>منافذ تجريبية للمعاينة؛ لا تنفذ دفعاً أو شحناً حقيقياً.</p>
       <article v-for="o in nearbyOutlets" :key="o.id">
         <h3>{{ o.name }}</h3>
         <p>{{ o.address }}</p>
-        <p v-if="Number.isFinite(distance(u.location, o.location))">
-          {{ distance(u.location, o.location).toFixed(1) }} كم تقريباً
+        <p v-if="Number.isFinite(distance(searchLocation, o.location))">
+          {{ distance(searchLocation, o.location).toFixed(1) }} كم تقريباً
         </p>
         <a :href="'tel:' + o.phone">{{ o.phone }}</a> ·
         <a
