@@ -270,3 +270,6 @@ html[data-theme=dark] .location-panel-actions>a,html[data-theme=dark] .location-
 #status-trigger{scroll-margin-top:18px}
 html[data-theme=dark] .shipment-pagination button{background:#213f51;color:#d7edf8;border-color:#365565}
 html[data-theme=dark] .shipment-pagination button[aria-current=page]{background:#f47d2f;color:#173744;border-color:#f47d2f}
+.registry-display-options{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;color:#00567a;font-size:13px}
+.registry-display-options select{min-height:42px;max-width:100%;padding:8px 12px;border:1px solid #cbdfe7;border-radius:12px;background:#f8fcfd;color:#00567a;font:inherit}
+.registry-display-options .home-page-summary{flex-basis:100%;margin:0}

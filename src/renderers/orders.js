@@ -382,6 +382,26 @@ export function createOrdersRenderers(context) {
         (!state.query ||
           JSON.stringify([o.id, o.recipient, o.sender]).includes(state.query)),
     );
+    const registry = state.screen === "registry";
+    const showAll = state.registrySize === "all";
+    const pagination = paginate(
+      os,
+      state.registryPage,
+      showAll ? Math.max(1, os.length) : 10,
+    );
+    const pageButton = (label, page, disabled = false, current = false) =>
+      h(
+        "button",
+        {
+          type: "button",
+          "data-action": "registry-page",
+          "data-page": page,
+          disabled,
+          "aria-current": current ? "page" : undefined,
+          "aria-label": typeof label === "number" ? `الصفحة ${label}` : label,
+        },
+        [label],
+      );
     return [
       h(
         "section",
@@ -418,7 +438,43 @@ export function createOrdersRenderers(context) {
             : "",
         ],
       ),
-      orderList(os),
+      registry
+        ? h("div", { class: "registry-display-options" }, [
+            h("label", { for: "registry-page-size" }, ["عدد الطلبات المعروضة"]),
+            h(
+              "select",
+              { id: "registry-page-size", value: state.registrySize || "10" },
+              [
+                h("option", { value: "10" }, ["10 طلبات لكل صفحة"]),
+                h("option", { value: "all" }, ["إظهار الكل"]),
+              ],
+            ),
+            h("p", { class: "home-page-summary", role: "status" }, [
+              `عرض ${pagination.start}–${pagination.end} من ${pagination.total} طلب`,
+            ]),
+          ])
+        : "",
+      orderList(registry ? pagination.items : os),
+      registry && !showAll && pagination.pages > 1
+        ? h(
+            "nav",
+            { class: "shipment-pagination", "aria-label": "صفحات السجل" },
+            [
+              pageButton("السابق", pagination.page - 1, pagination.page === 1),
+              ...pagination.numbers.flatMap((number, index, numbers) => [
+                index && number - numbers[index - 1] > 1
+                  ? h("span", { "aria-hidden": "true" }, ["…"])
+                  : "",
+                pageButton(number, number, false, number === pagination.page),
+              ]),
+              pageButton(
+                "التالي",
+                pagination.page + 1,
+                pagination.page === pagination.pages,
+              ),
+            ],
+          )
+        : "",
     ];
   }
   function orderList(os) {

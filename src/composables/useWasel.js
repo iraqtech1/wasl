@@ -151,6 +151,8 @@ export function useWasel() {
     screen: "home",
     filter: "all",
     homePage: 1,
+    registryPage: 1,
+    registrySize: "10",
     query: "",
     wizard: null,
     registration: null,
@@ -457,6 +459,7 @@ export function useWasel() {
     state.screen = "home";
     state.filter = "all";
     state.homePage = 1;
+    state.registryPage = 1;
     ui.loginPassword = "";
     ui.loginPhone = "";
     await refresh();
@@ -699,6 +702,7 @@ export function useWasel() {
           state.wizard = null;
           state.filter = "all";
           state.homePage = 1;
+          state.registryPage = 1;
           state.query = "";
           render();
           window.scrollTo(0, 0);
@@ -775,8 +779,11 @@ export function useWasel() {
               String(menu.matches(":popover-open")),
             );
         }
-      } else if (a === "home-page") {
-        state.homePage = Math.max(1, Number(b.dataset.page) || 1);
+      } else if (a === "home-page" || a === "registry-page") {
+        state[a === "home-page" ? "homePage" : "registryPage"] = Math.max(
+          1,
+          Number(b.dataset.page) || 1,
+        );
         await nextTick();
         const trigger = $("#status-trigger");
         trigger?.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -786,6 +793,7 @@ export function useWasel() {
         if (menu?.matches(":popover-open")) menu.hidePopover();
         state.filter = b.dataset.value;
         state.homePage = 1;
+        state.registryPage = 1;
         render();
         $("#status-trigger")?.focus({ preventScroll: true });
       } else if (a === "wizard-back") {
@@ -1155,6 +1163,10 @@ export function useWasel() {
     }
   });
   onEvent("change", (e) => {
+    if (e.target.id === "registry-page-size") {
+      state.registrySize = e.target.value === "all" ? "all" : "10";
+      state.registryPage = 1;
+    }
     const f = e.target.form;
     if (f?.id === "order-form" && e.target.name === "area") {
       const other = f.querySelector(".other-area-field");
@@ -1225,6 +1237,7 @@ export function useWasel() {
     if (field.id === "order-search") {
       const pos = e.target.selectionStart;
       state.query = e.target.value;
+      state.registryPage = 1;
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         render();
@@ -1651,6 +1664,7 @@ export function useWasel() {
       state.screen = route.page;
       state.filter = "all";
       state.homePage = 1;
+      state.registryPage = 1;
       state.query = "";
       if (route.page === "new") {
         if (!state.wizard) startOrder();
