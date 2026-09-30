@@ -210,3 +210,19 @@ html[data-theme=dark] button.wasel-close:hover{background:#f47d2f;color:#102636}
 .search-location-marker{display:grid;place-items:center;background:transparent;border:0;cursor:grab;touch-action:none}.search-location-marker:active{cursor:grabbing}.search-location-marker span{display:block;width:26px;height:26px;border:4px solid white;border-radius:50%;background:#f47d2f;box-shadow:0 0 0 3px #f47d2f70,0 3px 12px #00263866}.search-location-marker:focus-visible{outline:3px solid #00567a;outline-offset:3px;border-radius:50%}
 
 .section-title.live-shipments-title{font-family:'Cairo',sans-serif;font-weight:700}
+
+/* Pair each metric value with its icon using Wasil's blue and warm accents. */
+.metrics-grid .metric{--metric-ink:#00567a;--metric-soft:#e7f2f7;border-top-color:var(--metric-ink)}
+.metrics-grid .metric.orange{--metric-ink:#b95b15;--metric-soft:#fff0e3}
+.metrics-grid .metric.teal{--metric-ink:#087d79;--metric-soft:#e4f4f1}
+.metrics-grid .metric.red{--metric-ink:#b54343;--metric-soft:#fbecec}
+.metrics-grid .metric .metric-value,.metrics-grid .metric .metric-label .material-symbols-outlined{color:var(--metric-ink)}
+.metrics-grid .metric .metric-label .material-symbols-outlined{background:var(--metric-soft)}
+html[data-theme=dark] .metrics-grid .metric{--metric-ink:#90cef7;--metric-soft:#234558;border-top-color:var(--metric-ink)!important}
+html[data-theme=dark] .metrics-grid .metric.orange{--metric-ink:#ffb17a;--metric-soft:#493426}
+html[data-theme=dark] .metrics-grid .metric.teal{--metric-ink:#7cdbcd;--metric-soft:#1c4548}
+html[data-theme=dark] .metrics-grid .metric.red{--metric-ink:#ffa6a6;--metric-soft:#512e37}
+html[data-theme=dark] .metrics-grid .metric .metric-value,html[data-theme=dark] .metrics-grid .metric .metric-label .material-symbols-outlined{color:var(--metric-ink)!important}
+html[data-theme=dark] .metrics-grid .metric .metric-label .material-symbols-outlined{background:var(--metric-soft)!important}
+.status-trigger .status-trigger-count{display:inline-grid;place-items:center;flex-shrink:0;min-width:28px;height:28px;padding:0 6px;box-sizing:border-box;border:1px solid #ffffff40;border-radius:999px;background:#e7f2f7;color:#00567a;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+html[data-theme=dark] .status-trigger .status-trigger-count{background:#234558;color:#c9e8fa;border-color:#90cef74d}

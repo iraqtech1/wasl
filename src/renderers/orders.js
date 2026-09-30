@@ -136,7 +136,7 @@ export function createOrdersRenderers(context) {
         [
           metric("شحنات نشطة", active, "local_shipping"),
           metric("قبل الاستلام", pickup, "inventory_2", "orange"),
-          metric("رصيد المحفظة", money(state.S.balance), "payments"),
+          metric("رصيد المحفظة", money(state.S.balance), "payments", "teal"),
           metric("تعذر ومرتجعات", returns, "assignment_return", "red"),
         ],
       ),
