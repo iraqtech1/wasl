@@ -6,7 +6,7 @@
 .platform-header #header-actions .icon-button{position:relative;width:42px;min-width:42px;height:42px;border:1px solid #00567a18;background:#f5fafc;color:#00567a;box-shadow:0 3px 10px #00567a0a}
 .header-shortcut svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .platform-header #header-actions .captain-shortcut{background:#f5fafc;border-color:#f47d2f80;color:#00567a;box-shadow:0 0 0 3px #f47d2f12}
-.captain-fast-badge{position:absolute;top:-4px;right:-3px;display:grid;place-items:center;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#f47d2f;color:#173744;font:700 12px/1 sans-serif}
+.captain-fast-badge{position:absolute;top:-5px;right:-5px;display:grid;place-items:center;width:20px;height:20px;box-sizing:border-box;border:2px solid #fff;border-radius:50%;background:#f47d2f;color:#173744;box-shadow:0 1px 4px #00567a20}.header-shortcut .captain-fast-badge svg{display:block;width:13px;height:13px;fill:currentColor;stroke:none}
 .platform-header #header-actions .captain-shortcut,.platform-header #header-actions .captain-shortcut *,.platform-header #header-actions .captain-shortcut::before,.platform-header #header-actions .captain-shortcut::after{animation:none!important;transition:none!important;transform:none!important}
 .shortcut-dot{position:absolute;top:2px;right:1px;width:8px;height:8px;border:2px solid white;border-radius:50%;background:#f47d2f}
 #header-actions .icon-button:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}

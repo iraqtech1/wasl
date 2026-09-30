@@ -91,7 +91,11 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
                 <circle cx="7" cy="18" r="2" />
                 <circle cx="17" cy="18" r="2" />
               </svg>
-              <span class="captain-fast-badge" aria-hidden="true">ϟ</span>
+              <span class="captain-fast-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2 5 13h6l-1 9 9-12h-6l1-8Z" />
+                </svg>
+              </span>
             </button>
           </template>
           <button
