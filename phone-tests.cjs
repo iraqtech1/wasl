@@ -1,4 +1,5 @@
 "use strict";
+require("./tools/register-vue-tests.cjs");
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs"),
@@ -85,13 +86,21 @@ test("phone helpers keep English digits and stop at eleven", async () => {
   assert.match(PHONE_ATTRIBUTES, /pattern="07\[789\]\[0-9\]\{8\}"/);
 });
 
-test("login, registration and order forms expose a numeric eleven-digit keyboard", async () => {
-  const login = await renderPage(
-    "AuthView",
-    (a) => (a.state.authRole = "merchant"),
-  );
-  assertPhoneField(login.html, "phone");
+test("login allows usernames or phone numbers for both roles", async () => {
+  for (const role of ["merchant", "courier"]) {
+    const { html } = await renderPage(
+      "AuthView",
+      (a) => (a.state.authRole = role),
+    );
+    const field = html.match(/<input[^>]*name="identifier"[^>]*>/);
+    assert.ok(field, "missing login identifier for " + role);
+    assert.match(field[0], /type="text"/);
+    assert.match(field[0], /autocomplete="username"/);
+    assert.doesNotMatch(field[0], /inputmode="numeric"|pattern=|maxlength="11"/);
+  }
+});
 
+test("registration and order forms expose a numeric eleven-digit keyboard", async () => {
   for (let step = 0; step < 4; step++) {
     const { html } = await renderPage(
       "MerchantRegistration",
