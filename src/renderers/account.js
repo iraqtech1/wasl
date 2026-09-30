@@ -13,17 +13,25 @@ export function createAccountRenderers(context) {
       offlineDraftsView,
       money,
       vehicleNames,
+      modal,
     } = context();
     const u = state.S.user;
     const section = (title, symbol, content) =>
-      h("details", { class: "account-disclosure" }, [
-        h("summary", { class: "account-option" }, [
+      h(
+        "button",
+        {
+          type: "button",
+          class: "account-option",
+          "aria-haspopup": "dialog",
+          onClick: () =>
+            modal(title, h("div", { class: "account-panel-content" }, content)),
+        },
+        [
           h("span", { class: "option-icon" }, [icon(symbol)]),
           h("strong", {}, [title]),
           h("span", { class: "option-chevron", "aria-hidden": "true" }, ["‹"]),
-        ]),
-        h("div", { class: "account-disclosure-content" }, content),
-      ]);
+        ],
+      );
     return h("div", { class: "account-options account-profile-options" }, [
       section("معلومات الحساب", "person", [
         h("h2", {}, [u.name]),

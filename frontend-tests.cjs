@@ -184,3 +184,42 @@ test("demo catalog upgrade preserves edited orders and is not repeated", async (
   await again("/api/login", { role: "merchant" });
   assert.equal((await again("/api/state")).orders.length, 55);
 });
+
+test("merchant and courier account sections open independent dialogs", async () => {
+  const { createAccountRenderers } = await import("./src/renderers/account.js");
+  const { createDemoData } = await import("./src/services/demoData.js");
+  for (const user of createDemoData().users) {
+    let opened;
+    const h = (tag, props, children) => ({ tag, props, children });
+    const context = {
+      state: { S: { user, orders: [], ratings: [], profileLocked: false } },
+      h,
+      row: () => null,
+      icon: () => null,
+      button: () => null,
+      maps: () => null,
+      roleNames: {},
+      vehicleNames: {},
+      money: String,
+      fallback: (items, empty) => (items.length ? items : empty),
+      offlineDraftsView: () => null,
+      modal: (title, content) => {
+        opened = { title, content };
+      },
+    };
+    const view = createAccountRenderers(() => context).accountView();
+    assert.equal(view.children.length, 3);
+    for (const [index, title] of [
+      "معلومات الحساب",
+      "التقييمات",
+      "المسودات",
+    ].entries()) {
+      const trigger = view.children[index];
+      assert.equal(trigger.tag, "button");
+      assert.equal(trigger.props["aria-haspopup"], "dialog");
+      trigger.props.onClick();
+      assert.equal(opened.title, title);
+      assert.equal(opened.content.props.class, "account-panel-content");
+    }
+  }
+});
