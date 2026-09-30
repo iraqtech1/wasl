@@ -316,7 +316,11 @@ const settingsLabels = {
   <dialog
     ref="panel"
     class="workspace-dialog"
-    @click.stop
+    @click.stop="
+      outletPickerOpen = $event.target.closest('.outlet-picker')
+        ? outletPickerOpen
+        : false
+    "
     @submit.stop
     @change.stop
     @input.stop
@@ -725,16 +729,9 @@ const settingsLabels = {
                   name="topup-outlet"
                   :value="outlet.id"
                   :checked="form.outlet === outlet.id"
-                  @change="chooseOutlet(outlet.id)"
+                  @click="chooseOutlet(outlet.id)"
                 />
-                <span
-                  ><strong>{{ outlet.name }}</strong
-                  ><small>{{ outlet.address }}</small
-                  ><small
-                    >الرصيد:
-                    {{ outlet.balance.toLocaleString("en-US") }} د.ع</small
-                  ></span
-                >
+                <span>{{ outlet.name }}</span>
               </label>
             </div>
           </div>
@@ -905,6 +902,7 @@ const settingsLabels = {
 </template>
 <style>
 .outlet-picker {
+  position: relative;
   display: grid;
   gap: 8px;
 }
@@ -931,19 +929,28 @@ const settingsLabels = {
   font-weight: 400;
 }
 .outlet-picker-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline: 0;
+  z-index: 20;
+  background: var(--surface, #fff);
+  box-shadow: 0 10px 28px #003b5526;
   display: grid;
   gap: 6px;
   padding: 8px;
   border: 1px solid #f47d2f55;
   border-radius: 12px;
-  max-height: 320px;
+  max-height: 220px;
   overflow: auto;
 }
 .workspace-dialog .outlet-picker-option {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px;
+  padding: 8px;
+  margin: 0;
+  min-height: 44px;
+  box-sizing: border-box;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -952,7 +959,9 @@ const settingsLabels = {
 }
 .workspace-dialog .outlet-picker-option input {
   width: 18px;
-  min-height: 18px;
+  min-height: 18px !important;
+  padding: 0;
+  margin: 0;
   height: 18px;
   flex: 0 0 18px;
   accent-color: #d56b24;
