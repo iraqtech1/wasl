@@ -137,6 +137,23 @@ html[data-theme=dark] #status-menu .status-option:is(:hover,[aria-selected=true]
 #status-menu .status-option:focus-visible{outline:2px solid #f47d2f;outline-offset:-2px}
 html[data-theme=dark] #dialog-content .code{color:#ffb676}
 
+/* Brand scrollbars and a dialog header that stays outside the scrolling body. */
+html,body *{scrollbar-width:thin;scrollbar-color:#00567a transparent}
+html[data-theme=dark],html[data-theme=dark] body *{scrollbar-color:#f47d2f transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#00567a;border-radius:8px}
+html[data-theme=dark] ::-webkit-scrollbar-thumb{background:#f47d2f}
+#app-dialog{padding:0;overflow:hidden}
+#app-dialog[open]{display:flex;flex-direction:column}
+#app-dialog .dialog-head{flex-shrink:0;padding:18px 22px;margin:0;border-bottom:1px solid #00567a15}
+#dialog-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 22px 22px}
+.tracking-link-row{display:grid;gap:8px;margin-block:12px;min-width:0}
+.tracking-link{justify-self:start;max-width:100%;padding:8px 14px;border:1px solid #00567a40;border-radius:12px;background:#e6f2fb;color:#00567a;text-decoration:underline;text-underline-offset:4px}
+.tracking-link:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}
+html[data-theme=dark] .tracking-link{background:#213e50;color:#90cef7;border-color:#547080}
+html[data-theme=dark] #app-dialog .dialog-head{border-color:#365565}
+
 .courier-step{border:0;padding:0;margin:0;min-width:0}.courier-step[hidden],.other-area-field[hidden]{display:none!important}.other-area-field>label{display:grid;gap:8px}.workspace-dialog input[type=search]{border-radius:14px;border:1px solid #8ca4b640;padding:10px 14px;font:inherit}
 /* One dismiss control for all dialogs and the document camera. */
 button.wasel-close{display:inline-grid;place-items:center;flex:0 0 46px;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;margin:0;border:1px solid #f47d2f80;border-radius:50%;background:#fff0e5;color:#f47d2f;cursor:pointer;box-shadow:none;line-height:1;vertical-align:middle}

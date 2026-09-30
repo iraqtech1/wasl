@@ -766,12 +766,17 @@ export function createOrdersRenderers(context) {
           )
         : "",
       isOwn || o.courier === state.S.user.id
-        ? h("label", {}, [
+        ? h("div", { class: "tracking-link-row" }, [
             "رابط متابعة الحالة (نسخة عند المشاركة)",
             h(
-              "input",
-              { readonly: true, dir: "ltr", value: trackingLink(o) },
-              [],
+              "a",
+              {
+                class: "tracking-link",
+                href: trackingLink(o),
+                target: "_blank",
+                rel: "noopener noreferrer",
+              },
+              ["فتح متابعة الطلب"],
             ),
           ])
         : "",
