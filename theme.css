@@ -304,3 +304,6 @@ html[data-theme=dark] .registry-show-all:has(input:checked){background:#614026}
 
 /* Consistent readable delivery badges in dark mode. */
 html[data-theme=dark] .chip:is(.transit,.at_customer){background:#214d57!important;color:#c5f5ee!important;border:1px solid #4d9295;font-family:Cairo,sans-serif;font-weight:700}
+
+/* One type style for every order status, in both themes and at every width. */
+html .chip{font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;line-height:1.7;letter-spacing:normal}
