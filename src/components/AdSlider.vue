@@ -26,7 +26,6 @@ const slides = [
   },
 ];
 const current = ref(0);
-const paused = ref(false);
 const hovered = ref(false);
 const focused = ref(false);
 const reduced = ref(false);
@@ -50,15 +49,9 @@ onMounted(() => {
   reduced.value = motion.matches;
   motion.addEventListener("change", onMotion);
   timer = window.setInterval(() => {
-    if (
-      !paused.value &&
-      !hovered.value &&
-      !focused.value &&
-      !reduced.value &&
-      !document.hidden
-    )
+    if (!hovered.value && !focused.value && !reduced.value && !document.hidden)
       move(1);
-  }, 6000);
+  }, 2000);
 });
 onBeforeUnmount(() => {
   window.clearInterval(timer);
@@ -97,27 +90,53 @@ onBeforeUnmount(() => {
           {{ slides[current].action }} <span aria-hidden="true">←</span>
         </button>
       </div>
-      <div class="ad-art" aria-hidden="true">
+      <div
+        :key="slides[current].icon"
+        class="ad-art"
+        :class="`ad-art-${slides[current].icon}`"
+        aria-hidden="true"
+      >
         <svg viewBox="0 0 80 80" fill="none">
+          <ellipse class="art-shadow" cx="40" cy="71" rx="24" ry="3" />
           <template v-if="slides[current].icon === 'box'">
-            <path
-              d="m16 26 24-12 24 12v28L40 67 16 54V26Zm0 0 24 13 24-13M40 39v28M28 20l24 13v12"
-            />
+            <path class="art-spark" d="M8 20v8m-4-4h8M68 8v8m-4-4h8" />
+            <g class="art-float">
+              <path
+                class="art-parcel"
+                d="m16 26 24-12 24 12v28L40 67 16 54V26Zm0 0 24 13 24-13M40 39v28M28 20l24 13v12"
+              />
+              <path class="art-label" d="m47 47 10-5v8l-10 5z" />
+            </g>
           </template>
           <template v-else-if="slides[current].icon === 'pin'">
-            <path d="M61 33c0 17-21 35-21 35S19 50 19 33a21 21 0 0 1 42 0Z" />
-            <circle cx="40" cy="32" r="8" />
+            <ellipse class="art-radar" cx="40" cy="65" rx="26" ry="9" />
+            <g class="art-float">
+              <path
+                class="art-pin"
+                d="M61 33c0 17-21 35-21 35S19 50 19 33a21 21 0 0 1 42 0Z"
+              />
+              <circle cx="40" cy="32" r="8" />
+            </g>
           </template>
-          <path
-            v-else
-            d="m23 15 45 25-45 25 8-25-8-25Zm8 25h37M8 24h7M4 40h14M8 56h7"
-          />
+          <template v-else>
+            <path class="art-speed" d="M4 31h12M2 41h10M5 51h9" />
+            <g class="art-drive">
+              <path class="art-parcel" d="M18 23h32v34H18z" />
+              <path class="art-pin" d="M50 34h13l11 13v10H50z" />
+              <path d="M56 39h5l7 8H56zM29 23v12l5-3 5 3V23" />
+              <circle class="art-wheel" cx="29" cy="59" r="7" />
+              <circle class="art-wheel" cx="63" cy="59" r="7" />
+              <path d="M29 57v4m34-4v4" />
+            </g>
+          </template>
         </svg>
       </div>
     </div>
     <div class="ad-controls">
       <button type="button" @click="move(-1)" aria-label="الإعلان السابق">
-        ‹
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m14 7-5 5 5 5" />
+        </svg>
       </button>
       <div class="ad-dots">
         <button
@@ -130,18 +149,9 @@ onBeforeUnmount(() => {
         ></button>
       </div>
       <button type="button" @click="move(1)" aria-label="الإعلان التالي">
-        ›
-      </button>
-      <button
-        v-if="!reduced"
-        type="button"
-        class="ad-pause"
-        :aria-label="
-          paused ? 'تشغيل الإعلانات تلقائياً' : 'إيقاف الإعلانات مؤقتاً'
-        "
-        @click="paused = !paused"
-      >
-        {{ paused ? "▷" : "Ⅱ" }}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m10 7 5 5-5 5" />
+        </svg>
       </button>
     </div>
   </section>

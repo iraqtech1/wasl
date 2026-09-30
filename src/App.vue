@@ -87,8 +87,11 @@ onBeforeUnmount(() => document.body.classList.remove("auth-mode"));
               title="طلب كابتن حر وسريع"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m10 4 11 8-11 8 2-8-2-8Zm2 8h9M3 7h4M2 12h5M3 17h4" />
+                <path d="M3 6h11v11H3V6Zm11 4h4l3 4v3h-7M17 10v4h4M5 3h5" />
+                <circle cx="7" cy="18" r="2" />
+                <circle cx="17" cy="18" r="2" />
               </svg>
+              <span class="captain-fast-badge" aria-hidden="true">ϟ</span>
             </button>
           </template>
           <button
