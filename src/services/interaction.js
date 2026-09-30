@@ -37,10 +37,15 @@ export function initInteractions() {
   const insidePanel = (target) =>
     target instanceof Element &&
     target.closest("dialog[open], [popover]:popover-open");
+  const insideMap = (target) =>
+    target instanceof Element && target.closest(".geographic-map");
   document.addEventListener(
     "touchmove",
     (event) => {
-      if (event.touches.length > 1 || (saved && !insidePanel(event.target)))
+      if (
+        (event.touches.length > 1 && !insideMap(event.target)) ||
+        (saved && !insidePanel(event.target))
+      )
         event.preventDefault();
     },
     { passive: false },

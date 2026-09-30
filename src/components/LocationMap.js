@@ -12,10 +12,10 @@ export default defineComponent({
         const L = await import("leaflet");
         if (disposed) return;
         map = L.map(host.value, {
-          scrollWheelZoom: false,
-          touchZoom: false,
-          dragging: false,
-          doubleClickZoom: false,
+          scrollWheelZoom: true,
+          touchZoom: true,
+          dragging: true,
+          doubleClickZoom: true,
         }).setView([33.3, 44.43], 12);
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,

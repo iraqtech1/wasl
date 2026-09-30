@@ -251,7 +251,9 @@ const settingsLabels = {
         aria-label="إغلاق"
         @click="panel.close()"
       >
-        ×
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
       </button>
     </div>
     <p v-if="error" role="alert" class="inline-error">{{ error }}</p>
@@ -699,17 +701,39 @@ const settingsLabels = {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 14px;
+}
+.workspace-dialog-head h2 {
+  margin: 0;
 }
 .workspace-close {
   border: 1px solid #f47d2f !important;
   color: #f47d2f !important;
   background: #f47d2f15 !important;
   border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  font-size: 30px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
   line-height: 1;
   flex-shrink: 0;
+}
+.workspace-close svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.geographic-map {
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 .workspace-dialog article {
   border: 1px solid #8ca4b640;
