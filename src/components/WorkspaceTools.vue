@@ -21,6 +21,44 @@ const selected = ref([]);
 const query = ref("");
 const u = computed(() => props.snapshot.user);
 const searchLocation = ref(null);
+const sharedOutlet = ref(null);
+function outletLink(outlet, provider = "share") {
+  const point = encodeURIComponent(
+    `${outlet.location.lat},${outlet.location.lng}`,
+  );
+  if (provider === "waze")
+    return `https://waze.com/ul?ll=${point}&navigate=yes&utm_source=wasil`;
+  if (provider === "google")
+    return `https://www.google.com/maps/dir/?api=1&destination=${point}`;
+  return `https://www.google.com/maps/search/?api=1&query=${point}`;
+}
+async function shareOutlet(outlet) {
+  const result = { id: outlet.id, url: outletLink(outlet), status: "" };
+  sharedOutlet.value = result;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: outlet.name,
+        text: `${outlet.name} — ${outlet.address}`,
+        url: result.url,
+      });
+      sharedOutlet.value = null;
+      return;
+    } catch (e) {
+      if (e.name === "AbortError") {
+        sharedOutlet.value = null;
+        return;
+      }
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(outletLink(outlet));
+    result.status = "تم نسخ رابط المنفذ؛ تگدر تشاركه بأي تطبيق.";
+  } catch {
+    result.status = "انسخ رابط المنفذ أدناه وشاركه بالتطبيق الذي تريده.";
+  }
+  if (sharedOutlet.value?.id === outlet.id) sharedOutlet.value = { ...result };
+}
 const labels = {
   addresses: "عناويني",
   customers: "زبائني",
@@ -61,6 +99,7 @@ const batchOrders = computed(() =>
   ),
 );
 function reset() {
+  sharedOutlet.value = null;
   for (const k of Object.keys(form)) delete form[k];
   Object.assign(form, {
     name: "",
@@ -444,8 +483,7 @@ const settingsLabels = {
       ><LocationMap
         :groups="nearbyOutlets.map((o) => ({ ...o, count: 1 }))"
         :movable-location="searchLocation"
-        @location-change="searchLocation = $event"
-      />
+        @location-change="searchLocation = $event" />
       <p class="file-help">
         اسحب العلامة البرتقالية أو اضغط مكانًا بالخريطة لتغيير موقع البحث.
         العلامات الزرقاء هي منافذ الشحن.
@@ -460,21 +498,44 @@ const settingsLabels = {
         <p v-if="Number.isFinite(distance(searchLocation, o.location))">
           {{ distance(searchLocation, o.location).toFixed(1) }} كم تقريباً
         </p>
-        <a :href="'tel:' + o.phone">{{ o.phone }}</a> ·
-        <a
-          v-if="o.location"
-          :href="
-            'https://www.google.com/maps/dir/?api=1&destination=' +
-            o.location.lat +
-            ',' +
-            o.location.lng
-          "
-          target="_blank"
-          rel="noopener"
-          >الاتجاهات</a
+        <a :href="'tel:' + o.phone">{{ o.phone }}</a>
+        <div v-if="o.location" class="outlet-actions">
+          <a :href="outletLink(o, 'google')" target="_blank" rel="noopener"
+            >Google Maps</a
+          >
+          <a :href="outletLink(o, 'waze')" target="_blank" rel="noopener"
+            >Waze</a
+          >
+          <button type="button" @click="shareOutlet(o)">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />
+            </svg>
+            مشاركة الموقع
+          </button>
+        </div>
+        <div
+          v-if="sharedOutlet?.id === o.id && sharedOutlet.status"
+          class="outlet-share-result"
         >
-      </article></template
-    >
+          <p role="status">{{ sharedOutlet.status }}</p>
+          <input
+            aria-label="رابط موقع المنفذ"
+            :value="sharedOutlet.url"
+            readonly
+            dir="ltr"
+            @click="$event.target.select()"
+          />
+        </div></article
+    ></template>
     <template v-if="page === 'admin' && admin"
       ><p class="status-note">
         لوحة تجربة محلية على هذا الجهاز، لا تمثل صلاحيات إدارة حقيقية.
@@ -761,6 +822,42 @@ const settingsLabels = {
 }
 .workspace-dialog p {
   overflow-wrap: anywhere;
+}
+.outlet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.outlet-actions a,
+.outlet-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #f47d2f80;
+  border-radius: 14px;
+  background: #f47d2f15;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.outlet-actions button {
+  background: #f47d2f;
+  color: #092d3d;
+}
+.outlet-actions svg {
+  width: 20px;
+  height: 20px;
+}
+.outlet-actions :focus-visible {
+  outline: 2px solid #f47d2f;
+  outline-offset: 3px;
 }
 .dark-mode .workspace-dialog,
 [data-theme="dark"] .workspace-dialog {
