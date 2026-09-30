@@ -305,3 +305,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 /* The dashboard header belongs to the home page and scrolls with its content. */
 .platform-header{position:relative;inset:auto;width:calc(100% - 24px);margin:12px auto 0}
 body:not(.auth-mode) .wasel-app>#app{padding-top:20px!important}
+
+/* Compact permanent labels for the nearby courier map. */
+.leaflet-tooltip.courier-map-tooltip{background:#fff8f0;border:1px solid #f6c9a5;border-radius:12px;padding:5px 9px;box-shadow:0 2px 8px #00567a18;color:#e58a43}
+.leaflet-tooltip-top.courier-map-tooltip:before{border-top-color:#f6c9a5}
+.courier-map-label{display:flex;align-items:center;gap:6px;font-family:'Cairo',sans-serif;font-weight:800;font-size:12px;line-height:1.6;white-space:nowrap}
+.courier-map-label svg{width:27px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.courier-map-cooling{font-size:10px;font-weight:700;color:#00567a}
+.leaflet-tooltip-bottom.courier-map-tooltip:before{border-bottom-color:#f6c9a5}

@@ -2044,6 +2044,8 @@ export function createOrdersRenderers(context) {
       ? state.S.couriers.map((c) => ({
           id: c.id,
           name: c.name,
+          vehicle: c.vehicle,
+          cooling: c.cooling,
           vehicleLabel: c.cooling === "frozen"
             ? "براد — تجميد"
             : c.cooling === "chilled"

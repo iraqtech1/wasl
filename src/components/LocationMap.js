@@ -34,20 +34,50 @@ export default defineComponent({
           .on("tileerror", () => (failed.value = true))
           .addTo(map);
         const points = [];
-        for (const g of props.groups.filter((g) => g.location)) {
+        for (const [index, g] of props.groups.filter((g) => g.location).entries()) {
           const point = [g.location.lat, g.location.lng];
           points.push(point);
           const label = document.createElement("div");
-          label.textContent =
-            g.name + " · " + g.count + (g.vip ? " · VIP" : "");
+          if (g.vehicle) {
+            label.className = "courier-map-label";
+            label.dir = "rtl";
+            const name = document.createElement("span");
+            name.textContent = g.name;
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 32 24");
+            svg.setAttribute("aria-hidden", "true");
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const wheels = "M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M29 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
+            path.setAttribute("d", g.vehicle === "motorcycle"
+              ? wheels + "M6 18l7-10 6 10H6m7-10h8l5 10M19 4h4l3 14M10 8h5"
+              : g.vehicle === "refrigerated" || g.vehicle === "truck"
+                ? wheels + "M3 15V4h17v14H9m11-9h6l4 6v3h-1m-6 0h-3"
+                : wheels + "M3 16v-4l4-6h16l5 6 2 2v4h-1M9 18h14M7 12h19M12 6v6");
+            svg.append(path);
+            label.append(name, svg);
+            if (g.vehicle === "refrigerated") {
+              const badge = document.createElement("span");
+              badge.className = "courier-map-cooling";
+              badge.textContent = g.cooling === "frozen" ? "❄ براد" : "❄ تبريد";
+              label.append(badge);
+            }
+            label.title = g.name + " — " + g.vehicleLabel;
+          } else {
+            label.textContent =
+              g.name + " · " + g.count + (g.vip ? " · VIP" : "");
+          }
           const marker = L.circleMarker(point, {
-            radius: g.vip ? 19 : 15,
+            radius: g.vehicle ? 6 : g.vip ? 19 : 15,
             color: g.vip ? "#f47d2f" : "#00567a",
             fillColor: g.vip ? "#f47d2f" : "#00567a",
             fillOpacity: 0.88,
             weight: 3,
           }).addTo(map);
-          marker.bindTooltip(label, { permanent: true, direction: "top" });
+          marker.bindTooltip(label, {
+            permanent: true,
+            direction: g.vehicle && index % 2 ? "bottom" : "top",
+            className: g.vehicle ? "courier-map-tooltip" : "",
+          });
           marker.on("click", () =>
             document
               .getElementById("map-group-" + g.id)
@@ -84,7 +114,10 @@ export default defineComponent({
           map.on("click", (event) => choose(event.latlng));
         }
         if (points.length)
-          map.fitBounds(points, { padding: [40, 40], maxZoom: 15 });
+          map.fitBounds(points, {
+            padding: props.groups.some((g) => g.vehicle) ? [90, 60] : [40, 40],
+            maxZoom: 15,
+          });
         observer = new ResizeObserver(() => map?.invalidateSize());
         observer.observe(host.value);
       } catch {
@@ -111,7 +144,7 @@ export default defineComponent({
           ref: host,
           class: "geographic-map",
           style:
-            "height:280px;border-radius:18px;overflow:hidden;isolation:isolate",
+            `height:${props.groups.some((g) => g.vehicle) ? 380 : 280}px;border-radius:18px;overflow:hidden;isolation:isolate`,
           role: "region",
           "aria-label": "خريطة مواقع الطلبات",
         }),
