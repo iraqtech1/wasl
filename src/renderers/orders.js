@@ -644,6 +644,7 @@ export function createOrdersRenderers(context) {
     }
     if (assigned && o.settled && ["delivered", "returned"].includes(o.status))
       add("complete", "إنهاء الطلب");
+    if (own && o.exclusionPending) add("resolve_exclusion", "معالجة الطلب المستثنى");
     if (own) {
       if (before.includes(o.status)) {
         add("edit", "تعديل الطلب");
@@ -684,6 +685,7 @@ export function createOrdersRenderers(context) {
       if (["reserved", "approaching", "arrived", "waiting"].includes(o.status))
         add("release", "إلغاء الحجز مع سبب");
       if (o.status === "arrived") add("wait", "بانتظار تجهيز الشحنة");
+      if (["arrived", "waiting"].includes(o.status)) add("exclude_pickup", "استثناء الطلب لوجود مشكلة");
       if (["arrived", "waiting"].includes(o.status))
         add("pickup", "فحص ودفع واستلام");
       if (o.status === "received") add("transit", "بدء التوصيل");
@@ -1029,7 +1031,7 @@ export function createOrdersRenderers(context) {
                   class: "detail-row",
                 },
                 [
-                  h("span", {}, [v.name, " — ", money(v.fee), " د.ع"]),
+                  h("span", {}, [v.name, " — ", vehicleNames[v.vehicle] || "مندوب", " — ", money(v.fee), " د.ع"]),
                   button(
                     "order-action",
                     "قبول العرض",
@@ -1709,16 +1711,18 @@ export function createOrdersRenderers(context) {
         h("p", {}, ["إذا انتهت المهلة ولم تصل، يُلغى الحجز ويُعاد نشر الطلب تلقائياً."]),
       ];
     }
-    if (op === "arrive")
-      fields = [
-        input(
-          "reason",
-          "سبب الوصول اليدوي إذا تعذر GPS",
-          "",
-          'maxlength="300"',
-        ),
-        h("p", {}, ["يُقبل GPS ضمن نطاق الوصول؛ خارج النطاق يجب توضيح السبب."]),
-      ];
+    if (op === "arrive") fields = h("p", {}, ["عند التأكيد نقرأ موقعك الحالي. يجب أن تكون ضمن " + Math.round((state.S.settings.arrivalRadiusKm || 0.3) * 1000) + " متر من التاجر؛ بعدها تصبح بانتظار الاستلام ويتوقف العدّاد."]);
+    if (op === "exclude_pickup") fields = [
+      input("reason", "ما مشكلة الطلب؟", "", 'required maxlength="300"'),
+      h("p", {}, ["يُرفع هذا الطلب فقط من حجزك دون استلامه أو دفع قيمته. يبقى محفوظاً بانتظار قرار التاجر، وتكمل باقي طلباتك."]),
+    ];
+    if (op === "resolve_exclusion") fields = [
+      h("p", {}, ["سبب الاستثناء: " + o.exclusionReason]),
+      h("label", {}, ["قرار التاجر", h("select", { name: "resolution", required: true }, [
+        h("option", { value: "draft" }, ["إبقاؤه محفوظاً للتعديل"]),
+        h("option", { value: "published" }, ["إعادة نشره بعد التأكد من جاهزيته"]),
+      ])]),
+    ];
     if (
       [
         "complete",

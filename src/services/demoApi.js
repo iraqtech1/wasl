@@ -1,3 +1,4 @@
+import { capacityProblem } from "./reservationCapacity.js";
 import { createDemoData, statuses, settings as defaults } from "./demoData.js";
 import { rememberOrderPlaces } from "./addressBook.js";
 import {
@@ -192,6 +193,8 @@ export function createDemoApi(storage = globalThis.localStorage) {
     o.extensionRequest = null;
     o.editPending = false;
     o.publishedAt = now();
+    o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
+    o.courierInfo = null;
   }
   function sweep() {
     for (const o of data.orders) {
@@ -225,10 +228,11 @@ export function createDemoApi(storage = globalThis.localStorage) {
       if (
         o.status === "published" &&
         !o.waitNotified &&
+        data.users.some((c) => c.role === "courier" && eligible(c, o, data.config) && !capacityProblem(c, o, data.orders, data.config)) &&
         Date.now() - Date.parse(o.publishedAt || o.createdAt) >
           data.config.offerAfterMinutes * 60000
       ) {
-        notify(o.merchant, "طلبك لم يُحجز بعد؛ يمكنك زيادة الأجرة", o.id);
+        notify(o.merchant, "طلبك لم يُحجز رغم وجود مناديب متاحين؛ فُتحت عروض أجور التوصيل", o.id);
         o.waitNotified = true;
       }
     }
@@ -239,30 +243,8 @@ export function createDemoApi(storage = globalThis.localStorage) {
       eligible(c, o, data.config),
       "الطلب لا يناسب الموقع أو المركبة أو الميزانية",
     );
-    const carried = data.orders.filter(
-      (x) => x.courier === c.id && unresolved(x),
-    );
-    must(
-      !data.config.maxCarried || carried.length < data.config.maxCarried,
-      "بلغت حد الطلبات المحمولة",
-    );
-    must(
-      !carried.some((x) => x.service === "vip") &&
-        !(o.service === "vip" && carried.length),
-      "يجب التفرغ لطلب VIP حتى إكماله وتسويته",
-    );
-    must(
-      !carried.some(
-        (x) =>
-          BEFORE.includes(x.status) &&
-          !(
-            x.merchant === o.merchant &&
-            (x.sender.addressId || x.sender.address) ===
-              (o.sender.addressId || o.sender.address)
-          ),
-      ),
-      "استلم الحجز الأول؛ التجميع مسموح لنفس عنوان التاجر فقط",
-    );
+    const problem = capacityProblem(c, o, data.orders, data.config);
+    must(!problem, problem);
     must(
       !data.config.penaltiesEnabled ||
         !c.restrictedUntil ||
@@ -411,7 +393,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       ratings: data.ratings.filter(
         (r) => r.owner === u.id || r.target === u.id,
       ),
-      offers: data.offers.filter((r) => orders.some((o) => o.id === r.orderId)),
+      offers: data.offers.filter((r) => orders.some((o) => o.id === r.orderId && o.status === "published" && (r.round || 0) === (o.offerRound || 0)) && (u.role === "merchant" || r.owner === u.id)),
       notifications: data.notifications.filter((r) => r.owner === u.id),
       couriers: data.users
         .filter(
@@ -534,6 +516,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       ];
       for (const k of fields) if (p[k] !== undefined) o[k] = copy(p[k]);
       rememberOrderPlaces(u, o, id);
+      o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
       if (["reserved", "approaching"].includes(o.status)) o.editPending = true;
       change(
         o,
@@ -549,6 +532,8 @@ export function createDemoApi(storage = globalThis.localStorage) {
       if (a === "decline_edit")
         release(o, "رفض التعديل — لا يحتسب إلغاء على المندوب");
       else {
+        const problem = capacityProblem(u, o, data.orders, data.config);
+        must(!problem, problem);
         o.editPending = false;
         change(o, o.status, "وافق المندوب على البيانات الجديدة");
       }
@@ -569,6 +554,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
             ? ["published"]
             : BEFORE.filter((s) => s !== "draft"),
       );
+      if (a === "publish") o.exclusionPending = false;
       if (a === "cancel") o.settled = true;
       change(
         o,
@@ -579,6 +565,16 @@ export function createDemoApi(storage = globalThis.localStorage) {
             : "cancelled",
       );
       o.publishedAt = now();
+      o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
+      return;
+    }
+    if (a === "resolve_exclusion") {
+      merchant(); requireState(["draft"]);
+      must(o.exclusionPending, "لا يوجد طلب مستثنى بانتظار القرار");
+      must(["published", "draft"].includes(p.resolution), "اختر إعادة النشر أو إبقاءه محفوظاً");
+      o.exclusionPending = false; o.publishedAt = p.resolution === "published" ? now() : null;
+      o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
+      change(o, p.resolution, p.resolution === "published" ? "أعاد التاجر نشر الطلب المستثنى" : "أبقى التاجر الطلب المستثنى محفوظاً للتعديل");
       return;
     }
     if (a === "reserve") {
@@ -597,12 +593,17 @@ export function createDemoApi(storage = globalThis.localStorage) {
           data.config.offerAfterMinutes * 60000,
         "لم تنته مهلة اقتراح الأجرة",
       );
-      must(money(p.fee) && Number(p.fee) > 0, "أدخل أجرة صحيحة");
+      const problem = capacityProblem(u, o, data.orders, data.config);
+      must(!problem, problem);
+      must(money(p.fee) && Number(p.fee) > 0 && Number(p.fee) >= o.returnFee && (o.service !== "vip" || Number(p.fee) >= o.baseFee + data.config.vipSurcharge), "أجرة العرض لا تغطي أجور الراجع أو زيادة VIP");
+      data.offers = data.offers.filter((v) => !(v.orderId === o.id && v.owner === u.id));
       data.offers.push({
         id: id("OFFER"),
         owner: u.id,
         name: u.name,
         orderId: o.id,
+        round: o.offerRound || 0,
+        vehicle: u.vehicle,
         fee: Number(p.fee),
         at: now(),
       });
@@ -614,12 +615,14 @@ export function createDemoApi(storage = globalThis.localStorage) {
       const offer = data.offers.find(
         (v) => v.id === p.offer && v.orderId === o.id,
       );
-      must(offer, "العرض غير موجود");
+      must(offer && (offer.round || 0) === (o.offerRound || 0), "العرض لم يعد متاحاً؛ اطلب عرضاً جديداً");
+      must(offer.fee >= o.returnFee && (o.service !== "vip" || offer.fee >= o.baseFee + data.config.vipSurcharge), "العرض لا يغطي أجور الطلب");
       reserve(
         o,
         data.users.find((c) => c.id === offer.owner),
       );
       o.fee = offer.fee;
+      change(o, o.status, "وافق التاجر على عرض " + offer.name + " بأجرة " + offer.fee + " د.ع وحُجز الطلب له");
       return;
     }
     if (a === "raise_fee") {
@@ -627,6 +630,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       requireState(["published"]);
       must(Number(p.fee) > o.fee, "الأجرة الجديدة يجب أن تكون أعلى");
       o.fee = Number(p.fee);
+      o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
       change(o, o.status, "زيادة أجرة التوصيل");
       return;
     }
@@ -741,23 +745,37 @@ export function createDemoApi(storage = globalThis.localStorage) {
     if (a === "arrive") {
       requireState(["reserved", "approaching"]);
       must(!o.editPending, "وافق على التعديل أولاً");
+      const point = p.location || u.location;
+      must(point && Number.isFinite(point.lat) && Number.isFinite(point.lng), "تعذر تحديد الموقع؛ حدّث GPS");
+      must(!p.accuracy || p.accuracy <= data.config.arrivalRadiusKm * 1000, "دقة GPS ضعيفة؛ أعد المحاولة");
       const near =
-        distance(u.location, o.sender.location) <= data.config.arrivalRadiusKm;
+        distance(point, o.sender.location) <= data.config.arrivalRadiusKm;
       must(
-        near || p.reason?.trim(),
-        "الموقع بعيد: حدّث GPS أو اذكر سبب تأكيد الوصول اليدوي",
+        near,
+        "لم تصل إلى نطاق الاستلام بعد؛ اقترب وحدّث GPS",
       );
       o.arrivedAt = now();
       o.waitAlerted = false;
       o.deadline = null;
       o.extensionRequest = null;
       o.arrivalNote = near ? "وصول ضمن النطاق" : "وصول يدوي: " + p.reason;
-      change(o, "arrived", o.arrivalNote);
+      change(o, "waiting", "تم التحقق من القرب — بانتظار الاستلام");
       return;
     }
     if (a === "wait") {
-      requireState(["arrived"]);
+      requireState(["arrived", "waiting"]);
       change(o, "waiting");
+      return;
+    }
+    if (a === "exclude_pickup") {
+      requireState(["arrived", "waiting"]);
+      must(p.reason?.trim(), "وضح مشكلة الطلب قبل استثنائه");
+      o.exclusionReason = p.reason.trim().slice(0, 300);
+      o.exclusionPending = true;
+      change(o, "draft", "استثنى المندوب الطلب قبل الاستلام: " + o.exclusionReason);
+      o.courier = null; o.courierInfo = null; o.deadline = null; o.publishedAt = null;
+      o.offerRound = (o.offerRound || 0) + 1; o.waitNotified = false;
+      for (const batch of data.batches.filter((b) => b.ids.includes(o.id))) batch.used = true;
       return;
     }
     if (a === "pickup") {

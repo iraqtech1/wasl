@@ -1144,6 +1144,14 @@ export function useWasel() {
         if (f.reasonDetails) f.reason += " — " + f.reasonDetails;
         if (form.dataset.op === "retry")
           f.when = new Date(f.when).toISOString();
+        if (form.dataset.op === "arrive") {
+          if (!navigator.geolocation) throw Error("المتصفح لا يدعم تحديد الموقع");
+          const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve,
+            () => reject(Error("تعذر تحديد موقعك؛ اسمح بالوصول للموقع وأعد المحاولة")),
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }));
+          f.location = { lat: position.coords.latitude, lng: position.coords.longitude };
+          f.accuracy = position.coords.accuracy;
+        }
         await runAction(form.dataset.id, form.dataset.op, {
           ...f,
           offer: form.dataset.offer,

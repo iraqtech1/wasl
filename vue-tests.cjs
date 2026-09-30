@@ -294,6 +294,8 @@ test("all order action forms render with their validation fields", async () => {
     partial_approve: null,
     raise_fee: "fee",
     offer: "fee",
+    exclude_pickup: "reason",
+    resolve_exclusion: "resolution",
     release: "reason",
     fail: "reason",
     pickup: "code",

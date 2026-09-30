@@ -134,7 +134,7 @@ test("batch pickup is atomic, consumes one code, and leaves excluded orders unch
   await t.api("/api/batch", { code: batch.code, paid: true, inspected: true });
   let s = await t.state();
   assert.equal(s.user.budget, initial - a.amount - b.amount);
-  assert.equal(s.orders.find((o) => o.id === c.id).status, "arrived");
+  assert.equal(s.orders.find((o) => o.id === c.id).status, "waiting");
   await assert.rejects(
     t.api("/api/batch", { code: batch.code, paid: true, inspected: true }),
   );
@@ -154,7 +154,7 @@ test("edits require courier acceptance and declining never counts as cancellatio
   assert.equal(s.orders[0].status, "published");
   assert.equal(s.orders[0].amount, 30000);
 });
-test("VIP excludes simultaneous jobs; normal reservations group only one pickup site", async () => {
+test("VIP excludes simultaneous jobs in both reservation directions", async () => {
   const t = await setup();
   const vip = await t.create({ service: "vip", fee: 8000 }),
     normal = await t.create();
@@ -165,6 +165,65 @@ test("VIP excludes simultaneous jobs; normal reservations group only one pickup 
   await t.act(normal, "reserve");
   await assert.rejects(t.act(vip, "reserve"), /VIP/);
 });
+test("multiple merchants share budget and weight limits; exclusions preserve other orders", async () => {
+  const t = await setup();
+  const first = await t.create({ amount: 20000, weight: 40 });
+  await t.api("/api/register", { role: "merchant", name: "تاجر ثان", phone: "07912345670", province: "بغداد", area: "الكرادة", address: "مخزن ثان", location: { lat: 33.301, lng: 44.43 } });
+  await t.api("/api/login", { role: "merchant", phone: "07912345670" });
+  const second = await t.create({ amount: 25000, weight: 40, sender: { ...t.template.sender, address: "مخزن ثان", location: { lat: 33.301, lng: 44.43 } } });
+  const cashHeavy = await t.create({ amount: 10000, weight: 1 });
+  const tooHeavy = await t.create({ amount: 1000, weight: 30 });
+  await t.login("courier");
+  await t.api("/api/profile", { action: "readiness", available: true, budget: 50000, radius: 5, location: { lat: 33.3, lng: 44.43 } });
+  await t.act(first, "reserve"); await t.act(second, "reserve");
+  await assert.rejects(t.act(cashHeavy, "reserve"), /الميزانية/);
+  await assert.rejects(t.act(tooHeavy, "reserve"), /أوزان/);
+  await assert.rejects(t.act(second, "arrive", { location: { lat: 34, lng: 45 }, reason: "وصلت" }));
+  await assert.rejects(t.act(second, "arrive", { location: second.sender.location, accuracy: 1000 }));
+  await t.act(second, "arrive", { location: second.sender.location, accuracy: 20 });
+  await t.act(second, "exclude_pickup", { reason: "الكرتون مكسور" });
+  const after = await t.state();
+  assert.equal(after.user.budget, 50000);
+  assert.equal(after.user.cancellations.length, 0);
+  assert.equal(after.orders.find((o) => o.id === first.id).status, "reserved");
+  await t.act(cashHeavy, "reserve");
+  await t.api("/api/login", { role: "merchant", phone: "07700000001" });
+  await assert.rejects(t.act(second, "resolve_exclusion", { resolution: "published" }));
+  await t.api("/api/login", { role: "merchant", phone: "07912345670" });
+  const excluded = (await t.state()).orders.find((o) => o.id === second.id);
+  assert.equal(excluded.status, "draft"); assert.equal(excluded.courier, null);
+  await t.act(second, "resolve_exclusion", { resolution: "published" });
+  assert.equal((await t.state()).orders.find((o) => o.id === second.id).status, "published");
+});
+
+test("offers wait for configured delay, recheck capacity and cannot be reused after republishing", async () => {
+  const t = await setup();
+  const order = await t.create();
+  await t.login("courier");
+  await assert.rejects(t.act(order, "offer", { fee: 6000 }));
+  const saved = JSON.parse(t.values.get(t.key)); saved.config.offerAfterMinutes = 0;
+  t.values.set(t.key, JSON.stringify(saved));
+  await assert.rejects(t.act(order, "offer", { fee: 1000 }));
+  await t.act(order, "offer", { fee: 6000 });
+  const offer = (await t.state()).offers[0];
+  await t.api("/api/profile", { action: "readiness", available: true, budget: 0, radius: 5, location: { lat: 33.3, lng: 44.43 } });
+  await t.login("merchant");
+  await assert.rejects(t.act(order, "accept_offer", { offer: offer.id }));
+  assert.equal((await t.state()).orders[0].fee, order.fee);
+  await t.login("courier");
+  await t.api("/api/profile", { action: "readiness", available: true, budget: 500000, radius: 5, location: { lat: 33.3, lng: 44.43 } });
+  await t.login("merchant");
+  await t.act(order, "accept_offer", { offer: offer.id });
+  const reserved = (await t.state()).orders[0];
+  assert.equal(reserved.fee, 6000); assert.equal(reserved.courier, "COU-DEMO");
+  assert.ok(reserved.deadline);
+  await assert.rejects(t.act(order, "accept_offer", { offer: offer.id }));
+  await t.login("courier"); await t.act(order, "release", { reason: "اختبار" });
+  await t.login("merchant");
+  await assert.rejects(t.act(order, "accept_offer", { offer: offer.id }));
+  assert.equal((await t.state()).offers.length, 0);
+});
+
 test("filtering enforces distance, cash, vehicle and availability", async () => {
   const t = await setup();
   await t.create();
