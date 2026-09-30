@@ -70,28 +70,6 @@ export function createAccountRenderers(context) {
           [h("p", { class: "muted" }, ["لا توجد تقييمات بعد."])],
         ),
       ]),
-      h(
-        "button",
-        {
-          type: "button",
-          class: "account-option",
-          "data-action": "preferences",
-          role: "switch",
-          "aria-checked": u.motivational !== false,
-        },
-        [
-          h("span", { class: "option-icon" }, [icon("notifications_active")]),
-          h("strong", {}, ["التنبيهات التحفيزية"]),
-          h(
-            "span",
-            {
-              class: "theme-switch" + (u.motivational !== false ? " on" : ""),
-              "aria-hidden": "true",
-            },
-            [],
-          ),
-        ],
-      ),
       section("المسودات", "draft", [
         ...state.S.orders
           .filter((o) => o.status === "draft")
