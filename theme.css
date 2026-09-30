@@ -301,3 +301,6 @@ html[data-theme=dark] .registry-show-all:has(input:checked){background:#614026}
 .account-location-form>.inline-error:empty{display:none}
 .account-location-save{width:100%;min-height:46px;margin:0;border-radius:12px}
 .account-location-form>.account-location-save{display:flex;align-items:center;justify-content:center;padding:10px 14px!important;border:1px solid #f47d2f!important;background:linear-gradient(145deg,#ff9b52,#f47d2f)!important;color:#fff!important;font-weight:700;cursor:pointer}
+
+/* Keep the in-transit badge readable against dark order cards. */
+html[data-theme=dark] .chip.transit{background:#214d57!important;color:#c5f5ee!important;border:1px solid #4d9295;font-weight:700}
