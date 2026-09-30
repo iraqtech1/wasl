@@ -8,7 +8,7 @@ export function createAccountRenderers(context) {
       roleNames,
       icon,
       button,
-      maps,
+      coords,
       fallback,
       offlineDraftsView,
       money,
@@ -62,9 +62,30 @@ export function createAccountRenderers(context) {
           ? h("p", { class: "profile-lock" }, [
               "تعديل الملف مقفل حتى إكمال الطلبات والتسويات.",
             ])
-          : button("edit-profile", "تعديل معلومات الحساب"),
-        button("change-password", "تغيير كلمة مرور الحساب"),
-        h("div", { class: "contact-actions" }, [maps(u.location)]),
+          : "",
+        h("div", { class: "account-profile-actions" }, [
+          ...(!state.S.profileLocked
+            ? [button("edit-profile", "تعديل معلومات الحساب")]
+            : []),
+          button("change-password", "تغيير كلمة مرور الحساب"),
+        ]),
+        h(
+          "form",
+          { id: "account-location-form", class: "account-location-form" },
+          [
+            h("h3", {}, ["موقع الحساب"]),
+            h("p", { class: "file-help" }, [
+              "اختر نقطة بالضغط على الخريطة أو اسحب العلامة، ثم اضغط حفظ الموقع. يمكنك تعديل الموقع حتى مع وجود طلبات نشطة.",
+            ]),
+            coords(u.location),
+            h("p", { class: "inline-error", role: "alert" }, []),
+            h(
+              "button",
+              { type: "submit", class: "primary account-location-save" },
+              ["حفظ الموقع"],
+            ),
+          ],
+        ),
       ]),
       section("التقييمات", "star", [
         ...fallback(

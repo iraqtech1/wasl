@@ -1,8 +1,8 @@
 "use strict";
 const BASE = new URL("./", self.location.href);
 const PREFIX = "wasel-vue-" + BASE.pathname + "-";
-const CACHE = PREFIX + "5a86307a001d";
-const FILES = ["./","assets/apple-touch-icon.png","assets/bal3d.css","assets/bal3d.js","assets/brand-transparent-VUtseKAh.svg","assets/brand-transparent.svg","assets/cairo-variable.ttf","assets/favicon-32.png","assets/favicon-48.png","assets/font-0-0.ttf","assets/font-0-1.ttf","assets/font-0-2.ttf","assets/font-0-3.ttf","assets/font-1-3.ttf","assets/fonts.css","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-192.png","assets/icon-maskable-512.png","assets/index-DKekoNb8.js","assets/index-DzR65nIN.css","assets/leaflet-src--E3Dtt7h.js","assets/LICENSE-Material-Symbols.txt","assets/logo-mark.svg","assets/OFL-Cairo.txt","assets/OFL-IBM-Plex.txt","assets/profile-0.png","assets/wasel-brand-B1pZ3qtI.jpeg","assets/wasel-brand.jpeg","index.html","manifest.webmanifest"].map((file) => new URL(file, BASE).href);
+const CACHE = PREFIX + "e2b9ca95c065";
+const FILES = ["./","assets/apple-touch-icon.png","assets/bal3d.css","assets/bal3d.js","assets/brand-transparent-VUtseKAh.svg","assets/brand-transparent.svg","assets/cairo-variable.ttf","assets/favicon-32.png","assets/favicon-48.png","assets/font-0-0.ttf","assets/font-0-1.ttf","assets/font-0-2.ttf","assets/font-0-3.ttf","assets/font-1-3.ttf","assets/fonts.css","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-192.png","assets/icon-maskable-512.png","assets/index-BVMD91fw.css","assets/index-mYhqa5a8.js","assets/leaflet-src-D52U6wXP.js","assets/LICENSE-Material-Symbols.txt","assets/logo-mark.svg","assets/OFL-Cairo.txt","assets/OFL-IBM-Plex.txt","assets/profile-0.png","assets/wasel-brand-B1pZ3qtI.jpeg","assets/wasel-brand.jpeg","index.html","manifest.webmanifest"].map((file) => new URL(file, BASE).href);
 self.addEventListener("install", (event) =>
   event.waitUntil(
     caches

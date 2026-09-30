@@ -1157,6 +1157,15 @@ export function useWasel() {
         });
         closeModal();
         await refresh();
+      } else if (form.id === "account-location-form") {
+        if (!f.lat || !f.lng) throw Error("حدد الموقع على الخريطة أولاً.");
+        await api("/api/profile", {
+          action: "location",
+          location: { lat: Number(f.lat), lng: Number(f.lng) },
+        });
+        closeModal();
+        await refresh();
+        toast("تم حفظ موقع الحساب");
       } else if (form.id === "profile-form") {
         await api("/api/profile", {
           ...f,

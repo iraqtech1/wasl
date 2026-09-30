@@ -1013,8 +1013,17 @@ export function createDemoApi(storage = globalThis.localStorage) {
     sweep();
     if (url === "/api/state") return view();
     if (url === "/api/profile") {
-      if (p.action === "location") u.location = p.location;
-      else if (p.action === "readiness") {
+      if (p.action === "location") {
+        must(
+          p.location &&
+            Number.isFinite(p.location.lat) &&
+            Number.isFinite(p.location.lng) &&
+            Math.abs(p.location.lat) <= 90 &&
+            Math.abs(p.location.lng) <= 180,
+          "حدد موقعاً صحيحاً على الخريطة",
+        );
+        u.location = { lat: p.location.lat, lng: p.location.lng };
+      } else if (p.action === "readiness") {
         must(
           money(p.budget) && p.radius >= 1 && p.radius <= 100,
           "الميزانية أو النطاق غير صالح",

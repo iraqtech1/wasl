@@ -26,6 +26,23 @@ test("iraq demo credentials select the populated merchant and reject a wrong pas
   assert.equal(state.orders.length, 54);
   assert.ok(state.orders.some((order) => order.service === "vip"));
 });
+test("both account roles can save a map point while profile is locked", async () => {
+  for (const role of ["merchant", "courier"]) {
+    const { api, createDemoApi, storage } = await setup();
+    await api("/api/login", { role });
+    const before = await api("/api/state");
+    assert.equal(before.profileLocked, true);
+    const location = { lat: 33.315, lng: 44.415 };
+    await api("/api/profile", { action: "location", location });
+    await assert.rejects(api("/api/profile", { action: "location", location: { lat: 91, lng: 44 } }));
+    const restored = createDemoApi(storage);
+    await restored("/api/login", { role });
+    const after = await restored("/api/state");
+    assert.deepEqual(after.user.location, location);
+    const savedOrderDetails = (orders) => orders.map(({ id, sender, recipient, status }) => ({ id, sender, recipient, status }));
+    assert.deepEqual(savedOrderDetails(after.orders), savedOrderDetails(before.orders));
+  }
+});
 test("both roles navigate populated frontend data without network calls", async () => {
   const { api } = await setup();
   for (const role of ["merchant", "courier"]) {
