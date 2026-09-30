@@ -225,6 +225,7 @@ test("merchant and courier account sections open independent dialogs", async () 
       icon: () => null,
       button: () => null,
       maps: () => null,
+      coords: () => null,
       roleNames: {},
       vehicleNames: {},
       money: String,

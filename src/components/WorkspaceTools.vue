@@ -1,6 +1,6 @@
 <script setup>
 import CloseIcon from "./CloseIcon.js";
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, nextTick } from "vue";
 import LocationMap from "./LocationMap.js";
 import LocationPanel from "./LocationPanel.vue";
 import { phoneDigits } from "../renderers/helpers.js";
@@ -18,6 +18,24 @@ const panel = ref(),
   busy = ref(false),
   admin = ref(null);
 const form = reactive({});
+const adminPage = ref("");
+const adminPages = {
+  settings: "ضبط الخدمات والعمولات",
+  profiles: "مراجعة تعديلات الحسابات",
+  topup: "منفذ الشحن — محاكاة",
+  support: "تذاكر الدعم",
+  reviews: "مراجعة الإلغاءات والتعذر",
+  outlets: "إضافة وتمويل منفذ",
+  audit: "سجل العمليات",
+};
+async function openAdminPage(key) {
+  adminPage.value = key;
+  error.value = "";
+  message.value = "";
+  await nextTick();
+  panel.value.scrollTop = 0;
+  panel.value.querySelector(".workspace-dialog-head h2")?.focus();
+}
 const selected = ref([]);
 const query = ref("");
 const u = computed(() => props.snapshot.user);
@@ -131,6 +149,7 @@ async function open(p) {
       ...(u.value.location || { lat: 33.3, lng: 44.43 }),
     };
   page.value = p;
+  adminPage.value = props.portal === "outlet" ? "topup" : "";
   reset();
   query.value = "";
   panel.value.showModal();
@@ -290,7 +309,15 @@ const settingsLabels = {
     @input.stop
   >
     <div class="workspace-dialog-head">
-      <h2>{{ portal === "outlet" ? "واجهة منفذ الشحن" : labels[page] }}</h2>
+      <h2 tabindex="-1">
+        {{
+          page === "admin" && adminPage
+            ? adminPages[adminPage]
+            : portal === "outlet"
+              ? "واجهة منفذ الشحن"
+              : labels[page]
+        }}
+      </h2>
       <button
         type="button"
         class="wasel-close"
@@ -300,6 +327,14 @@ const settingsLabels = {
         <CloseIcon />
       </button>
     </div>
+    <button
+      v-if="page === 'admin' && adminPage && portal !== 'outlet'"
+      type="button"
+      class="admin-back"
+      @click="openAdminPage('')"
+    >
+      → الرجوع إلى خيارات الإدارة
+    </button>
     <p v-if="error" role="alert" class="inline-error">{{ error }}</p>
     <p v-if="message" role="status" class="status-note">{{ message }}</p>
     <template v-if="['addresses', 'customers'].includes(page)">
@@ -534,8 +569,26 @@ const settingsLabels = {
       ><p class="status-note">
         لوحة تجربة محلية على هذا الجهاز، لا تمثل صلاحيات إدارة حقيقية.
       </p>
-      <details v-if="portal !== 'outlet'">
-        <summary>ضبط الخدمات والعمولات</summary>
+      <nav
+        v-if="!adminPage"
+        class="account-options admin-options"
+        aria-label="خيارات الإدارة"
+      >
+        <button
+          v-for="(label, key) in adminPages"
+          :key="key"
+          type="button"
+          class="account-option"
+          @click="openAdminPage(key)"
+        >
+          <strong>{{ label }}</strong
+          ><span class="option-chevron" aria-hidden="true">‹</span>
+        </button>
+      </nav>
+      <section
+        v-if="adminPage === 'settings' && portal !== 'outlet'"
+        class="admin-page"
+      >
         <form class="form-stack" @submit.prevent="save">
           <label v-for="(label, key) in settingsLabels" :key="key"
             >{{ label
@@ -571,9 +624,17 @@ const settingsLabels = {
         >
           تطبيق اشتراك الشهر مرة واحدة
         </button>
-      </details>
-      <details v-if="portal !== 'outlet'">
-        <summary>مراجعة تعديلات الحسابات</summary>
+      </section>
+      <section
+        v-if="adminPage === 'profiles' && portal !== 'outlet'"
+        class="admin-page"
+      >
+        <p
+          v-if="!admin.users.some((x) => x.pendingProfile)"
+          class="empty-state"
+        >
+          لا توجد تعديلات حسابات بانتظار المراجعة.
+        </p>
         <article
           v-for="x in admin.users.filter((x) => x.pendingProfile)"
           :key="x.id"
@@ -593,9 +654,8 @@ const settingsLabels = {
             رفض
           </button>
         </article>
-      </details>
-      <details>
-        <summary>منفذ الشحن — محاكاة</summary>
+      </section>
+      <section v-if="adminPage === 'topup'" class="admin-page">
         <form
           @submit.prevent="
             adminAction('topup', {
@@ -630,9 +690,14 @@ const settingsLabels = {
               required /></label
           ><button class="primary-button" :disabled="busy">شحن تجريبي</button>
         </form>
-      </details>
-      <details v-if="portal !== 'outlet'">
-        <summary>تذاكر الدعم</summary>
+      </section>
+      <section
+        v-if="adminPage === 'support' && portal !== 'outlet'"
+        class="admin-page"
+      >
+        <p v-if="!admin.tickets.length" class="empty-state">
+          لا توجد تذاكر دعم حالياً.
+        </p>
         <article v-for="t in admin.tickets" :key="t.id">
           <h3>{{ t.id }} · {{ t.category }}</h3>
           <p>{{ t.text }}</p>
@@ -656,9 +721,21 @@ const settingsLabels = {
             ><button :disabled="busy">إرسال وإغلاق</button>
           </form>
         </article>
-      </details>
-      <details v-if="portal !== 'outlet'">
-        <summary>مراجعة الإلغاءات والتعذر</summary>
+      </section>
+      <section
+        v-if="adminPage === 'reviews' && portal !== 'outlet'"
+        class="admin-page"
+      >
+        <p
+          v-if="
+            !admin.users.some(
+              (x) => x.failures?.length || x.cancellations?.length,
+            )
+          "
+          class="empty-state"
+        >
+          لا توجد إلغاءات أو حالات تعذر للمراجعة.
+        </p>
         <article
           v-for="x in admin.users.filter(
             (x) => x.failures?.length || x.cancellations?.length,
@@ -689,9 +766,11 @@ const settingsLabels = {
             ><button :disabled="busy">اعتماد المراجعة</button>
           </form>
         </article>
-      </details>
-      <details v-if="portal !== 'outlet'">
-        <summary>إضافة وتمويل منفذ</summary>
+      </section>
+      <section
+        v-if="adminPage === 'outlets' && portal !== 'outlet'"
+        class="admin-page"
+      >
         <form
           class="form-stack"
           @submit.prevent="
@@ -745,15 +824,49 @@ const settingsLabels = {
         <a href="?portal=outlet" target="_blank" rel="noopener"
           >فتح واجهة المنفذ المستقلة</a
         >
-      </details>
-      <details v-if="portal !== 'outlet'">
-        <summary>سجل العمليات</summary>
+      </section>
+      <section
+        v-if="adminPage === 'audit' && portal !== 'outlet'"
+        class="admin-page"
+      >
+        <p v-if="!admin.audit.length" class="empty-state">
+          لا توجد عمليات مسجلة بعد.
+        </p>
         <p v-for="a in admin.audit" :key="a.id">{{ a.at }} — {{ a.text }}</p>
-      </details></template
+      </section></template
     >
   </dialog>
 </template>
 <style>
+.admin-back {
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid #f47d2f55;
+  border-radius: 12px;
+  background: #fff0e3;
+  color: #99501d;
+  cursor: pointer;
+  font: inherit;
+}
+.admin-options {
+  gap: 10px;
+}
+.admin-options .account-option {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 58px;
+  text-align: start;
+}
+.admin-page {
+  padding: 4px 0 12px;
+}
+[data-theme="dark"] .admin-back {
+  background: #493426;
+  color: #ffbc8d;
+}
 .workspace-dialog {
   width: min(94vw, 680px);
   max-height: 88dvh;
