@@ -50,7 +50,66 @@ export function createDemoData() {
     radius: 5,
   };
   const at = new Date().toISOString();
-  const orders = Object.keys(statuses).map((status, index) => ({
+  const sampleRecipients = [
+    [
+      "أحمد سامر",
+      "المنصور",
+      "شارع الرواد — بناية الربيع، الطابق الثاني",
+      33.32,
+      44.35,
+    ],
+    [
+      "زينب علي",
+      "زيونة",
+      "شارع الربيعي — قرب مجمع المحلات، دار 12",
+      33.33,
+      44.46,
+    ],
+    ["مصطفى كريم", "الجادرية", "شارع الجامعة — محلة 21، زقاق 8", 33.28, 44.4],
+    [
+      "نور حسين",
+      "الكرادة",
+      "الكرادة داخل — قرب مكتبة الندى، دار 7",
+      33.3,
+      44.43,
+    ],
+    ["حسن ماجد", "المنصور", "شارع 14 رمضان — مجمع النخيل، محل 4", 33.33, 44.36],
+    [
+      "مريم عادل",
+      "زيونة",
+      "شارع فلسطين — قرب حديقة الحي، دار 25",
+      33.34,
+      44.45,
+    ],
+    [
+      "علي سجاد",
+      "الجادرية",
+      "شارع الوزراء — بناية الياسمين، شقة 3",
+      33.29,
+      44.41,
+    ],
+    [
+      "فاطمة رائد",
+      "الكرادة",
+      "الكرادة خارج — شارع العطار، دار 18",
+      33.31,
+      44.42,
+    ],
+    ["عمر قاسم", "المنصور", "حي دراغ — شارع الزيتون، دار 9", 33.32, 44.34],
+    ["سارة مهند", "زيونة", "شارع الربيعي — مجمع الزهور، شقة 6", 33.32, 44.45],
+    ["يوسف حازم", "الجادرية", "قرب جسر الجادرية — زقاق 5، دار 14", 33.27, 44.4],
+    [
+      "رقية وسام",
+      "الكرادة",
+      "شارع الصناعة — بناية دجلة، الطابق الأول",
+      33.31,
+      44.44,
+    ],
+  ];
+  const orders = Array.from(
+    { length: 54 },
+    (_, index) => Object.keys(statuses)[index % 18],
+  ).map((status, index) => ({
     id: "ORD-DEMO-" + String(index + 1).padStart(4, "0"),
     merchant: merchant.id,
     courier: ["draft", "published", "cancelled"].includes(status)
@@ -58,7 +117,7 @@ export function createDemoData() {
       : courier.id,
     status,
     kind: "merchant",
-    service: index === 2 ? "vip" : "normal",
+    service: index % 3 === 2 ? "vip" : "normal",
     collection: "none",
     nature: "normal",
     vehicle: "sedan",
@@ -74,14 +133,23 @@ export function createDemoData() {
     feePayer: "customer",
     sender: { ...merchant },
     recipient: {
-      name: "مستلم تجريبي " + (index + 1),
+      name: sampleRecipients[index % sampleRecipients.length][0],
       phone: "0778800" + String(index + 1).padStart(4, "0"),
       province: "بغداد",
-      area: ["المنصور", "زيونة", "الجادرية"][index % 3],
-      address: "عنوان تجريبي " + (index + 1),
-      location: { lat: 33.31, lng: 44.44 },
+      area: sampleRecipients[index % sampleRecipients.length][1],
+      address: sampleRecipients[index % sampleRecipients.length][2],
+      location: {
+        lat: sampleRecipients[index % sampleRecipients.length][3],
+        lng: sampleRecipients[index % sampleRecipients.length][4],
+      },
     },
-    notes: "طلب تجريبي لتصميم وفحص الواجهة",
+    notes:
+      [
+        "ملابس جاهزة — الاتصال قبل الوصول",
+        "عناية بالبشرة — يرجى إبقاء العبوة مستقيمة",
+        "أحذية — التسليم بعد الساعة الرابعة",
+        "هدايا مغلفة — التعامل بحذر",
+      ][index % 4] + " (بيانات وهمية للفحص)",
     demo: true,
     createdAt: at,
     updatedAt: at,
@@ -138,6 +206,7 @@ export function createDemoData() {
   ];
   return {
     version: 1,
+    expandedDemoCatalog: true,
     users: [merchant, courier],
     orders,
     ledger,

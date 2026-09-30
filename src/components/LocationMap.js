@@ -94,8 +94,10 @@ export default defineComponent({
     watch(
       () => props.movableLocation,
       (point) => {
-        if (point && locationMarker)
+        if (point && locationMarker) {
           locationMarker.setLatLng([point.lat, point.lng]);
+          map?.panTo([point.lat, point.lng]);
+        }
       },
     );
     onBeforeUnmount(() => {

@@ -36,6 +36,20 @@ export function createDemoApi(storage = globalThis.localStorage) {
     )
       data = saved;
   } catch {}
+  if (!data.expandedDemoCatalog) {
+    const sample = createDemoData();
+    if (data.users.some((u) => u.id === "MER-DEMO")) {
+      for (const order of sample.orders) {
+        const existing = data.orders.find((o) => o.id === order.id);
+        if (!existing) data.orders.push(order);
+        else if (existing.recipient?.name?.startsWith("مستلم تجريبي")) {
+          existing.recipient = order.recipient;
+          existing.notes = order.notes;
+        }
+      }
+    }
+    data.expandedDemoCatalog = true;
+  }
   data.config = { ...defaults, ...data.config };
   data.tickets ??= [];
   data.audit ??= [];

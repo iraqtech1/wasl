@@ -1,3 +1,4 @@
+import LocationPanel from "../components/LocationPanel.vue";
 import AdSlider from "../components/AdSlider.vue";
 import LocationMap from "../components/LocationMap.js";
 import LocationShare from "../components/LocationShare.vue";
@@ -1297,18 +1298,7 @@ export function createOrdersRenderers(context) {
               'required maxlength="200" list="recipient-addresses"',
             ),
             input("landmark", "أقرب نقطة دالة", r.landmark, 'maxlength="200"'),
-            input(
-              "lat",
-              "خط عرض المستلم (اختياري)",
-              r.location?.lat ?? "",
-              'type="number" step="any"',
-            ),
-            input(
-              "lng",
-              "خط طول المستلم (اختياري)",
-              r.location?.lng ?? "",
-              'type="number" step="any"',
-            ),
+            h(LocationPanel, { location: r.location, editable: true }),
           ],
         ),
         h("label", { class: "checkbox" }, [
@@ -1319,7 +1309,7 @@ export function createOrdersRenderers(context) {
           ),
           "حفظ المستلم في زبائني",
         ]),
-        button("gps", "تحديد موقع المستلم الحالي واقتراح المنطقة"),
+
         h("label", {}, [
           "ملاحظات التوصيل",
           h(
@@ -1993,7 +1983,7 @@ export function createOrdersRenderers(context) {
                       class: "contact-actions map-pin-actions",
                     },
                     [
-                      maps(g.location, "فتح الخريطة"),
+                      maps(g.location, "فتح الخريطة", true),
                       g.location
                         ? h(LocationShare, {
                             location: g.location,

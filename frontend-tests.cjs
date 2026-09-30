@@ -149,3 +149,38 @@ test("unavailable browser storage never prevents preview login", async () => {
   await api("/api/login", { role: "merchant" });
   assert.equal((await api("/api/state")).user.id, "MER-DEMO");
 });
+
+test("demo catalog upgrade preserves edited orders and is not repeated", async () => {
+  const { createDemoData } = await import("./src/services/demoData.js");
+  const { createDemoApi, DEMO_STORAGE_KEY } =
+    await import("./src/services/demoApi.js");
+  const data = createDemoData();
+  assert.equal(data.orders.length, 54);
+  assert.equal(data.orders.filter((o) => o.service === "vip").length, 18);
+  data.orders = data.orders.slice(0, 18);
+  delete data.expandedDemoCatalog;
+  data.orders[0].recipient.name = "اسم عدله المستخدم";
+  data.orders[0].status = "cancelled";
+  const custom = { ...structuredClone(data.orders[0]), id: "USER-ORDER" };
+  data.orders.push(custom);
+  const values = new Map([[DEMO_STORAGE_KEY, JSON.stringify(data)]]);
+  const storage = {
+    getItem: (k) => values.get(k),
+    setItem: (k, v) => values.set(k, v),
+  };
+  const api = createDemoApi(storage);
+  await api("/api/login", { role: "merchant" });
+  const first = await api("/api/state");
+  assert.equal(first.orders.length, 55);
+  assert.equal(
+    first.orders.find((o) => o.id === "ORD-DEMO-0001").recipient.name,
+    "اسم عدله المستخدم",
+  );
+  assert.equal(
+    first.orders.find((o) => o.id === "ORD-DEMO-0001").status,
+    "cancelled",
+  );
+  const again = createDemoApi(storage);
+  await again("/api/login", { role: "merchant" });
+  assert.equal((await again("/api/state")).orders.length, 55);
+});

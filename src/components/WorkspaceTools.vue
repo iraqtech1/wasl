@@ -2,6 +2,7 @@
 import CloseIcon from "./CloseIcon.js";
 import { ref, reactive, computed, onMounted } from "vue";
 import LocationMap from "./LocationMap.js";
+import LocationPanel from "./LocationPanel.vue";
 import { phoneDigits } from "../renderers/helpers.js";
 import { api } from "../services/api.js";
 import { areas, nearestArea, distance } from "../services/orderPolicy.js";
@@ -175,7 +176,7 @@ async function gps() {
             form.area = nearestArea(location()) || form.area;
             resolve();
           },
-          () => reject(Error("تعذر تحديد الموقع؛ أدخل الإحداثيات يدوياً.")),
+          () => reject(Error("تعذر تحديد الموقع؛ اختره على الخريطة.")),
           { timeout: 12000 },
         ),
       ),
@@ -309,6 +310,11 @@ const settingsLabels = {
         <article v-for="x in items" :key="x.id">
           <strong>{{ x.name }}</strong>
           <p>{{ x.phone }} · {{ x.area }} · {{ x.address }}</p>
+          <LocationPanel
+            v-if="x.location"
+            :location="x.location"
+            :name="x.name"
+          />
           <button type="button" @click="edit(x)">تعديل</button>
           <button type="button" @click="remove(x)" :disabled="busy">حذف</button>
         </article>
@@ -347,26 +353,14 @@ const settingsLabels = {
         ><label
           >العنوان<input v-model.trim="form.address" required maxlength="200"
         /></label>
-        <div class="form-grid">
-          <label
-            >خط العرض<input
-              v-model="form.lat"
-              type="number"
-              step="any"
-              min="-90"
-              max="90" /></label
-          ><label
-            >خط الطول<input
-              v-model="form.lng"
-              type="number"
-              step="any"
-              min="-180"
-              max="180"
-          /></label>
-        </div>
-        <button type="button" @click="gps" :disabled="busy">
-          تحديد موقعي واقتراح المنطقة</button
-        ><button class="primary-button" :disabled="busy">حفظ</button
+        <LocationPanel
+          :location="location()"
+          editable
+          @update:location="
+            form.lat = $event.lat;
+            form.lng = $event.lng;
+          "
+        /><button class="primary-button" :disabled="busy">حفظ</button
         ><button type="button" @click="reset">إضافة جديدة</button>
       </form>
     </template>
@@ -717,22 +711,23 @@ const settingsLabels = {
               pattern="07[789][0-9]{8}"
               required /></label
           ><label>العنوان<input v-model="form.address" required /></label
-          ><label
-            >خط العرض<input
-              v-model="form.lat"
-              type="number"
-              step="any"
-              required /></label
-          ><label
-            >خط الطول<input
-              v-model="form.lng"
-              type="number"
-              step="any"
-              required /></label
-          ><button :disabled="busy">إضافة المنفذ محلياً</button>
+          ><LocationPanel
+            :location="location()"
+            editable
+            required
+            @update:location="
+              form.lat = $event.lat;
+              form.lng = $event.lng;
+            "
+          /><button :disabled="busy">إضافة المنفذ محلياً</button>
         </form>
         <article v-for="o in admin.outlets" :key="o.id">
           <strong>{{ o.name }}</strong>
+          <LocationPanel
+            v-if="o.location"
+            :location="o.location"
+            :name="o.name"
+          />
           <form
             @submit.prevent="
               adminAction('fund-outlet', { id: o.id, amount: o.fund })

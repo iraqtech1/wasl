@@ -1,3 +1,4 @@
+import LocationPanel from "../components/LocationPanel.vue";
 export function createUiRenderers(context) {
   function row(label, value) {
     const { h } = context();
@@ -91,44 +92,16 @@ export function createUiRenderers(context) {
     );
   }
   function coords(loc, readonly = false) {
-    const { h, input, button, icon } = context();
-    return [
-      h(
-        "div",
-        {
-          class: "form-grid",
-        },
-        [
-          input(
-            "lat",
-            "خط العرض",
-            loc?.lat ?? "",
-            `type="number" step="any" required ${readonly ? "readonly" : ""}`,
-          ),
-          input(
-            "lng",
-            "خط الطول",
-            loc?.lng ?? "",
-            `type="number" step="any" required ${readonly ? "readonly" : ""}`,
-          ),
-        ],
-      ),
-      readonly
-        ? ""
-        : button("gps", [icon("my_location"), " تحديد موقعي الحالي"]),
-      h(
-        "p",
-        {
-          class: "file-help",
-        },
-        [
-          "الموقع محفوظ بإحداثياته. فتح الخرائط لا يحتاج مشاركة الموقع مع التطبيق.",
-        ],
-      ),
-    ];
+    const { h } = context();
+    return h(LocationPanel, {
+      location: loc,
+      editable: !readonly,
+      required: !readonly,
+    });
   }
-  function maps(loc, label = "فتح الموقع بالخرائط") {
+  function maps(loc, label = "فتح الموقع بالخرائط", compact = false) {
     const { h, icon } = context();
+    if (!compact) return h(LocationPanel, { location: loc, name: label });
     return loc
       ? h(
           "a",

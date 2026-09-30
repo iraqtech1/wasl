@@ -975,7 +975,7 @@ export function useWasel() {
           },
           () => {
             b.disabled = false;
-            toast("تعذر تحديد الموقع؛ يمكنك إدخال الإحداثيات يدوياً");
+            toast("تعذر تحديد الموقع؛ اختره بالضغط على الخريطة");
           },
           {
             enableHighAccuracy: true,
