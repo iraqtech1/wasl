@@ -343,30 +343,28 @@ export function createOrdersRenderers(context) {
           JSON.stringify([o.id, o.recipient, o.sender]).includes(state.query)),
     );
     return [
-      u.role === "merchant"
-        ? h(AdSlider)
-        : h(
-            "section",
+      h(
+        "section",
+        {
+          class: "search-row",
+        },
+        [
+          h(
+            "input",
             {
-              class: "search-row",
+              id: "order-search",
+              "aria-label": "البحث عن طلب",
+              placeholder: "ابحث برقم الطلب أو الاسم أو المنطقة",
+              value: state.query,
             },
-            [
-              h(
-                "input",
-                {
-                  id: "order-search",
-                  "aria-label": "البحث عن طلب",
-                  placeholder: "ابحث برقم الطلب أو الاسم أو المنطقة",
-                  value: state.query,
-                },
-                [],
-              ),
-              statusPicker(),
-              state.screen === "available"
-                ? button("merchant-map", [icon("map"), " تجميع حسب الموقع"])
-                : "",
-            ],
+            [],
           ),
+          statusPicker(),
+          state.screen === "available"
+            ? button("merchant-map", [icon("map"), " تجميع حسب الموقع"])
+            : "",
+        ],
+      ),
       h(
         "p",
         {
@@ -1973,18 +1971,15 @@ export function createOrdersRenderers(context) {
                   id: "map-group-" + g.id,
                 },
                 [
-                  h(
-                    "span",
-                    {
-                      class: "number",
-                    },
-                    [g.count],
-                  ),
-                  h("h3", {}, [g.name]),
+                  h("div", { class: "map-pin-heading" }, [
+                    h("h3", {}, [g.name]),
+                    h("span", { class: "number" }, [g.count]),
+                  ]),
                   h(
                     "p",
                     {
-                      class: "info-line",
+                      class: "info-line map-pin-coordinates",
+                      dir: "ltr",
                     },
                     [
                       g.location.lat.toFixed(4),
@@ -1995,10 +1990,10 @@ export function createOrdersRenderers(context) {
                   h(
                     "div",
                     {
-                      class: "contact-actions",
+                      class: "contact-actions map-pin-actions",
                     },
                     [
-                      maps(g.location),
+                      maps(g.location, "فتح الخريطة"),
                       g.location
                         ? h(LocationShare, {
                             location: g.location,
@@ -2008,7 +2003,16 @@ export function createOrdersRenderers(context) {
                     ],
                   ),
                   g.ids
-                    ? g.ids.map((id) => button("order", id, `data-id="${id}"`))
+                    ? h(
+                        "div",
+                        {
+                          class: "map-pin-orders",
+                          "aria-label": "طلبات الموقع",
+                        },
+                        g.ids.map((id) =>
+                          button("order", id, `data-id="${id}"`),
+                        ),
+                      )
                     : "",
                 ],
               ),
