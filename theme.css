@@ -302,8 +302,43 @@ html[data-theme=dark] .registry-show-all:has(input:checked){background:#614026}
 .account-location-save{width:100%;min-height:46px;margin:0;border-radius:12px}
 .account-location-form>.account-location-save{display:flex;align-items:center;justify-content:center;padding:10px 14px!important;border:1px solid #f47d2f!important;background:linear-gradient(145deg,#ff9b52,#f47d2f)!important;color:#fff!important;font-weight:700;cursor:pointer}
 
-/* Consistent readable delivery badges in dark mode. */
-html[data-theme=dark] .chip:is(.transit,.at_customer){background:#214d57!important;color:#c5f5ee!important;border:1px solid #4d9295;font-family:Cairo,sans-serif;font-weight:700}
-
 /* One type style for every order status, in both themes and at every width. */
 html .chip{font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;line-height:1.7;letter-spacing:normal}
+
+/* Status-specific palettes: shared typography, distinct semantic colors. */
+html .chip.draft{background:#edf1f4!important;color:#455866!important;border:1px solid #45586633}
+html[data-theme=dark] .chip.draft{background:#253440!important;color:#cfdae3!important;border-color:#cfdae355}
+html .chip.published{background:#e2f2fa!important;color:#00567a!important;border:1px solid #00567a33}
+html[data-theme=dark] .chip.published{background:#163e54!important;color:#a5ddf6!important;border-color:#a5ddf655}
+html .chip.reserved{background:#fff0df!important;color:#934508!important;border:1px solid #93450833}
+html[data-theme=dark] .chip.reserved{background:#49321f!important;color:#ffc38d!important;border-color:#ffc38d55}
+html .chip.approaching{background:#ffeadf!important;color:#a44015!important;border:1px solid #a4401533}
+html[data-theme=dark] .chip.approaching{background:#4d2d23!important;color:#ffb898!important;border-color:#ffb89855}
+html .chip.arrived{background:#e4f1ec!important;color:#245f4d!important;border:1px solid #245f4d33}
+html[data-theme=dark] .chip.arrived{background:#203e34!important;color:#b4e6ce!important;border-color:#b4e6ce55}
+html .chip.waiting{background:#fff5d9!important;color:#73530b!important;border:1px solid #73530b33}
+html[data-theme=dark] .chip.waiting{background:#443b21!important;color:#f4d88e!important;border-color:#f4d88e55}
+html .chip.received{background:#e2f3f1!important;color:#17635d!important;border:1px solid #17635d33}
+html[data-theme=dark] .chip.received{background:#193f3d!important;color:#9fe0d9!important;border-color:#9fe0d955}
+html .chip.transit{background:#dceef5!important;color:#004d70!important;border:1px solid #004d7033}
+html[data-theme=dark] .chip.transit{background:#123b51!important;color:#b7e7ff!important;border-color:#b7e7ff55}
+html .chip.at_customer{background:#e6f4df!important;color:#39611d!important;border:1px solid #39611d33}
+html[data-theme=dark] .chip.at_customer{background:#2d4022!important;color:#c4e5a3!important;border-color:#c4e5a355}
+html .chip.delivered{background:#dff4e8!important;color:#16603b!important;border:1px solid #16603b33}
+html[data-theme=dark] .chip.delivered{background:#163f2b!important;color:#a1e4bb!important;border-color:#a1e4bb55}
+html .chip.failed{background:#ffebe7!important;color:#9d352b!important;border:1px solid #9d352b33}
+html[data-theme=dark] .chip.failed{background:#482925!important;color:#ffbcb2!important;border-color:#ffbcb255}
+html .chip.retry{background:#fff2cf!important;color:#785000!important;border:1px solid #78500033}
+html[data-theme=dark] .chip.retry{background:#483719!important;color:#ffdc86!important;border-color:#ffdc8655}
+html .chip.return_pending{background:#f8ece2!important;color:#855027!important;border:1px solid #85502733}
+html[data-theme=dark] .chip.return_pending{background:#433326!important;color:#ecc5a2!important;border-color:#ecc5a255}
+html .chip.returning{background:#f8e4df!important;color:#923e30!important;border:1px solid #923e3033}
+html[data-theme=dark] .chip.returning{background:#4a2d29!important;color:#f3b5a8!important;border-color:#f3b5a855}
+html .chip.partial_pending{background:#f5eadc!important;color:#7d551e!important;border:1px solid #7d551e33}
+html[data-theme=dark] .chip.partial_pending{background:#423523!important;color:#eaca99!important;border-color:#eaca9955}
+html .chip.returned{background:#eaeef5!important;color:#455779!important;border:1px solid #45577933}
+html[data-theme=dark] .chip.returned{background:#293448!important;color:#becfeb!important;border-color:#becfeb55}
+html .chip.cancelled{background:#f5e7ec!important;color:#843d55!important;border:1px solid #843d5533}
+html[data-theme=dark] .chip.cancelled{background:#422b34!important;color:#edb8ca!important;border-color:#edb8ca55}
+html .chip.completed{background:#e4efec!important;color:#355f54!important;border:1px solid #355f5433}
+html[data-theme=dark] .chip.completed{background:#263b36!important;color:#b8dcd1!important;border-color:#b8dcd155}
