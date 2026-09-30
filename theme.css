@@ -261,3 +261,12 @@ html[data-theme=dark] .map-pin-orders>button{background:#213f51;color:#d7edf8;bo
 .location-panel-actions>.location-share{min-width:0}
 html[data-theme=dark] .location-panel-actions>a,html[data-theme=dark] .location-panel-actions>button,html[data-theme=dark] .location-panel-actions>.location-share>button,html[data-theme=dark] .outlet-actions>a,html[data-theme=dark] .outlet-actions>button{background:#493426!important;color:#ffbc8d!important;border-color:#815333!important}
 .geographic-map .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}
+.home-page-summary{font-size:13px;color:#607e8b;margin:12px 0}
+.shipment-pagination{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:20px 0 12px}
+.shipment-pagination button{display:grid;place-items:center;min-width:38px;min-height:42px;padding:6px 10px;border:1px solid #cbdfe7;border-radius:12px;background:#f8fcfd;color:#00567a;font:700 13px/1.5 'Cairo',sans-serif}
+.shipment-pagination button[aria-current=page]{background:#00567a;color:#fff;border-color:#00567a}
+.shipment-pagination button:disabled{opacity:.4;cursor:default}
+.shipment-pagination button:focus-visible{outline:3px solid #f47d2f;outline-offset:2px}
+#status-trigger{scroll-margin-top:18px}
+html[data-theme=dark] .shipment-pagination button{background:#213f51;color:#d7edf8;border-color:#365565}
+html[data-theme=dark] .shipment-pagination button[aria-current=page]{background:#f47d2f;color:#173744;border-color:#f47d2f}

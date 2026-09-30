@@ -150,6 +150,7 @@ export function useWasel() {
     S: null,
     screen: "home",
     filter: "all",
+    homePage: 1,
     query: "",
     wizard: null,
     registration: null,
@@ -455,6 +456,7 @@ export function useWasel() {
     });
     state.screen = "home";
     state.filter = "all";
+    state.homePage = 1;
     ui.loginPassword = "";
     ui.loginPhone = "";
     await refresh();
@@ -696,6 +698,7 @@ export function useWasel() {
           state.screen = b.dataset.screen;
           state.wizard = null;
           state.filter = "all";
+          state.homePage = 1;
           state.query = "";
           render();
           window.scrollTo(0, 0);
@@ -772,10 +775,17 @@ export function useWasel() {
               String(menu.matches(":popover-open")),
             );
         }
+      } else if (a === "home-page") {
+        state.homePage = Math.max(1, Number(b.dataset.page) || 1);
+        await nextTick();
+        const trigger = $("#status-trigger");
+        trigger?.scrollIntoView({ block: "start", behavior: "smooth" });
+        trigger?.focus({ preventScroll: true });
       } else if (a === "filter") {
         const menu = $("#status-menu");
         if (menu?.matches(":popover-open")) menu.hidePopover();
         state.filter = b.dataset.value;
+        state.homePage = 1;
         render();
         $("#status-trigger")?.focus({ preventScroll: true });
       } else if (a === "wizard-back") {
@@ -1640,6 +1650,7 @@ export function useWasel() {
       }
       state.screen = route.page;
       state.filter = "all";
+      state.homePage = 1;
       state.query = "";
       if (route.page === "new") {
         if (!state.wizard) startOrder();

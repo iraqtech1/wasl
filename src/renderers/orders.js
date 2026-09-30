@@ -1,4 +1,5 @@
 import LocationPanel from "../components/LocationPanel.vue";
+import { paginate } from "../services/pagination.js";
 import AdSlider from "../components/AdSlider.vue";
 import LocationMap from "../components/LocationMap.js";
 import LocationShare from "../components/LocationShare.vue";
@@ -35,6 +36,27 @@ export function createOrdersRenderers(context) {
           o.status,
         ),
       ).length;
+    const pagination = paginate(
+      own.filter((o) =>
+        state.filter === "all"
+          ? !closed.includes(o.status)
+          : o.status === state.filter,
+      ),
+      state.homePage,
+    );
+    const pageButton = (label, page, disabled = false, current = false) =>
+      h(
+        "button",
+        {
+          type: "button",
+          "data-action": "home-page",
+          "data-page": page,
+          disabled,
+          "aria-current": current ? "page" : undefined,
+          "aria-label": typeof label === "number" ? `الصفحة ${label}` : label,
+        },
+        [label],
+      );
     return [
       u.role === "merchant"
         ? h(AdSlider)
@@ -166,15 +188,32 @@ export function createOrdersRenderers(context) {
             ["الطلبات بعهدتي"],
           ),
       statusPicker(),
-      orderList(
-        own
-          .filter((o) =>
-            state.filter === "all"
-              ? !closed.includes(o.status)
-              : o.status === state.filter,
+      pagination.total
+        ? h("p", { class: "home-page-summary", role: "status" }, [
+            `عرض ${pagination.start}–${pagination.end} من ${pagination.total} شحنة`,
+          ])
+        : "",
+      orderList(pagination.items),
+      pagination.pages > 1
+        ? h(
+            "nav",
+            { class: "shipment-pagination", "aria-label": "صفحات الشحنات" },
+            [
+              pageButton("السابق", pagination.page - 1, pagination.page === 1),
+              ...pagination.numbers.flatMap((number, index, numbers) => [
+                index && number - numbers[index - 1] > 1
+                  ? h("span", { "aria-hidden": "true" }, ["…"])
+                  : "",
+                pageButton(number, number, false, number === pagination.page),
+              ]),
+              pageButton(
+                "التالي",
+                pagination.page + 1,
+                pagination.page === pagination.pages,
+              ),
+            ],
           )
-          .slice(0, 10),
-      ),
+        : "",
     ];
   }
   function statusPicker() {

@@ -223,3 +223,19 @@ test("merchant and courier account sections open independent dialogs", async () 
     }
   }
 });
+
+test("shipment pagination includes every item and clamps filtered pages", async () => {
+  const { paginate } = await import("./src/services/pagination.js");
+  const items = Array.from({ length: 23 }, (_, i) => i);
+  const pages = Array.from({ length: 5 }, (_, i) => paginate(items, i + 1));
+  assert.deepEqual(
+    pages.flatMap((p) => p.items),
+    items,
+  );
+  assert.equal(pages[4].start, 21);
+  assert.equal(pages[4].end, 23);
+  assert.equal(paginate(items.slice(0, 2), 5).page, 1);
+  assert.equal(paginate([], 5).start, 0);
+  assert.deepEqual(paginate([], 5).items, []);
+  assert.equal(paginate(items, -1).page, 1);
+});
