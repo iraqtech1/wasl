@@ -170,7 +170,7 @@ export function createOrdersRenderers(context) {
               h(
                 "h2",
                 {
-                  class: "section-title",
+                  class: "section-title live-shipments-title",
                 },
                 ["الشحنات المباشرة"],
               ),
