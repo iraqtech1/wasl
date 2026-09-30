@@ -1,4 +1,5 @@
 import LocationMap from "../components/LocationMap.js";
+import LocationShare from "../components/LocationShare.vue";
 import { trackingLink } from "../services/tracking.js";
 import { areas } from "../services/orderPolicy.js";
 import { PHONE_ATTRIBUTES } from "./helpers.js";
@@ -2072,7 +2073,15 @@ export function createOrdersRenderers(context) {
                     {
                       class: "contact-actions",
                     },
-                    [maps(g.location)],
+                    [
+                      maps(g.location),
+                      g.location
+                        ? h(LocationShare, {
+                            location: g.location,
+                            name: g.name,
+                          })
+                        : "",
+                    ],
                   ),
                   g.ids
                     ? g.ids.map((id) => button("order", id, `data-id="${id}"`))
