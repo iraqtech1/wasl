@@ -240,7 +240,14 @@ export function createOrdersRenderers(context) {
           },
           [
             icon("filter_list"),
-            h("span", {}, [state.S.statuses[state.filter] || "جميع الحالات"]),
+            h(
+              "span",
+              {
+                class: "status-trigger-label",
+                title: state.S.statuses[state.filter] || "جميع الحالات",
+              },
+              [state.S.statuses[state.filter] || "جميع الحالات"],
+            ),
             h(
               "span",
               {
