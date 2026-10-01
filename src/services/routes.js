@@ -9,7 +9,7 @@ export function parseRoute(hash) {
     "registry",
     "wallet",
     "account",
-    ...(role === "merchant" ? ["new"] : ["available"]),
+    ...(role === "merchant" ? ["new", "draft"] : ["available"]),
   ];
   return { role, page: pages.includes(page) ? page : "home" };
 }

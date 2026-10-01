@@ -422,3 +422,4 @@ html[data-theme=dark] .wizard-steps li span{box-shadow:0 3px 8px -2px #0005,0 1p
 html[data-theme=dark] .wizard-steps li.active span{box-shadow:0 0 0 3px #f47d2f25,0 4px 10px -3px #f47d2f45}
 
 .order-card-selection{display:flex;align-items:center;justify-content:flex-start;min-height:36px;width:44px}.order-card-selection input{width:21px;height:21px;accent-color:#f47d2f;cursor:pointer}
+.device-draft-card{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;margin:12px 0;border:1px solid #8ca4b640;border-right:3px solid #f47d2f;border-radius:16px;background:#f3f9fb}.device-draft-card p{margin:4px 0 0}html[data-theme=dark] .device-draft-card{background:#193444}

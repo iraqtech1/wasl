@@ -363,3 +363,23 @@ test("offline publish request remains in device drafts without creating a publis
   assert.match(app.ui.toast, /الجهاز/);
 });
 
+
+test("device draft opens a dedicated page using its stable id", async () => {
+  const { readDeviceDrafts } = await import('./src/services/sampleDrafts.js');
+  const { app } = await renderPage('AccountView');
+  const key = 'wasel-offline-' + app.state.S.user.id;
+  localStorage.setItem(key, JSON.stringify([{ recipient: { name: 'Draft page recipient' }, amount: 1000 }]));
+  const first = readDeviceDrafts(app.state.S.user)[0];
+  assert.ok(first.localDraftId);
+  assert.equal(readDeviceDrafts(app.state.S.user)[0].localDraftId, first.localDraftId);
+  const button = { dataset: { action: 'view-local-draft', draftId: first.localDraftId } };
+  await app.dispatch('click', { target: { closest: () => button } });
+  assert.equal(app.state.screen, 'draft');
+  assert.equal(app.ui.page, 'DeviceDraftView');
+  const { h } = await import('vue');
+  const { renderToString } = await import('vue/server-renderer');
+  const html = await renderToString(h(app.currentView.value));
+  assert.match(html, /Draft page recipient/);
+  assert.match(html, /نشر الطلب/);
+  assert.match(html, /حذف المسودة/);
+});

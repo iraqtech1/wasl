@@ -468,14 +468,12 @@ export function createAccountRenderers(context) {
           h(
             "div",
             {
-              class: "detail-row",
+              class: "device-draft-card",
             },
             [
-              h("span", {}, [d.recipient?.name || "طلب بدون اسم"]),
+              h("div", {}, [h("strong", {}, [d.recipient?.name || "طلب بدون اسم"]), h("p", { class: "muted" }, [[d.recipient?.province, d.recipient?.area].filter(Boolean).join(" — ")])]),
               h("div", { class: "order-actions" }, [
-                button("sync-draft", "حفظ", `data-index="${i}" ${state.offline ? "disabled" : ""}`),
-                button("sync-draft", "إعادة نشر", `data-index="${i}" data-publish="true" ${state.offline ? "disabled" : ""}`),
-                button("delete-local-draft", "حذف", `data-index="${i}"`),
+                button("view-local-draft", "مشاهدة الطلب", `data-draft-id="${d.localDraftId}"`),
               ]),
             ],
           ),

@@ -5,6 +5,7 @@ import {
   nearestArea,
 } from "../services/orderPolicy.js";
 import { api as frontendApi } from "../services/api.js";
+import DeviceDraftDetail from "../components/DeviceDraftDetail.vue";
 import { parseRoute, routeHash } from "../services/routes.js";
 import { createCameraRenderers } from "../renderers/camera.js";
 import { createAccountRenderers } from "../renderers/account.js";
@@ -521,6 +522,7 @@ export function useWasel() {
         available: "OrdersView",
         wallet: "WalletView",
         account: "AccountView",
+        draft: "DeviceDraftView",
         new: "OrderWizard",
       }[state.screen] || "HomeView";
     ui.revision++;
@@ -844,6 +846,12 @@ export function useWasel() {
           await refresh();
           toast("تم حفظ الطلب");
         }
+      } else if (a === "view-local-draft") {
+        state.localDraftId = b.dataset.draftId;
+        state.screen = "draft";
+        closeModal();
+        render();
+        window.scrollTo(0, 0);
       } else if (a === "sync-draft" || a === "delete-local-draft") {
         if (state.draftBusy) return;
         const drafts = readDrafts();
@@ -1629,6 +1637,11 @@ export function useWasel() {
     OrdersView: ordersView,
     OrderWizard: orderWizard,
     AccountView: accountView,
+    DeviceDraftView: () => h(DeviceDraftDetail, {
+      user: state.S.user, draftId: state.localDraftId, offline: state.offline,
+      onBack: () => { state.screen = "account"; render(); modal("المسودات", [offlineDraftsView()]); },
+      onDone: async message => { state.screen = "account"; await refresh(); modal("المسودات", [offlineDraftsView()]); toast(message); },
+    }),
     WalletView: walletView,
     MerchantRegistration: merchantRegistrationView,
     CourierRegistration: courierView,
@@ -1706,7 +1719,7 @@ export function useWasel() {
   let restoringRoute = false;
   function writeRoute(role, page) {
     if (restoringRoute) return;
-    const hash = routeHash(role, page);
+    const hash = routeHash(role, page) + (page === "draft" && state.localDraftId ? "/" + encodeURIComponent(state.localDraftId) : "");
     if (location.hash !== hash) history.pushState(null, "", hash);
   }
   async function restoreRoute() {
@@ -1744,6 +1757,7 @@ export function useWasel() {
         await refresh(false);
       }
       state.screen = route.page;
+      if (route.page === "draft") state.localDraftId = decodeURIComponent(location.hash.split("/")[3] || "");
       state.filter = "all";
       state.homePage = 1;
       state.registryPage = 1;
