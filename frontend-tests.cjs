@@ -23,7 +23,7 @@ test("iraq demo credentials select the populated merchant and reject a wrong pas
   const result = await api("/api/login", { role: "merchant", phone: "iraq", password: "iraq" });
   assert.equal(result.user.id, "MER-DEMO");
   const state = await api("/api/state");
-  assert.equal(state.orders.length, 54);
+  assert.equal(state.orders.length, 414);
   assert.ok(state.orders.some((order) => order.service === "vip"));
 });
 test("both account roles can save a map point while profile is locked", async () => {
@@ -233,7 +233,7 @@ test("demo catalog upgrade preserves edited orders and is not repeated", async (
   const { createDemoApi, DEMO_STORAGE_KEY } =
     await import("./src/services/demoApi.js");
   const data = createDemoData();
-  assert.equal(data.orders.length, 54);
+  assert.equal(data.orders.length, 414);
   assert.equal(data.orders.filter((o) => o.service === "vip").length, 18);
   data.orders = data.orders.slice(0, 18);
   delete data.expandedDemoCatalog;
@@ -249,7 +249,7 @@ test("demo catalog upgrade preserves edited orders and is not repeated", async (
   const api = createDemoApi(storage);
   await api("/api/login", { role: "merchant" });
   const first = await api("/api/state");
-  assert.equal(first.orders.length, 55);
+  assert.equal(first.orders.length, 415);
   assert.equal(
     first.orders.find((o) => o.id === "ORD-DEMO-0001").recipient.name,
     "اسم عدله المستخدم",
@@ -260,7 +260,7 @@ test("demo catalog upgrade preserves edited orders and is not repeated", async (
   );
   const again = createDemoApi(storage);
   await again("/api/login", { role: "merchant" });
-  assert.equal((await again("/api/state")).orders.length, 55);
+  assert.equal((await again("/api/state")).orders.length, 415);
 });
 
 test("merchant and courier account sections open independent dialogs", async () => {
@@ -287,11 +287,10 @@ test("merchant and courier account sections open independent dialogs", async () 
       },
     };
     const view = createAccountRenderers(() => context).accountView();
-    assert.equal(view.children.length, 3);
+    assert.equal(view.children.length, 2);
     for (const [index, title] of [
       "معلومات الحساب",
       "التقييمات",
-      "المسودات",
     ].entries()) {
       const trigger = view.children[index];
       assert.equal(trigger.tag, "button");
@@ -317,4 +316,24 @@ test("shipment pagination includes every item and clamps filtered pages", async 
   assert.equal(paginate([], 5).start, 0);
   assert.deepEqual(paginate([], 5).items, []);
   assert.equal(paginate(items, -1).page, 1);
+});
+
+test("October samples add twenty per status once without replacing existing orders", async () => {
+  const { createDemoApi, DEMO_STORAGE_KEY } = await import('./src/services/demoApi.js');
+  const { createDemoData, statuses } = await import('./src/services/demoData.js');
+  const data = createDemoData();
+  const extra = data.orders.filter(o => o.id.startsWith('ORD-SAMPLE-OCT-'));
+  for (const status of Object.keys(statuses)) assert.equal(extra.filter(o => o.status === status).length, 20);
+  assert.equal(new Set(extra.map(o => o.vehicle)).size, 3);
+  data.orders = data.orders.filter(o => !o.id.startsWith('ORD-SAMPLE-OCT-'));
+  data.orders[0].notes = 'preserve custom edit';
+  delete data.expandedOctoberOrders;
+  const values = new Map([[DEMO_STORAGE_KEY, JSON.stringify(data)]]);
+  const storage = { getItem: k => values.get(k), setItem: (k,v) => values.set(k,v) };
+  for (let i = 0; i < 2; i++) {
+    const api = createDemoApi(storage); await api('/api/login', { role: 'merchant' });
+    const state = await api('/api/state');
+    assert.equal(state.orders.length, 414);
+    assert.equal(state.orders.find(o => o.id === data.orders[0].id).notes, 'preserve custom edit');
+  }
 });

@@ -212,6 +212,39 @@ export function createDemoData() {
       },
     ],
   }));
+  const vehicles = ["motorcycle", "sedan", "refrigerated"];
+  const additions = Object.keys(statuses).flatMap((status, stateIndex) =>
+    Array.from({ length: 20 }, (_, index) => {
+      const order = structuredClone(orders.find(o => o.status === status));
+      const number = stateIndex * 20 + index + 1;
+      const vehicle = vehicles[index % vehicles.length];
+      const person = sampleRecipients[(index + stateIndex) % sampleRecipients.length];
+      const driver = [courier, ...extraCouriers].find(c => c.vehicle === vehicle);
+      const date = new Date(Date.now() - (index * 3 + stateIndex) * 3600000).toISOString();
+      return {
+        ...order,
+        id: `ORD-SAMPLE-OCT-${String(number).padStart(4, "0")}`,
+        vehicle, vehicles: [vehicle],
+        courier: order.courier ? driver.id : null,
+        nature: vehicle === "refrigerated" ? "cold" : "normal",
+        service: "normal", amount: 10000 + number * 500,
+        count: 2 + index % 5, weight: 1 + index % 4,
+        length: 15 + index % 6, width: 12 + index % 5, height: 10 + index % 4,
+        baseFee: 4000 + (index % 4) * 1000, fee: 4000 + (index % 4) * 1000,
+        feePayer: index % 2 ? "merchant" : "customer",
+        recipient: {
+          name: person[0], phone: "0779900" + String(number).padStart(4, "0"),
+          province: "بغداد", area: person[1], address: `${person[2]} — وحدة ${index + 1}`,
+          landmark: ["قرب المدرسة", "مقابل الصيدلية", "بجانب السوق", "قرب الجامع"][index % 4],
+          location: { lat: person[3] + index * 0.0001, lng: person[4] + index * 0.0001 },
+        },
+        notes: `${vehicle === "refrigerated" ? "مواد غذائية مبردة" : ["ملابس", "كتب", "إكسسوارات", "هدايا"][index % 4]} — بيانات تجريبية ${number}`,
+        createdAt: date, updatedAt: date, publishedAt: date,
+        history: [{ at: date, actor: "DEMO", text: "طلب تجريبي — " + statuses[status], status }],
+      };
+    }),
+  );
+  orders.push(...additions);
   merchant.customers = orders.slice(0, 3).map((o) => o.recipient);
   const ledger = [
     {
@@ -234,6 +267,7 @@ export function createDemoData() {
   return {
     version: 1,
     expandedDemoCatalog: true,
+    expandedOctoberOrders: true,
     expandedDemoCouriers: true,
     users: [merchant, courier, ...extraCouriers],
     orders,

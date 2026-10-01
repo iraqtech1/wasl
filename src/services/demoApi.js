@@ -62,6 +62,15 @@ export function createDemoApi(storage = globalThis.localStorage) {
     }
     data.expandedDemoCouriers = true;
   }
+  if (!data.expandedOctoberOrders) {
+    if (data.users.some(u => u.id === "MER-DEMO")) {
+      const known = new Set(data.orders.map(o => o.id));
+      for (const order of createDemoData().orders.filter(o => o.id.startsWith("ORD-SAMPLE-OCT-"))) {
+        if (!known.has(order.id)) data.orders.push(order);
+      }
+    }
+    data.expandedOctoberOrders = true;
+  }
   data.config = { ...defaults, ...data.config };
   data.tickets ??= [];
   data.audit ??= [];
