@@ -33,10 +33,15 @@ export const distance = (a, b) => {
 export const unresolved = (o) =>
   !CLOSED.includes(o.status) &&
   !(o.settled && ["delivered", "returned"].includes(o.status));
+export const orderVehicles = (o) => Array.isArray(o.vehicles) ? [...new Set(o.vehicles)] : [o.vehicle];
+export const vehicleFits = (v, o, s) =>
+  (o.nature !== "cold" || v === "refrigerated") &&
+  Number(o.weight) <= (s.vehicleKg[v] || 0) &&
+  Math.max(o.length, o.width, o.height) <= (s.vehicleCm[v] || 0);
 export function eligible(u, o, s) {
   return (
     u.available &&
-    u.vehicle === o.vehicle &&
+    orderVehicles(o).includes(u.vehicle) && vehicleFits(u.vehicle, o, s) &&
     Number(u.budget) >= (o.kind === "free" ? 0 : o.amount) &&
     o.weight <= (s.vehicleKg[u.vehicle] || 0) &&
     Math.max(o.length, o.width, o.height) <= (s.vehicleCm[u.vehicle] || 0) &&

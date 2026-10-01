@@ -411,3 +411,5 @@ button.metric{font:inherit;text-align:start;width:100%;cursor:pointer}button.met
 .courier-vehicle-marker .courier-map-label{display:grid;place-items:center;width:52px;height:52px;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#b94e0b}
 .courier-vehicle-marker .courier-map-label svg{width:42px;height:34px;overflow:visible;fill:none;stroke:#b94e0b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 2px 2px #003e5940)}
 .courier-vehicle-marker:focus-visible{outline:3px solid #f47d2f;border-radius:10px;outline-offset:1px}
+
+.vehicle-choices{min-width:0;margin:0;padding:14px;border:1px solid #8ca4b640;border-radius:14px}.vehicle-choices legend{padding:0 6px;font-weight:700}.vehicle-choices .checkbox{padding:8px 0}.vehicle-choices input{accent-color:#f47d2f}.vehicle-choices label:has(input:disabled){opacity:.5}

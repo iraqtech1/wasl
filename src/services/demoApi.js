@@ -3,6 +3,8 @@ import { createDemoData, statuses, settings as defaults } from "./demoData.js";
 import { rememberOrderPlaces } from "./addressBook.js";
 import {
   BEFORE,
+  orderVehicles,
+  vehicleFits,
   unresolved,
   eligible,
   distance,
@@ -456,13 +458,11 @@ export function createDemoApi(storage = globalThis.localStorage) {
     );
     must(p.returnFee <= p.fee, "أجرة الراجع لا تتجاوز التوصيل");
     must(
-      p.nature !== "cold" || p.vehicle === "refrigerated",
+      p.nature !== "cold" || orderVehicles(p).every(v => v === "refrigerated"),
       "الشحنة المبردة تحتاج سيارة مبردة",
     );
     must(
-      p.weight <= data.config.vehicleKg[p.vehicle] &&
-        Math.max(p.length, p.width, p.height) <=
-          data.config.vehicleCm[p.vehicle],
+      orderVehicles(p).length > 0 && orderVehicles(p).every(v => vehicleFits(v, p, data.config)),
       "حمولة الشحنة تتجاوز سعة المركبة",
     );
     must(
@@ -504,6 +504,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
         "height",
         "nature",
         "vehicle",
+        "vehicles",
         "baseFee",
         "fee",
         "returnFee",

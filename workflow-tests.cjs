@@ -575,3 +575,20 @@ test("commission and monthly subscription are configurable, delayed and not dupl
   await t.api("/api/local-admin", { action: "subscription" });
   assert.equal((await t.state()).balance, initial - 2500);
 });
+
+test("multiple vehicle choices persist and match either courier while rejecting unsuitable choices", async () => {
+  const t = await setup();
+  const { eligible } = await import('./src/services/orderPolicy.js');
+  const o = await t.create({ vehicle: 'motorcycle', vehicles: ['motorcycle', 'sedan'], weight: 1, length: 10, width: 10, height: 10 });
+  assert.deepEqual(o.vehicles, ['motorcycle', 'sedan']);
+  const s = await t.state();
+  const courier = { available: true, budget: 1000000, radius: 20, location: o.sender.location };
+  assert.equal(eligible({ ...courier, vehicle: 'motorcycle' }, o, s.settings), true);
+  assert.equal(eligible({ ...courier, vehicle: 'sedan' }, o, s.settings), true);
+  assert.equal(eligible({ ...courier, vehicle: 'truck' }, o, s.settings), false);
+  assert.equal(eligible({ ...courier, vehicle: 'sedan' }, { ...o, vehicles: undefined, vehicle: 'motorcycle' }, s.settings), false);
+  await assert.rejects(t.create({ vehicles: [] }));
+  await assert.rejects(t.create({ vehicles: ['motorcycle', 'sedan'], weight: s.settings.vehicleKg.motorcycle + 1 }));
+  await assert.rejects(t.create({ nature: 'cold', vehicles: ['sedan', 'refrigerated'] }));
+  assert.deepEqual((await t.state()).orders.find(x => x.id === o.id).vehicles, ['motorcycle', 'sedan']);
+});

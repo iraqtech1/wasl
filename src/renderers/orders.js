@@ -9,7 +9,7 @@ import LocationMap from "../components/LocationMap.js";
 import CourierMap from "../components/CourierMap.vue";
 import LocationShare from "../components/LocationShare.vue";
 import { trackingLink } from "../services/tracking.js";
-import { areas } from "../services/orderPolicy.js";
+import { areas, orderVehicles, vehicleFits } from "../services/orderPolicy.js";
 import { PHONE_ATTRIBUTES } from "./helpers.js";
 export function createOrdersRenderers(context) {
   function homeView() {
@@ -571,7 +571,7 @@ export function createOrdersRenderers(context) {
                         " ← ",
                         o.recipient.area,
                         " • ",
-                        vehicleNames[o.vehicle],
+                        orderVehicles(o).map(v => vehicleNames[v]).join(" أو "),
                       ],
                     ),
                   ]),
@@ -788,7 +788,7 @@ export function createOrdersRenderers(context) {
       ),
       row(
         "وسيلة النقل",
-        natureNames[o.nature] + " • " + vehicleNames[o.vehicle],
+        natureNames[o.nature] + " • " + orderVehicles(o).map(v => vehicleNames[v]).join(" أو "),
       ),
       row("كلفة البضاعة", money(o.amount) + " د.ع"),
       row(
@@ -1147,7 +1147,14 @@ export function createOrdersRenderers(context) {
               'type="number" min="1" required',
             ),
             select("nature", "طبيعة الشحنة", natureNames, d.nature),
-            select("vehicle", "المركبة المناسبة", vehicleNames, d.vehicle),
+            h("fieldset", { class: "vehicle-choices" }, [
+              h("legend", {}, ["المركبة المناسبة"]),
+              h("p", { class: "muted" }, ["تگدر تختار أكثر من وسيلة نقل مناسبة للشحنة."]),
+              ...Object.entries(vehicleNames).map(([value, label]) => h("label", { class: "checkbox" }, [
+                h("input", { type: "checkbox", name: "vehicles", value, checked: orderVehicles(d).includes(value), disabled: !vehicleFits(value, d, state.S.settings) }),
+                label,
+              ])),
+            ]),
             select(
               "service",
               "نوع الخدمة",
@@ -1443,7 +1450,7 @@ export function createOrdersRenderers(context) {
             h("p", {}, [
               natureNames[d.nature],
               " • ",
-              vehicleNames[d.vehicle],
+              orderVehicles(d).map(v => vehicleNames[v]).join(" أو "),
               " • ",
               d.service === "vip" ? "VIP" : "عادي",
             ]),

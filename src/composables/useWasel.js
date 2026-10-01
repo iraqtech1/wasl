@@ -1,5 +1,6 @@
 import {
   recommendVehicle,
+  vehicleFits,
   areas,
   nearestArea,
 } from "../services/orderPolicy.js";
@@ -580,8 +581,13 @@ export function useWasel() {
         "returnFee",
       ])
         d[key] = Number(f[key]);
-      for (const key of ["nature", "vehicle", "service", "feePayer"])
+      for (const key of ["nature", "service", "feePayer"])
         d[key] = f[key];
+      d.vehicles = new FormData(form).getAll("vehicles");
+      if (!d.vehicles.length) throw Error("اختر وسيلة نقل واحدة على الأقل");
+      if (!d.vehicles.every(v => vehicleFits(v, d, state.S.settings)))
+        throw Error("اختر وسائل نقل تناسب طبيعة الشحنة ووزنها وأبعادها");
+      d.vehicle = d.vehicles[0];
       d.collection = f.collection || d.collection;
       if (!f.hasReturn) d.returnFee = 0;
       d.fee =
@@ -1212,7 +1218,15 @@ export function useWasel() {
       ["nature", "weight", "length", "width", "height"].includes(e.target.name)
     ) {
       const d = Object.fromEntries(new FormData(f));
-      f.elements.vehicle.value = recommendVehicle(d, state.S.settings);
+      const choices = [...f.querySelectorAll('input[name="vehicles"]')];
+      for (const choice of choices) {
+        choice.disabled = !vehicleFits(choice.value, d, state.S.settings);
+        if (choice.disabled) choice.checked = false;
+      }
+      if (!choices.some(c => c.checked)) {
+        const suggested = choices.find(c => c.value === recommendVehicle(d, state.S.settings) && !c.disabled);
+        if (suggested) suggested.checked = true;
+      }
     }
     if (
       f?.id === "order-form" &&
