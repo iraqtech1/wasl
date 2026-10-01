@@ -10,7 +10,6 @@ export function createAccountRenderers(context) {
       button,
       coords,
       fallback,
-      offlineDraftsView,
       money,
       vehicleNames,
       modal,
@@ -103,17 +102,6 @@ export function createAccountRenderers(context) {
             ),
           [h("p", { class: "muted" }, ["لا توجد تقييمات بعد."])],
         ),
-      ]),
-      section("المسودات", "draft", [
-        ...state.S.orders
-          .filter((o) => o.status === "draft")
-          .map((o) =>
-            h("div", { class: "detail-row" }, [
-              h("span", {}, [o.id, " — ", o.recipient?.name || ""]),
-              button("order", "عرض المسودة", `data-id="${o.id}"`),
-            ]),
-          ),
-        offlineDraftsView(),
       ]),
     ]);
   }
