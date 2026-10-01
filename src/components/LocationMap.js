@@ -48,27 +48,36 @@ export default defineComponent({
             );
             svg.setAttribute("viewBox", "0 0 32 24");
             svg.setAttribute("aria-hidden", "true");
-            const path = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "path",
-            );
-            const wheels =
-              "M10 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M28 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
-            path.setAttribute(
-              "d",
-              g.vehicle === "motorcycle"
-                ? wheels + "M3 13h7l3 5h6l3-7-2-7h-4M20 4h4M8 10h7M14 10l-2 5M22 11h4l3 3M3 9V4h7v5Z"
-                : g.vehicle === "refrigerated" || g.vehicle === "truck"
-                  ? wheels + "M3 15V4h15v14h-8M18 8h7l5 6v4h-2M18 18h4M22 8v6h8M3 11h15"
-                  : "M7 10l2-6h14l2 6M6 10h20l2 4v5H4v-5Zm1 9v2h4v-2m10 0v2h4v-2M8 14h3m10 0h3M13 16h6M3 9h3m20 0h3",
-            );
-            svg.append(path);
-            if (g.vehicle === "refrigerated") {
-              const cooling = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              path.setAttribute("d", path.getAttribute("d").replace("M3 11h15", ""));
-              cooling.setAttribute("d", "M10.5 6v9M6.6 8.3l7.8 4.4m-7.8 0 7.8-4.4M9 6.5l1.5 1.5L12 6.5M9 14.5l1.5-1.5 1.5 1.5");
-              cooling.setAttribute("stroke-width", "1.3");
-              svg.append(cooling);
+            const shape = (d, fill) => {
+              const part = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              part.setAttribute("d", d);
+              part.style.fill = fill;
+              part.style.stroke = "none";
+              svg.append(part);
+            };
+            const blue = "#00567a", orange = "#f47d2f";
+            if (g.vehicle === "motorcycle") {
+              shape("M11 18a4 4 0 1 0-8 0 4 4 0 0 0 8 0M30 18a4 4 0 1 0-8 0 4 4 0 0 0 8 0", blue);
+              shape("M2 4h10v7H2zM5 12h8l3 5h4l2-7-3-6h5l4 10-3 1-3 5H12l-4-5H5z", orange);
+              shape("M9 10h7v3H9zM18 2h6v3h-6z", blue);
+              shape("M9 18a2 2 0 1 0-4 0 2 2 0 0 0 4 0M28 18a2 2 0 1 0-4 0 2 2 0 0 0 4 0", "#fff");
+            } else if (g.vehicle === "truck" || g.vehicle === "refrigerated") {
+              shape("M2 3h17v15H2zM19 8h7l5 7v4H19z", orange);
+              shape("M21 10h4l3 4h-7z", "#fff");
+              shape("M2 17h29v3H2zM11 19a4 4 0 1 0-8 0 4 4 0 0 0 8 0M29 19a4 4 0 1 0-8 0 4 4 0 0 0 8 0", blue);
+              shape("M9 19a2 2 0 1 0-4 0 2 2 0 0 0 4 0M27 19a2 2 0 1 0-4 0 2 2 0 0 0 4 0", "#fff");
+              if (g.vehicle === "refrigerated") {
+                const snow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                snow.setAttribute("d", "M10.5 6v8M7 8l7 4m-7 0 7-4");
+                snow.style.stroke = "#fff";
+                snow.style.strokeWidth = "1.8";
+                svg.append(snow);
+              }
+            } else {
+              shape("M5 16h6v7H5zM21 16h6v7h-6z", blue);
+              shape("M8 3h16l3 8 3 3v6H2v-6l3-3z", orange);
+              shape("M10 5h12l2 6H8zM5 14h5v3H5zM22 14h5v3h-5z", "#fff");
+              shape("M12 16h8v2h-8z", blue);
             }
             label.append(svg);
             label.title = g.name + " — " + g.vehicleLabel;
