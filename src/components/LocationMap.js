@@ -8,7 +8,7 @@ import {
 } from "vue";
 export default defineComponent({
   props: { groups: Array, movableLocation: Object },
-  emits: ["location-change"],
+  emits: ["location-change", "courier-select"],
   setup(props, { emit }) {
     const host = ref(),
       failed = ref(false);
@@ -34,7 +34,7 @@ export default defineComponent({
           .on("tileerror", () => (failed.value = true))
           .addTo(map);
         const points = [];
-        const courierLabels = [];
+
         for (const g of props.groups.filter((g) => g.location)) {
           const point = [g.location.lat, g.location.lng];
           points.push(point);
@@ -44,50 +44,62 @@ export default defineComponent({
             label.dir = "rtl";
             const name = document.createElement("span");
             name.textContent = g.name;
-            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            const svg = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "svg",
+            );
             svg.setAttribute("viewBox", "0 0 32 24");
             svg.setAttribute("aria-hidden", "true");
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const wheels = "M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M29 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
-            path.setAttribute("d", g.vehicle === "motorcycle"
-              ? wheels + "M6 18l7-10 6 10H6m7-10h8l5 10M19 4h4l3 14M10 8h5"
-              : g.vehicle === "refrigerated" || g.vehicle === "truck"
-                ? wheels + "M3 15V4h17v14H9m11-9h6l4 6v3h-1m-6 0h-3"
-                : wheels + "M3 16v-4l4-6h16l5 6 2 2v4h-1M9 18h14M7 12h19M12 6v6");
+            const path = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path",
+            );
+            const wheels =
+              "M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M29 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
+            path.setAttribute(
+              "d",
+              g.vehicle === "motorcycle"
+                ? wheels + "M6 18l7-10 6 10H6m7-10h8l5 10M19 4h4l3 14M10 8h5"
+                : g.vehicle === "refrigerated" || g.vehicle === "truck"
+                  ? wheels + "M3 15V4h17v14H9m11-9h6l4 6v3h-1m-6 0h-3"
+                  : wheels +
+                    "M3 16v-4l4-6h16l5 6 2 2v4h-1M9 18h14M7 12h19M12 6v6",
+            );
             svg.append(path);
-            label.append(name, svg);
-            if (g.vehicle === "refrigerated") {
-              const badge = document.createElement("span");
-              badge.className = "courier-map-cooling";
-              badge.textContent = g.cooling === "frozen" ? "❄ براد" : "❄ تبريد";
-              label.append(badge);
-            }
+            label.append(svg);
             label.title = g.name + " — " + g.vehicleLabel;
           } else {
             label.textContent =
               g.name + " · " + g.count + (g.vip ? " · VIP" : "");
           }
-          const marker = L.circleMarker(point, {
-            radius: g.vehicle ? 6 : g.vip ? 19 : 15,
-            color: g.vip ? "#f47d2f" : "#00567a",
-            fillColor: g.vip ? "#f47d2f" : "#00567a",
-            fillOpacity: 0.88,
-            weight: 3,
-          }).addTo(map);
-          marker.bindTooltip(label, {
-            permanent: true,
-            direction: g.vehicle ? "center" : "top",
-            className: g.vehicle ? "courier-map-tooltip" : "",
-          });
-          if (g.vehicle) courierLabels.push({
-            marker,
-            leader: L.polyline([], { color: "#c78347", weight: 1.5, opacity: .8, interactive: false }).addTo(map),
-          });
-          marker.on("click", () =>
-            document
-              .getElementById("map-group-" + g.id)
-              ?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
-          );
+          if (g.vehicle) {
+            const marker = L.marker(point, {
+              title: g.name + " — " + g.vehicleLabel,
+              alt: "تفاصيل المندوب " + g.name,
+              keyboard: true,
+              icon: L.divIcon({
+                className: "courier-vehicle-marker",
+                html: label,
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+              }),
+            }).addTo(map);
+            marker.on("click", () => emit("courier-select", g.id));
+          } else {
+            const marker = L.circleMarker(point, {
+              radius: g.vip ? 19 : 15,
+              color: g.vip ? "#f47d2f" : "#00567a",
+              fillColor: g.vip ? "#f47d2f" : "#00567a",
+              fillOpacity: 0.88,
+              weight: 3,
+            }).addTo(map);
+            marker.bindTooltip(label, { permanent: true, direction: "top" });
+            marker.on("click", () =>
+              document
+                .getElementById("map-group-" + g.id)
+                ?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
+            );
+          }
         }
         if (props.movableLocation) {
           const point = [props.movableLocation.lat, props.movableLocation.lng];
@@ -120,37 +132,9 @@ export default defineComponent({
         }
         if (points.length)
           map.fitBounds(points, {
-            padding: props.groups.some((g) => g.vehicle) ? [90, 60] : [40, 40],
+            padding: [40, 40],
             maxZoom: 15,
           });
-        // Keep permanent names inside the map and move crowded labels apart.
-        // Leaders retain the connection to the courier's exact location.
-        const arrangeLabels = () => {
-          const size = map.getSize(), occupied = [{ left: 0, right: 48, top: 0, bottom: 82 }];
-          for (const { marker, leader } of [...courierLabels].sort((a, b) => (b.marker.getTooltip().getElement()?.offsetWidth || 0) - (a.marker.getTooltip().getElement()?.offsetWidth || 0))) {
-            const tooltip = marker.getTooltip(), element = tooltip.getElement();
-            if (!element) continue;
-            const width = element.offsetWidth, height = element.offsetHeight;
-            const point = map.latLngToContainerPoint(marker.getLatLng());
-            let best, bestScore = Infinity;
-            for (let y = height / 2 + 8; y < size.y - height / 2 - 8; y += height + 8) {
-              for (let x = width / 2 + 8; x < size.x - width / 2 - 8; x += 12) {
-                const box = { left: x - width / 2 - 3, right: x + width / 2 + 3, top: y - height / 2 - 3, bottom: y + height / 2 + 3 };
-                const overlaps = occupied.filter(b => box.left < b.right && box.right > b.left && box.top < b.bottom && box.bottom > b.top).length;
-                const score = overlaps * 1000000 + (x - point.x) ** 2 + (y - point.y) ** 2;
-                if (score < bestScore) { bestScore = score; best = { x, y, box }; }
-              }
-            }
-            if (!best) continue;
-            occupied.push(best.box);
-            tooltip.options.offset = L.point(best.x - point.x, best.y - point.y);
-            tooltip.update();
-            leader.setLatLngs([marker.getLatLng(), map.containerPointToLatLng([best.x, best.y])]);
-          }
-        };
-        map.on("moveend zoomend resize", arrangeLabels);
-        arrangeLabels();
-        document.fonts?.ready.then(() => { if (!disposed) arrangeLabels(); });
         observer = new ResizeObserver(() => map?.invalidateSize());
         observer.observe(host.value);
       } catch {
@@ -175,9 +159,11 @@ export default defineComponent({
       h("div", {}, [
         h("div", {
           ref: host,
-          class: ["geographic-map", { "has-couriers": props.groups.some((g) => g.vehicle) }],
-          style:
-            `height:${props.groups.some((g) => g.vehicle) ? 380 : 280}px;border-radius:18px;overflow:hidden;isolation:isolate`,
+          class: [
+            "geographic-map",
+            { "has-couriers": props.groups.some((g) => g.vehicle) },
+          ],
+          style: `height:${props.groups.some((g) => g.vehicle) ? 380 : 280}px;border-radius:18px;overflow:hidden;isolation:isolate`,
           role: "region",
           "aria-label": "خريطة مواقع الطلبات",
         }),

@@ -6,6 +6,7 @@ import ScanCodeField from "../components/ScanCodeField.vue";
 import { paginate } from "../services/pagination.js";
 import AdSlider from "../components/AdSlider.vue";
 import LocationMap from "../components/LocationMap.js";
+import CourierMap from "../components/CourierMap.vue";
 import LocationShare from "../components/LocationShare.vue";
 import { trackingLink } from "../services/tracking.js";
 import { areas } from "../services/orderPolicy.js";
@@ -1999,6 +2000,8 @@ export function createOrdersRenderers(context) {
           name: c.name,
           vehicle: c.vehicle,
           cooling: c.cooling,
+          plate: c.plate,
+          phone: c.phone,
           vehicleLabel: c.cooling === "frozen"
             ? "براد — تجميد"
             : c.cooling === "chilled"
@@ -2028,7 +2031,11 @@ export function createOrdersRenderers(context) {
             return a;
           }, {}),
         );
-    modal(couriers ? "مواقع المناديب المسجلة" : "طلبات كل موقع", [
+    if (couriers) {
+      modal("مواقع المناديب المسجلة", [h(CourierMap, { groups })]);
+      return;
+    }
+    modal("طلبات كل موقع", [
       h(
         "p",
         {
