@@ -624,12 +624,14 @@ export function createUiRenderers(context) {
       ],
     );
   }
-  function metric(label, value, ic, color = "") {
+  function metric(label, value, ic, color = "", attributes = {}) {
     const { h, icon } = context();
     return h(
-      "div",
+      "button",
       {
+        type: "button",
         class: "metric " + color,
+        ...attributes,
       },
       [
         h(

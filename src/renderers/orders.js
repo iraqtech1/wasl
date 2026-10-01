@@ -24,6 +24,7 @@ export function createOrdersRenderers(context) {
       metric,
       statusPicker,
       orderList,
+      modal,
     } = context();
     const u = state.S.user;
     const own = state.S.orders.filter(
@@ -31,15 +32,22 @@ export function createOrdersRenderers(context) {
       ),
       active = own.filter(
         (o) => !before.includes(o.status) && !closed.includes(o.status),
-      ).length,
+      ),
       pickup = own.filter((o) =>
         ["reserved", "approaching", "arrived", "waiting"].includes(o.status),
-      ).length,
+      ),
       returns = own.filter((o) =>
         ["failed", "return_pending", "returning", "partial_pending"].includes(
           o.status,
         ),
-      ).length;
+      );
+    const showMetric = (title, orders) => ({
+      "aria-label": `${title}، ${orders.length} طلب، عرض التفاصيل`,
+      onClick: () => modal(title, [
+        h("p", { class: "muted" }, [`عدد الطلبات: ${orders.length}`]),
+        ...[orderList(orders)].flat(),
+      ]),
+    });
     const pagination = paginate(
       own.filter((o) =>
         state.filter === "all"
@@ -161,10 +169,10 @@ export function createOrdersRenderers(context) {
           class: "metrics-grid",
         },
         [
-          metric("شحنات نشطة", active, "local_shipping"),
-          metric("قبل الاستلام", pickup, "inventory_2", "orange"),
-          metric("رصيد المحفظة", money(state.S.balance), "payments", "teal"),
-          metric("تعذر ومرتجعات", returns, "assignment_return", "red"),
+          metric("شحنات نشطة", active.length, "local_shipping", "", showMetric("شحنات نشطة", active)),
+          metric("قبل الاستلام", pickup.length, "inventory_2", "orange", showMetric("قبل الاستلام", pickup)),
+          metric("رصيد المحفظة", money(state.S.balance), "payments", "teal", { "data-action": "nav", "data-screen": "wallet", "aria-label": "رصيد المحفظة، عرض تفاصيل المحفظة" }),
+          metric("تعذر ومرتجعات", returns.length, "assignment_return", "red", showMetric("تعذر ومرتجعات", returns)),
         ],
       ),
       u.role === "merchant"

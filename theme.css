@@ -403,3 +403,5 @@ html[data-theme=dark] .courier-map-cooling{color:#a5ddf6}
 .geographic-map .leaflet-tooltip{left:0;right:auto}
 
 @media(max-width:480px){.geographic-map.has-couriers{height:480px!important}}
+
+button.metric{font:inherit;text-align:start;width:100%;cursor:pointer}button.metric:focus-visible{outline:3px solid #f47d2f;outline-offset:3px}button.metric:active{transform:translateY(1px)}
