@@ -28,7 +28,7 @@ onBeforeUnmount(() => observer?.disconnect());
 </script>
 <template>
   <div class="registry-display-options">
-    <p class="home-page-summary" role="status">عدد الطلبات: {{ orders.length }}</p>
+    <p class="home-page-summary registry-order-count" role="status">عدد الطلبات: <strong>{{ orders.length }}</strong></p>
     <button type="button" class="secondary-button" :aria-pressed="showAll" @click.stop="toggleAll">{{ showAll ? 'عرض تدريجي' : 'إظهار الكل' }}</button>
   </div>
   <slot :visible="visible" />
@@ -37,5 +37,8 @@ onBeforeUnmount(() => observer?.disconnect());
   </div>
 </template>
 <style scoped>
+.registry-display-options .registry-order-count{margin:0;font-family:'Cairo',sans-serif;font-size:17px;font-weight:700;line-height:1.7;color:#00567a}
+.registry-order-count strong{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+:global(html[data-theme=dark]) .registry-display-options .registry-order-count{color:#d7edf8}
 .orders-load-more{display:flex;justify-content:center;padding:20px 0 32px}
 </style>
