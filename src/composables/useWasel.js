@@ -627,7 +627,7 @@ export function useWasel() {
         phone2: f.phone2,
         province: state.S.user.province,
         area: f.area,
-        address: f.address,
+        address: d.recipient?.address || "",
         landmark: f.landmark,
         location:
           f.lat && f.lng
@@ -1250,7 +1250,6 @@ export function useWasel() {
       );
       for (const [id, key] of [
         ["recipient-names", "name"],
-        ["recipient-addresses", "address"],
       ]) {
         const list = document.getElementById(id);
         if (list)

@@ -24,7 +24,7 @@ export function rememberOrderPlaces(user, order, makeId) {
     sender.addressId = saved.id;
   }
   const recipient = order.recipient;
-  if (recipient?.phone && recipient.name && recipient.address &&
+  if (recipient?.phone && recipient.name && recipient.area &&
       !user.customers.some((c) => key(c, true) === key(recipient, true))) {
     const { id: ignored, ...details } = recipient;
     user.customers.push({ ...structuredClone(details), id: makeId("CUS") });

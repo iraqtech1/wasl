@@ -592,3 +592,11 @@ test("multiple vehicle choices persist and match either courier while rejecting 
   await assert.rejects(t.create({ nature: 'cold', vehicles: ['sedan', 'refrigerated'] }));
   assert.deepEqual((await t.state()).orders.find(x => x.id === o.id).vehicles, ['motorcycle', 'sedan']);
 });
+
+test("new recipient without street address can be saved and remembered", async () => {
+  const t = await setup();
+  const recipient = { ...t.template.recipient, name: 'Recipient without street', address: '' };
+  const o = await t.create({ recipient });
+  assert.equal(o.recipient.address, '');
+  assert.ok((await t.state()).user.customers.some(c => c.name === recipient.name && c.area === recipient.area));
+});

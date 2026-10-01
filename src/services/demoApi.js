@@ -432,7 +432,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       "الوزن والأبعاد يجب أن تكون أكبر من صفر",
     );
     must(
-      p.recipient?.name && p.recipient?.address && p.recipient?.area,
+      p.recipient?.name && p.recipient?.area,
       "أكمل بيانات المستلم",
     );
     must(

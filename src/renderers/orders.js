@@ -1327,13 +1327,6 @@ export function createOrdersRenderers(context) {
             .filter((c) => r.phone && c.phone === r.phone)
             .map((c) => h("option", { value: c.name }, [])),
         ),
-        h(
-          "datalist",
-          { id: "recipient-addresses" },
-          (u.customers || [])
-            .filter((c) => r.phone && c.phone === r.phone)
-            .map((c) => h("option", { value: c.address }, [])),
-        ),
         input("phone", "رقم هاتف المستلم", r.phone, `required ${PHONE_ATTRIBUTES} autocomplete="tel"`),
         input("name", "المستلمون", r.name, 'required maxlength="80" autocomplete="off" list="recipient-names" placeholder="اكتب اسم المستلم أو اختر اسماً محفوظاً"'),
         h(
@@ -1381,12 +1374,6 @@ export function createOrdersRenderers(context) {
                 ),
               ],
             ),
-            input(
-              "address",
-              "العنوان",
-              r.address,
-              'required maxlength="200" list="recipient-addresses"',
-            ),
             input("landmark", "أقرب نقطة دالة", r.landmark, 'maxlength="200"'),
             h(LocationPanel, { location: r.location, editable: true }),
           ],
@@ -1419,7 +1406,7 @@ export function createOrdersRenderers(context) {
               " ← ",
               r.name,
             ]),
-            h("p", {}, [r.province, "، ", r.area, "، ", r.address]),
+            h("p", {}, [[r.province, r.area, r.address].filter(Boolean).join("، ")]),
             h("p", {}, [r.phone, " ", r.phone2 ? " / " + r.phone2 : ""]),
           ],
         ),
