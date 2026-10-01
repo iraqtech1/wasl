@@ -819,17 +819,15 @@ export function useWasel() {
           ...state.wizard.data,
           publish: b.dataset.publish === "true",
         };
-        if (state.offline) {
-          if (state.wizard.id || data.publish)
-            throw Error("يمكن حفظ مسودة جديدة دون نشر فقط أثناء عدم الاتصال");
+        if (state.offline || navigator.onLine === false) {
+          if (state.wizard.id)
+            throw Error("تعديل طلب موجود يحتاج اتصالاً؛ بياناتك باقية في النموذج");
           const drafts = readDrafts();
-          drafts.push(data);
+          drafts.push({ ...data, publish: false });
           localStorage.setItem(
             "wasel-offline-" + state.S.user.id,
             JSON.stringify(drafts),
           );
-          await api("/api/order-places", data);
-          state.S = await api("/api/state");
           state.screen = "account";
           state.wizard = null;
           render();
@@ -844,21 +842,30 @@ export function useWasel() {
           state.wizard = null;
           state.screen = "registry";
           await refresh();
-          toast("حُفظ الطلب");
+          toast("تم حفظ الطلب");
         }
-      } else if (a === "sync-draft") {
+      } else if (a === "sync-draft" || a === "delete-local-draft") {
+        if (state.draftBusy) return;
         const drafts = readDrafts();
-        await api("/api/orders", {
-          ...drafts[Number(b.dataset.index)],
-          publish: false,
+        const index = Number(b.dataset.index);
+        if (!Number.isInteger(index) || !drafts[index]) return;
+        if (a === "sync-draft" && (state.offline || navigator.onLine === false))
+          throw Error("اتصل بالإنترنت لحفظ أو نشر المسودة");
+        state.draftBusy = true;
+        try {
+        if (a === "sync-draft") await api("/api/orders", {
+          ...drafts[index],
+          publish: b.dataset.publish === "true",
         });
-        drafts.splice(Number(b.dataset.index), 1);
+        drafts.splice(index, 1);
         localStorage.setItem(
           "wasel-offline-" + state.S.user.id,
           JSON.stringify(drafts),
         );
         await refresh();
-        toast("حُفظت المسودة في الخادم دون نشر");
+        modal("المسودات", [offlineDraftsView()]);
+        toast(a === "delete-local-draft" ? "تم حذف المسودة" : b.dataset.publish === "true" ? "تم نشر الطلب" : "تم حفظ الطلب");
+        } finally { state.draftBusy = false; }
       } else if (a === "refresh-chat") {
         await refresh(false);
         orderActionForm(

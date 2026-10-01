@@ -347,3 +347,19 @@ test("registry progressively renders twenty cards including selectable draft and
     } else assert.doesNotMatch(html, /class="order-card-selection"/);
   }
 });
+
+test("offline publish request remains in device drafts without creating a published order", async () => {
+  const { app } = await renderPage('AccountView');
+  const key = 'wasel-offline-' + app.state.S.user.id;
+  localStorage.setItem(key, '[]');
+  app.state.offline = true;
+  app.state.wizard = { data: { recipient: { name: 'Offline recipient' }, kind: 'merchant' } };
+  const button = { dataset: { action: 'save-order', publish: 'true' }, disabled: false };
+  await app.dispatch('click', { target: { closest: () => button } });
+  const drafts = JSON.parse(localStorage.getItem(key));
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0].publish, false);
+  assert.equal(app.state.wizard, null);
+  assert.match(app.ui.toast, /الجهاز/);
+});
+

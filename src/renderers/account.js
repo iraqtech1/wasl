@@ -10,6 +10,7 @@ export function createAccountRenderers(context) {
       button,
       coords,
       fallback,
+      offlineDraftsView,
       money,
       vehicleNames,
       modal,
@@ -103,6 +104,7 @@ export function createAccountRenderers(context) {
           [h("p", { class: "muted" }, ["لا توجد تقييمات بعد."])],
         ),
       ]),
+      section("المسودات", "draft", [offlineDraftsView()]),
     ]);
   }
   function walletView() {
@@ -445,7 +447,7 @@ export function createAccountRenderers(context) {
     ];
   }
   function offlineDraftsView() {
-    const { readDrafts, h, button } = context();
+    const { readDrafts, h, button, state } = context();
     const drafts = readDrafts();
     return h(
       "section",
@@ -468,8 +470,12 @@ export function createAccountRenderers(context) {
               class: "detail-row",
             },
             [
-              h("span", {}, [d.recipient.name]),
-              button("sync-draft", "حفظ ضمن المسودات", `data-index="${i}"`),
+              h("span", {}, [d.recipient?.name || "طلب بدون اسم"]),
+              h("div", { class: "order-actions" }, [
+                button("sync-draft", "حفظ", `data-index="${i}" ${state.offline ? "disabled" : ""}`),
+                button("sync-draft", "إعادة نشر", `data-index="${i}" data-publish="true" ${state.offline ? "disabled" : ""}`),
+                button("delete-local-draft", "حذف", `data-index="${i}"`),
+              ]),
             ],
           ),
         ),

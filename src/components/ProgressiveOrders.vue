@@ -28,7 +28,7 @@ onBeforeUnmount(() => observer?.disconnect());
 </script>
 <template>
   <div class="registry-display-options">
-    <p class="home-page-summary" role="status">عرض {{ visible.length }} من {{ orders.length }} طلب</p>
+    <p class="home-page-summary" role="status">عدد الطلبات: {{ orders.length }}</p>
     <button type="button" class="secondary-button" :aria-pressed="showAll" @click.stop="toggleAll">{{ showAll ? 'عرض تدريجي' : 'إظهار الكل' }}</button>
   </div>
   <slot :visible="visible" />

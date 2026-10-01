@@ -287,10 +287,11 @@ test("merchant and courier account sections open independent dialogs", async () 
       },
     };
     const view = createAccountRenderers(() => context).accountView();
-    assert.equal(view.children.length, 2);
+    assert.equal(view.children.length, 3);
     for (const [index, title] of [
       "معلومات الحساب",
       "التقييمات",
+      "المسودات",
     ].entries()) {
       const trigger = view.children[index];
       assert.equal(trigger.tag, "button");
