@@ -53,20 +53,20 @@ export default defineComponent({
               "path",
             );
             const wheels =
-              "M9 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M29 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
+              "M10 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0M28 18a3 3 0 1 0-6 0 3 3 0 0 0 6 0";
             path.setAttribute(
               "d",
               g.vehicle === "motorcycle"
-                ? wheels + "M6 18l5-8h6l4 8H9m8-8 3-4h3l3 12M9 7h6M13 10l-2 5h8M20 6l-2-3h-3"
+                ? wheels + "M3 13h7l3 5h6l3-7-2-7h-4M20 4h4M8 10h7M14 10l-2 5M22 11h4l3 3M3 9V4h7v5Z"
                 : g.vehicle === "refrigerated" || g.vehicle === "truck"
-                  ? wheels + "M3 15V4h16v14H9m10-10h6l5 6v4h-1m-6 0h-4m3-10v6h8"
-                  : wheels +
-                    "M3 16v-4l4-6h16l5 6 2 2v4h-1M9 18h14M7 12h19M12 6v6",
+                  ? wheels + "M3 15V4h15v14h-8M18 8h7l5 6v4h-2M18 18h4M22 8v6h8M3 11h15"
+                  : "M7 10l2-6h14l2 6M6 10h20l2 4v5H4v-5Zm1 9v2h4v-2m10 0v2h4v-2M8 14h3m10 0h3M13 16h6M3 9h3m20 0h3",
             );
             svg.append(path);
             if (g.vehicle === "refrigerated") {
               const cooling = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              cooling.setAttribute("d", "M11 7v8M7.5 9l7 4m-7 0 7-4");
+              path.setAttribute("d", path.getAttribute("d").replace("M3 11h15", ""));
+              cooling.setAttribute("d", "M10.5 6v9M6.6 8.3l7.8 4.4m-7.8 0 7.8-4.4M9 6.5l1.5 1.5L12 6.5M9 14.5l1.5-1.5 1.5 1.5");
               cooling.setAttribute("stroke-width", "1.3");
               svg.append(cooling);
             }
