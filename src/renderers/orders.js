@@ -778,10 +778,10 @@ export function createOrdersRenderers(context) {
         `${o.count} قطع • ${o.weight} كغم • ${o.length}×${o.width}×${o.height} سم`,
       ),
       row(
-        "الطبيعة والمركبة",
+        "وسيلة النقل",
         natureNames[o.nature] + " • " + vehicleNames[o.vehicle],
       ),
-      row("قيمة البضاعة", money(o.amount) + " د.ع"),
+      row("كلفة البضاعة", money(o.amount) + " د.ع"),
       row(
         "أجرة التوصيل",
         money(o.fee) +
@@ -795,21 +795,6 @@ export function createOrdersRenderers(context) {
             "مسافة التوصيل التقريبية",
             o.distanceKm.toFixed(1) + " كم — مسافة مباشرة",
           )
-        : "",
-      isOwn || o.courier === state.S.user.id
-        ? h("div", { class: "tracking-link-row" }, [
-            "رابط متابعة الحالة (نسخة عند المشاركة)",
-            h(
-              "a",
-              {
-                class: "tracking-link",
-                href: trackingLink(o),
-                target: "_blank",
-                rel: "noopener noreferrer",
-              },
-              ["فتح متابعة الطلب"],
-            ),
-          ])
         : "",
       row("تسوية الأموال", o.settled ? "مكتملة" : "غير مكتملة"),
       o.notes ? row("الملاحظات", o.notes) : "",
