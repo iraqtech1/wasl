@@ -585,6 +585,7 @@ export function useWasel() {
         d[key] = f[key];
       d.vehicles = new FormData(form).getAll("vehicles");
       if (!d.vehicles.length) throw Error("اختر وسيلة نقل واحدة على الأقل");
+      if (d.vehicles.length > 2) throw Error("اختر وسيلتي نقل كحد أقصى");
       if (!d.vehicles.every(v => vehicleFits(v, d, state.S.settings)))
         throw Error("اختر وسائل نقل تناسب طبيعة الشحنة ووزنها وأبعادها");
       d.vehicle = d.vehicles[0];
@@ -1227,6 +1228,17 @@ export function useWasel() {
         const suggested = choices.find(c => c.value === recommendVehicle(d, state.S.settings) && !c.disabled);
         if (suggested) suggested.checked = true;
       }
+      const summary = f.querySelector("#vehicle-selection");
+      if (summary) summary.textContent = choices.filter(c => c.checked).map(c => vehicleNames[c.value]).join(" أو ") || "اختر المركبة";
+    }
+    if (f?.id === "order-form" && e.target.name === "vehicles") {
+      const choices = [...f.querySelectorAll('input[name="vehicles"]')];
+      if (choices.filter(c => c.checked).length > 2) {
+        e.target.checked = false;
+        toast("تگدر تختار وسيلتين كحد أقصى");
+      }
+      const summary = f.querySelector("#vehicle-selection");
+      if (summary) summary.textContent = choices.filter(c => c.checked).map(c => vehicleNames[c.value]).join(" أو ") || "اختر المركبة";
     }
     if (
       f?.id === "order-form" &&

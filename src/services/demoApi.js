@@ -462,7 +462,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
       "الشحنة المبردة تحتاج سيارة مبردة",
     );
     must(
-      orderVehicles(p).length > 0 && orderVehicles(p).every(v => vehicleFits(v, p, data.config)),
+      orderVehicles(p).length > 0 && orderVehicles(p).length <= 2 && orderVehicles(p).every(v => vehicleFits(v, p, data.config)),
       "حمولة الشحنة تتجاوز سعة المركبة",
     );
     must(

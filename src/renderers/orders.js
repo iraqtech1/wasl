@@ -1147,13 +1147,22 @@ export function createOrdersRenderers(context) {
               'type="number" min="1" required',
             ),
             select("nature", "طبيعة الشحنة", natureNames, d.nature),
-            h("fieldset", { class: "vehicle-choices" }, [
-              h("legend", {}, ["المركبة المناسبة"]),
-              h("p", { class: "muted" }, ["تگدر تختار أكثر من وسيلة نقل مناسبة للشحنة."]),
+            h("div", { class: "vehicle-select-field" }, [
+              h("span", { id: "vehicle-select-label" }, ["المركبة المناسبة"]),
+              h("details", { class: "vehicle-dropdown", onKeydown: (event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary").focus(); } } }, [
+              h("summary", { "aria-labelledby": "vehicle-select-label vehicle-selection" }, [
+                h("span", { id: "vehicle-selection" }, [orderVehicles(d).map(v => vehicleNames[v]).join(" أو ") || "اختر المركبة"]),
+                h("span", { "aria-hidden": "true" }, ["⌄"]),
+              ]),
+              h("div", { class: "vehicle-choices" }, [
+              h("p", { class: "muted" }, ["اختر وسيلة واحدة أو وسيلتين"]),
               ...Object.entries(vehicleNames).map(([value, label]) => h("label", { class: "checkbox" }, [
                 h("input", { type: "checkbox", name: "vehicles", value, checked: orderVehicles(d).includes(value), disabled: !vehicleFits(value, d, state.S.settings) }),
                 label,
               ])),
+              h("button", { type: "button", class: "secondary-button", onClick: (event) => { const menu = event.currentTarget.closest("details"); menu.open = false; menu.querySelector("summary").focus(); } }, ["تم الاختيار"]),
+              ]),
+              ]),
             ]),
             select(
               "service",
