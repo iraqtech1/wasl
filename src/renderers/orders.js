@@ -728,7 +728,8 @@ export function createOrdersRenderers(context) {
       if (o.status === "delivered" && !o.settled)
         add("settle_delivery", "تأكيد التسوية مع المرسل");
     }
-    if ((own || assigned) && o.courier) add("chat", "محادثة هذا الطلب");
+    if ((own || assigned) && o.courier)
+      add("chat", own ? "محادثة مع المندوب" : "محادثة مع التاجر");
     if (
       (own || assigned) &&
       closed.includes(o.status) &&
