@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { api } from "../services/api.js";
-const props = defineProps({ orders: Array, action: String });
+const props = defineProps({ orders: Array, visibleOrders: Array, action: String });
 const emit = defineEmits(["published"]);
 const selected = ref([]),
   busy = ref(false),
@@ -10,6 +10,9 @@ const all = computed(
   () =>
     props.orders.length > 0 && selected.value.length === props.orders.length,
 );
+function toggle(id, checked) {
+  selected.value = checked ? [...new Set([...selected.value, id])] : selected.value.filter(x => x !== id);
+}
 watch(
   () => props.orders.map((o) => o.id).join(","),
   () => {
@@ -68,18 +71,9 @@ async function publish() {
     </div>
     <p v-if="message" role="status">{{ message }}</p>
     <p v-if="!orders.length" class="muted">لا توجد طلبات بهذه الحالة.</p>
-    <div v-for="order in orders" :key="order.id">
-      <label class="draft-order-select"
-        ><input
-          v-model="selected"
-          type="checkbox"
-          :value="order.id"
-          :disabled="busy"
-        />
-        تحديد {{ order.id }}</label
-      >
-      <slot :order="order" />
-    </div>
+    <template v-for="order in visibleOrders" :key="order.id">
+      <slot :order="order" :checked="selected.includes(order.id)" :busy="busy" :toggle="toggle" />
+    </template>
   </section>
 </template>
 <style scoped>

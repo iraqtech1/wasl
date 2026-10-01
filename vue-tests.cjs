@@ -328,3 +328,22 @@ test("all order action forms render with their validation fields", async () => {
       assert.ok(html.includes('name="' + field + '"'), op + " " + field);
   }
 });
+
+test("registry progressively renders twenty cards including selectable draft and published filters", async () => {
+  const { createDemoData } = await import('./src/services/demoData.js');
+  for (const status of ['all', 'draft', 'published', 'transit']) {
+    const { html } = await renderPage('OrdersView', app => {
+      const data = createDemoData();
+      app.state.S.orders = data.orders;
+      app.state.screen = 'registry';
+      app.state.filter = status;
+    });
+    assert.equal((html.match(/<article/g) || []).length, 20);
+    assert.match(html, /إظهار الكل/);
+    assert.doesNotMatch(html, /id="registry-show-all"/);
+    if (['draft', 'published'].includes(status)) {
+      assert.equal((html.match(/class="order-card-selection"/g) || []).length, 20);
+      assert.match(html, /<article[^>]*><label class="order-card-selection"/);
+    } else assert.doesNotMatch(html, /class="order-card-selection"/);
+  }
+});

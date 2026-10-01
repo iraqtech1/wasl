@@ -420,3 +420,5 @@ button.metric{font:inherit;text-align:start;width:100%;cursor:pointer}button.met
 .wizard-steps li.active span{box-shadow:0 0 0 3px #f47d2f25,0 4px 10px -3px #f47d2f55}
 html[data-theme=dark] .wizard-steps li span{box-shadow:0 3px 8px -2px #0005,0 1px 2px #0003}
 html[data-theme=dark] .wizard-steps li.active span{box-shadow:0 0 0 3px #f47d2f25,0 4px 10px -3px #f47d2f45}
+
+.order-card-selection{display:flex;align-items:center;justify-content:flex-start;min-height:36px;width:44px}.order-card-selection input{width:21px;height:21px;accent-color:#f47d2f;cursor:pointer}

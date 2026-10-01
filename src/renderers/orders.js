@@ -1,5 +1,6 @@
 import VipBanner from "../components/VipBanner.js";
 import DraftOrders from "../components/DraftOrders.vue";
+import ProgressiveOrders from "../components/ProgressiveOrders.vue";
 import ArrivalCountdown from "../components/ArrivalCountdown.js";
 import LocationPanel from "../components/LocationPanel.vue";
 import OrderQr from "../components/OrderQr.js";
@@ -405,25 +406,6 @@ export function createOrdersRenderers(context) {
     );
     const registry = state.screen === "registry";
     const bulkDrafts = registry && state.S.user.role === "merchant" && ["draft", "published"].includes(state.filter);
-    const showAll = state.registrySize === "all";
-    const pagination = paginate(
-      os,
-      state.registryPage,
-      showAll ? Math.max(1, os.length) : 10,
-    );
-    const pageButton = (label, page, disabled = false, current = false) =>
-      h(
-        "button",
-        {
-          type: "button",
-          "data-action": "registry-page",
-          "data-page": page,
-          disabled,
-          "aria-current": current ? "page" : undefined,
-          "aria-label": typeof label === "number" ? `الصفحة ${label}` : label,
-        },
-        [label],
-      );
     return [
       h(
         "section",
@@ -460,56 +442,16 @@ export function createOrdersRenderers(context) {
             : "",
         ],
       ) : "",
-      registry && !bulkDrafts
-        ? h("div", { class: "registry-display-options" }, [
-            h("div", { class: "registry-display-copy" }, [
-              h("strong", {}, ["عدد الطلبات المعروضة"]),
-              h("p", { class: "home-page-summary", role: "status" }, [
-                `عرض ${pagination.start}–${pagination.end} من ${pagination.total} طلب`,
-              ]),
-            ]),
-            h(
-              "label",
-              { class: "registry-show-all", for: "registry-show-all" },
-              [
-                h(
-                  "input",
-                  {
-                    type: "checkbox",
-                    id: "registry-show-all",
-                    checked: showAll,
-                  },
-                  [],
-                ),
-                h("span", {}, ["إظهار الكل"]),
-              ],
-            ),
-          ])
-        : "",
-      bulkDrafts ? h(DraftOrders, { key: state.filter, orders: os, action: state.filter === "draft" ? "publish" : "unpublish", onPublished: () => refresh() }, { default: ({ order }) => orderList([order]) }) : orderList(registry ? pagination.items : os),
-      registry && !bulkDrafts && !showAll && pagination.pages > 1
-        ? h(
-            "nav",
-            { class: "shipment-pagination", "aria-label": "صفحات السجل" },
-            [
-              pageButton("السابق", pagination.page - 1, pagination.page === 1),
-              ...pagination.numbers.flatMap((number, index, numbers) => [
-                index && number - numbers[index - 1] > 1
-                  ? h("span", { "aria-hidden": "true" }, ["…"])
-                  : "",
-                pageButton(number, number, false, number === pagination.page),
-              ]),
-              pageButton(
-                "التالي",
-                pagination.page + 1,
-                pagination.page === pagination.pages,
-              ),
-            ],
-          )
-        : "",
+      registry ? h(ProgressiveOrders, { key: state.filter + ":" + state.query, orders: os }, {
+        default: ({ visible }) => bulkDrafts
+          ? h(DraftOrders, { key: state.filter, orders: os, visibleOrders: visible, action: state.filter === "draft" ? "publish" : "unpublish", onPublished: () => refresh() }, {
+              default: ({ order, checked, busy, toggle }) => orderList([order], { checked, busy, toggle }),
+            })
+          : orderList(visible),
+      }) : orderList(os),
     ];
   }
-  function orderList(os) {
+  function orderList(os, selection = null) {
     const { h, icon, state, vehicleNames, money, button } = context();
     return os.length
       ? os.map((o) =>
@@ -520,6 +462,9 @@ export function createOrdersRenderers(context) {
                 "order-card" + (o.service === "vip" ? " order-card-vip" : ""),
             },
             [
+              selection ? h("label", { class: "order-card-selection" }, [
+                h("input", { type: "checkbox", checked: selection.checked, disabled: selection.busy, "aria-label": "تحديد الطلب " + o.id, onChange: event => selection.toggle(o.id, event.target.checked) }),
+              ]) : "",
               h(
                 "div",
                 {
