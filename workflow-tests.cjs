@@ -620,3 +620,21 @@ test("merchant cancellation stops after approaching and draft publication is rev
   await t.act(o, 'unpublish');
   assert.equal((await t.state()).orders.find(x => x.id === o.id).status, 'draft');
 });
+
+test("sample device drafts seed once, preserve existing drafts and can save or publish", async () => {
+  const { readDeviceDrafts } = await import('./src/services/sampleDrafts.js');
+  const t = await setup();
+  const values = new Map([['wasel-offline-MER-DEMO', JSON.stringify([{ recipient: { name: 'existing' } }])]]);
+  const storage = { getItem: k => values.get(k), setItem: (k,v) => values.set(k,v) };
+  const user = { id: 'MER-DEMO' };
+  const drafts = readDeviceDrafts(user, storage);
+  assert.equal(drafts.length, 11);
+  assert.equal(drafts[0].recipient.name, 'existing');
+  for (const [i,draft] of drafts.slice(1).entries()) {
+    const saved = await t.api('/api/orders', { ...draft, publish: i % 2 === 0 });
+    assert.equal(saved.status, i % 2 === 0 ? 'published' : 'draft');
+  }
+  storage.setItem('wasel-offline-MER-DEMO', '[]');
+  assert.equal(readDeviceDrafts(user, storage).length, 0);
+  assert.equal(readDeviceDrafts({id:'MER-OTHER'}, storage).length, 0);
+});

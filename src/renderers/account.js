@@ -1,4 +1,5 @@
 import { PHONE_ATTRIBUTES } from "./helpers.js";
+import { readDeviceDrafts } from "../services/sampleDrafts.js";
 export function createAccountRenderers(context) {
   function accountView() {
     const {
@@ -485,9 +486,7 @@ export function createAccountRenderers(context) {
   function readDrafts() {
     const { state } = context();
     try {
-      return JSON.parse(
-        localStorage.getItem("wasel-offline-" + state.S.user.id) || "[]",
-      );
+      return readDeviceDrafts(state.S.user);
     } catch {
       return [];
     }
