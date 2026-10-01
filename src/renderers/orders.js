@@ -1326,27 +1326,13 @@ export function createOrdersRenderers(context) {
             .map((c) => h("option", { value: c.address }, [])),
         ),
         input("phone", "رقم هاتف المستلم", r.phone, `required ${PHONE_ATTRIBUTES} autocomplete="tel"`),
-        h("label", {}, [
-          "المستلمون والمواقع المحفوظة لهذا الرقم",
-          h("select", { name: "savedCustomer" }, [
-            h("option", { value: "" }, ["إدخال مستلم أو موقع جديد"]),
-            ...(u.customers || []).map((c, i) => h("option", {
-              value: String(i), hidden: !r.phone || c.phone !== r.phone,
-            }, [c.name + " — " + c.area + " — " + c.address])),
-          ]),
-        ]),
+        input("name", "المستلمون", r.name, 'required maxlength="80" autocomplete="off" list="recipient-names" placeholder="اكتب اسم المستلم أو اختر اسماً محفوظاً"'),
         h(
           "div",
           {
             class: "form-grid",
           },
           [
-            input(
-              "name",
-              "اسم المستلم",
-              r.name,
-              'required maxlength="80" autocomplete="name" list="recipient-names"',
-            ),
             input(
               "phone2",
               "رقم إضافي (اختياري)",

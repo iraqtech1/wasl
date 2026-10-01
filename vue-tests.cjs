@@ -152,12 +152,16 @@ test("saved pickup and recipient choices fill editable locations and preserve no
   await select("pickupAddress", "new");
   assert.equal(app.state.wizard.data.sender.location, undefined);
   app.state.wizard.step = 2;
-  await select("savedCustomer", "0");
+  await select("name", recipient.name);
   assert.deepEqual(app.state.wizard.data.recipient, recipient);
   assert.equal(app.state.wizard.data.notes, "لا تضيع الملاحظات");
-  await select("savedCustomer", "");
+  await select("name", "مستلم جديد");
   assert.equal(app.state.wizard.data.recipient.phone, recipient.phone);
-  assert.equal(app.state.wizard.data.recipient.name, undefined);
+  assert.deepEqual(app.state.wizard.data.recipient.location, recipient.location);
+  app.state.S.user.customers.push({ ...recipient, address: "عنوان آخر" });
+  app.state.wizard.data.recipient = {};
+  await select("name", recipient.name);
+  assert.deepEqual(app.state.wizard.data.recipient, {});
 });
 
 test("registration preserves merchant steps and five courier documents", async () => {

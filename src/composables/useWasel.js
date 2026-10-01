@@ -1236,7 +1236,6 @@ export function useWasel() {
       const matches = (state.S.user.customers || []).filter(
         (c) => c.phone === e.target.value,
       );
-      const select = f.elements.savedCustomer;
       for (const [id, key] of [
         ["recipient-names", "name"],
         ["recipient-addresses", "address"],
@@ -1251,13 +1250,6 @@ export function useWasel() {
             ),
           );
       }
-      if (select) {
-        select.value = "";
-        for (const option of select.options)
-          option.hidden =
-            option.value !== "" &&
-            !matches.includes(state.S.user.customers[Number(option.value)]);
-      }
     }
 
     if (f?.id === "order-form" && e.target.name === "pickupAddress") {
@@ -1269,11 +1261,11 @@ export function useWasel() {
       ui.formRevision++;
       render();
     }
-    if (f?.id === "order-form" && e.target.name === "savedCustomer") {
+    if (f?.id === "order-form" && state.wizard?.step === 2 && e.target.name === "name") {
+      const matches = (state.S.user.customers || []).filter(c => c.phone === f.elements.phone.value && c.name === e.target.value);
+      if (matches.length !== 1) return;
       state.wizard.data.notes = f.elements.notes?.value || "";
-      state.wizard.data.recipient = e.target.value === ""
-        ? { phone: f.elements.phone.value, province: state.S.user.province }
-        : clone(state.S.user.customers[Number(e.target.value)]);
+      state.wizard.data.recipient = clone(matches[0]);
       ui.formRevision++;
       render();
     }
