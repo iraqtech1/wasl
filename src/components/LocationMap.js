@@ -42,8 +42,6 @@ export default defineComponent({
           if (g.vehicle) {
             label.className = "courier-map-label";
             label.dir = "rtl";
-            const name = document.createElement("span");
-            name.textContent = g.name;
             const svg = document.createElementNS(
               "http://www.w3.org/2000/svg",
               "svg",
@@ -59,13 +57,19 @@ export default defineComponent({
             path.setAttribute(
               "d",
               g.vehicle === "motorcycle"
-                ? wheels + "M6 18l7-10 6 10H6m7-10h8l5 10M19 4h4l3 14M10 8h5"
+                ? wheels + "M6 18l5-8h6l4 8H9m8-8 3-4h3l3 12M9 7h6M13 10l-2 5h8M20 6l-2-3h-3"
                 : g.vehicle === "refrigerated" || g.vehicle === "truck"
-                  ? wheels + "M3 15V4h17v14H9m11-9h6l4 6v3h-1m-6 0h-3"
+                  ? wheels + "M3 15V4h16v14H9m10-10h6l5 6v4h-1m-6 0h-4m3-10v6h8"
                   : wheels +
                     "M3 16v-4l4-6h16l5 6 2 2v4h-1M9 18h14M7 12h19M12 6v6",
             );
             svg.append(path);
+            if (g.vehicle === "refrigerated") {
+              const cooling = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              cooling.setAttribute("d", "M11 7v8M7.5 9l7 4m-7 0 7-4");
+              cooling.setAttribute("stroke-width", "1.3");
+              svg.append(cooling);
+            }
             label.append(svg);
             label.title = g.name + " — " + g.vehicleLabel;
           } else {
@@ -80,8 +84,8 @@ export default defineComponent({
               icon: L.divIcon({
                 className: "courier-vehicle-marker",
                 html: label,
-                iconSize: [44, 44],
-                iconAnchor: [22, 22],
+                iconSize: [52, 52],
+                iconAnchor: [26, 26],
               }),
             }).addTo(map);
             marker.on("click", () => emit("courier-select", g.id));

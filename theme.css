@@ -408,6 +408,6 @@ button.metric{font:inherit;text-align:start;width:100%;cursor:pointer}button.met
 
 /* Compact courier vehicle outlines; details appear only after selection. */
 .courier-vehicle-marker{background:none;border:0;cursor:pointer}
-.courier-vehicle-marker .courier-map-label{display:grid;place-items:center;width:44px;height:44px;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#00567a}
-.courier-vehicle-marker .courier-map-label svg{width:32px;height:28px;fill:none;stroke:#00567a;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #fff) drop-shadow(0 -1px 1px #fff)}
+.courier-vehicle-marker .courier-map-label{display:grid;place-items:center;width:52px;height:52px;min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#b94e0b}
+.courier-vehicle-marker .courier-map-label svg{width:42px;height:34px;overflow:visible;fill:none;stroke:#b94e0b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 2px 2px #003e5940)}
 .courier-vehicle-marker:focus-visible{outline:3px solid #f47d2f;border-radius:10px;outline-offset:1px}
