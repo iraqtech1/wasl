@@ -46,6 +46,7 @@ export function useWasel() {
       date,
       roleNames,
       state,
+      refresh,
       courierView,
       select,
       vehicleNames,
@@ -476,7 +477,7 @@ export function useWasel() {
       r === "merchant"
         ? [
             ["home", "الرئيسية"],
-            ["registry", "السجل"],
+            ["registry", "طلباتي"],
             ["new", "طلب جديد"],
             ["wallet", "المحفظة"],
             ["account", "حسابي"],

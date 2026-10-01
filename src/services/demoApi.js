@@ -553,7 +553,7 @@ export function createDemoApi(storage = globalThis.localStorage) {
           ? ["draft"]
           : a === "unpublish"
             ? ["published"]
-            : BEFORE.filter((s) => s !== "draft"),
+            : ["draft", "published", "reserved", "approaching"],
       );
       if (a === "publish") o.exclusionPending = false;
       if (a === "cancel") o.settled = true;

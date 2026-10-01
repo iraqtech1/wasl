@@ -1,4 +1,5 @@
 import VipBanner from "../components/VipBanner.js";
+import DraftOrders from "../components/DraftOrders.vue";
 import ArrivalCountdown from "../components/ArrivalCountdown.js";
 import LocationPanel from "../components/LocationPanel.vue";
 import OrderQr from "../components/OrderQr.js";
@@ -394,7 +395,7 @@ export function createOrdersRenderers(context) {
     );
   }
   function ordersView() {
-    const { baseOrders, state, h, statusPicker, button, icon, orderList } =
+    const { baseOrders, state, h, statusPicker, button, icon, orderList, refresh } =
       context();
     const os = baseOrders().filter(
       (o) =>
@@ -403,6 +404,7 @@ export function createOrdersRenderers(context) {
           JSON.stringify([o.id, o.recipient, o.sender]).includes(state.query)),
     );
     const registry = state.screen === "registry";
+    const bulkDrafts = registry && state.S.user.role === "merchant" && ["draft", "published"].includes(state.filter);
     const showAll = state.registrySize === "all";
     const pagination = paginate(
       os,
@@ -445,7 +447,7 @@ export function createOrdersRenderers(context) {
             : "",
         ],
       ),
-      h(
+      !registry ? h(
         "p",
         {
           class: "info-line",
@@ -457,8 +459,8 @@ export function createOrdersRenderers(context) {
             ? "يناسب الموقع والمركبة والميزانية"
             : "",
         ],
-      ),
-      registry
+      ) : "",
+      registry && !bulkDrafts
         ? h("div", { class: "registry-display-options" }, [
             h("div", { class: "registry-display-copy" }, [
               h("strong", {}, ["عدد الطلبات المعروضة"]),
@@ -484,8 +486,8 @@ export function createOrdersRenderers(context) {
             ),
           ])
         : "",
-      orderList(registry ? pagination.items : os),
-      registry && !showAll && pagination.pages > 1
+      bulkDrafts ? h(DraftOrders, { key: state.filter, orders: os, action: state.filter === "draft" ? "publish" : "unpublish", onPublished: () => refresh() }, { default: ({ order }) => orderList([order]) }) : orderList(registry ? pagination.items : os),
+      registry && !bulkDrafts && !showAll && pagination.pages > 1
         ? h(
             "nav",
             { class: "shipment-pagination", "aria-label": "صفحات السجل" },
@@ -667,9 +669,9 @@ export function createOrdersRenderers(context) {
             add("unpublish", "إلغاء النشر");
             add("raise_fee", "أنا مستعجل — زيادة الأجرة");
           }
-          add("cancel", "إلغاء الطلب");
         }
       }
+      if (["draft", "published", "reserved", "approaching"].includes(o.status)) add("cancel", "إلغاء الطلب");
       if (o.status === "retry" && !o.retryApproved)
         add("approve_retry", "الموافقة على الموعد");
       if (o.status === "at_customer" && o.partial && !o.partial.approved)

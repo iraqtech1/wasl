@@ -600,3 +600,23 @@ test("new recipient without street address can be saved and remembered", async (
   assert.equal(o.recipient.address, '');
   assert.ok((await t.state()).user.customers.some(c => c.name === recipient.name && c.area === recipient.area));
 });
+
+test("merchant cancellation stops after approaching and draft publication is reversible", async () => {
+  for (const status of ['draft', 'published', 'reserved', 'approaching', 'arrived', 'waiting', 'transit']) {
+    const t = await setup();
+    const o = await t.create();
+    const data = JSON.parse(t.storage.getItem(t.key));
+    data.orders.find(x => x.id === o.id).status = status;
+    t.storage.setItem(t.key, JSON.stringify(data));
+    if (['draft', 'published', 'reserved', 'approaching'].includes(status)) {
+      await t.act(o, 'cancel');
+      assert.equal((await t.state()).orders.find(x => x.id === o.id).status, 'cancelled');
+    } else await assert.rejects(t.act(o, 'cancel'));
+  }
+  const t = await setup();
+  const o = await t.create({ publish: false });
+  await t.act(o, 'publish');
+  assert.equal((await t.state()).orders.find(x => x.id === o.id).status, 'published');
+  await t.act(o, 'unpublish');
+  assert.equal((await t.state()).orders.find(x => x.id === o.id).status, 'draft');
+});
